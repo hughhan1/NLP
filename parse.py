@@ -3,12 +3,6 @@ import os
 import sys
 import random
 
-def sample(list):
-    '''
-    sample a elem from list, wrapper of random.sample
-    '''
-    return random.sample(list, 1)[0]
-
 def read_file(filename):
     '''
     Return Value:
@@ -41,7 +35,7 @@ def generate_sentence(rules):
             sentence.append(lhs)
             continue
         rhs = rules[lhs]
-        chosen_rule = sample(rhs) # sample one RHS from all RHSs
+        chosen_rule = random.choice(rhs) # sample one RHS from all RHSs
         reversed_rule = chosen_rule[::-1]
         stack.extend(reversed_rule)
     return ' '.join(sentence)
