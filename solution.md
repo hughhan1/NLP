@@ -19,4 +19,9 @@ see `no1-1.txt`
        The probability of having n Adj before a Noun is (1/6)^n. So it is rare
        to have multiple Adj.
 
-    3. 
+    4. For problem (a), the number of "NP -> NP PP" should be less than 1 (say
+       0.5) and for problem (b), the number of "Noun -> Adj Noun" should be
+       larger than 5 (say 6). Interestingly, when the number of "NP -> NP PP"
+       is 0.9, 0.8, 0.7, 0.6 and 0.5, the average length of sentence is 90,
+       47, 32, 24 and 20 respectively (from 100000 sentences and the number of
+       "Noun -> Adj Noun" is 6).
