@@ -32,13 +32,19 @@ def generate_sentence(rules):
     Input Value:
     rules - must be the return of read_file
     '''
-    def generate_subsentence(lhs):
+    stack = []
+    sentence = []
+    stack.append('ROOT')
+    while len(stack) > 0:
+        lhs = stack.pop()
         if lhs not in rules: # handle terminal symbols
-            return lhs
+            sentence.append(lhs)
+            continue
         rhs = rules[lhs]
-        chosen_rule = sample(rhs)
-        return ' '.join(map(generate_subsentence, chosen_rule))
-    return generate_subsentence('ROOT')
+        chosen_rule = sample(rhs) # sample one RHS from all RHSs
+        reversed_rule = chosen_rule[::-1]
+        stack.extend(reversed_rule)
+    return ' '.join(sentence)
 
 def main():
     if not os.path.isfile(sys.argv[1]):
