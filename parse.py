@@ -3,13 +3,25 @@ import os
 import sys
 import random
 
+def weighted_sample(choices, weights):
+    sum_of_weights = sum(weights)
+    r = random.uniform(0, sum_of_weights)
+    upto = 0
+    for c, w in zip(choices, weights):
+        if upto + w >= r:
+            return c
+        upto += w
+    return choices[-1]
+
 def read_file(filename):
     '''
     Return Value:
-    rules - defaultdict(list), key is LHS, value(list) is a list of RHSs, each
+    rules - defaultdict(list), key is LHS, value (list) is a list of RHSs, each
             RHS is a list
+    prob_of_rules - defaultdict(list), key is LHS, value (list) is a list of float
     '''
-    rules = defaultdict(list) # dist -> list -> list
+    rules = defaultdict(list)
+    prob_of_rules = defaultdict(list)
     with open(filename, 'r') as f:
         for line in f.readlines():
             line = line[:-1] # cleanup '\n'
@@ -17,11 +29,12 @@ def read_file(filename):
             line = line.strip() # cleanup left/right space
             if line == '': # skip empty line
                 continue
-            _, lhs, rhs = line.split('\t', 2)
+            prob, lhs, rhs = line.split('\t', 2)
             rules[lhs].append(rhs.split(' '))
-    return rules
+            prob_of_rules[lhs].append(float(prob))
+    return rules, prob_of_rules
 
-def generate_sentence(rules):
+def generate_sentence(rules, prob_of_rules):
     '''
     Input Value:
     rules - must be the return of read_file
@@ -35,7 +48,9 @@ def generate_sentence(rules):
             sentence.append(lhs)
             continue
         rhs = rules[lhs]
-        chosen_rule = random.choice(rhs) # sample one RHS from all RHSs
+        prob_of_rhs = prob_of_rules[lhs]
+        # sample one RHS from all RHSs based on probability
+        chosen_rule = weighted_sample(rhs, prob_of_rhs)
         reversed_rule = chosen_rule[::-1]
         stack.extend(reversed_rule)
     return ' '.join(sentence)
@@ -52,8 +67,8 @@ def main():
     except:
         pass
 
-    rules = read_file(filename)
+    rules, prob_of_rules = read_file(filename)
     for _ in xrange(num_of_sentences):
-        print generate_sentence(rules)
+        print generate_sentence(rules, prob_of_rules)
 
 main()
