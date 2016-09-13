@@ -1,0 +1,146 @@
+1 :	{[Sally] ate that {[Xiaochen] jumped}} . 
+
+(ROOT (S (NP (Noun_pro Sally)) 
+         (VP_pas (V_tr_ed ate) 
+                 (NC_pas that 
+                         (S (NP (Noun_pro Xiaochen)) 
+                            (VP_pas (V_in_ed jumped)))))) 
+      .) 
+
+
+2 :	{[[a fine chief of staff] on [a floor]] wanted [an extremely very fine president]} ! 
+
+(ROOT (S (NP (NP (Det a) 
+                 (Noun (Adj fine) 
+                       (Noun chief 
+                             of 
+                             staff))) 
+             (PP (Prep on) 
+                 (NP (Det a) 
+                     (Noun floor)))) 
+         (VP_pas (V_tr_ed wanted) 
+                 (NP (Det_vo an) 
+                     (Noun_vo (Adj_vo (Adv_vo extremely) 
+                                      (ADJ (Adj (Adv very) 
+                                                (Adj fine)))) 
+                              (NOUN (Noun president)))))) 
+      !) 
+
+
+3 :	{[the apple] wanted [[[[a president] or [the pickle]] and [an apple]] on [a sandwich]]} . 
+
+(ROOT (S (NP (Det_vo the) 
+             (Noun_vo apple)) 
+         (VP_pas (V_tr_ed wanted) 
+                 (NP (NP (NP (NP (Det a) 
+                                 (Noun president)) 
+                             (Conj or) 
+                             (NP (Det the) 
+                                 (Noun pickle))) 
+                         (Conj and) 
+                         (NP (Det_vo an) 
+                             (Noun_vo apple))) 
+                     (PP (Prep on) 
+                         (NP (Det a) 
+                             (Noun sandwich)))))) 
+      .) 
+
+
+4 :	did [a fine sandwich] want [[every pickle] and [the floor]] on [a sandwich] under [Sally] in [a very very delicious president] ? 
+
+(ROOT (Aux did) 
+      (S_ori (NP (Det a) 
+                 (Noun (Adj fine) 
+                       (Noun sandwich))) 
+             (VP_pre (VP_pre (VP_pre (VP_pre (V_tr_ori want) 
+                                             (NP (NP (Det every) 
+                                                     (Noun pickle)) 
+                                                 (Conj and) 
+                                                 (NP (Det the) 
+                                                     (Noun floor)))) 
+                                     (PP (Prep on) 
+                                         (NP (Det a) 
+                                             (Noun sandwich)))) 
+                             (PP (Prep under) 
+                                 (NP (Noun_pro Sally)))) 
+                     (PP (Prep in) 
+                         (NP (Det a) 
+                             (Noun (Adj (Adv very) 
+                                        (Adj (Adv very) 
+                                             (Adj delicious))) 
+                                   (Noun president)))))) 
+      ?) 
+
+
+5 :	{[an apple] understood [the president]} ! 
+
+(ROOT (S (NP (Det_vo an) 
+             (Noun_vo apple)) 
+         (VP_pas (V_tr_ed understood) 
+                 (NP (Det the) 
+                     (Noun president)))) 
+      !) 
+
+
+6 :	{[every idea] understood [Xiaochen]} . 
+
+(ROOT (S (NP (Det_vo every) 
+             (Noun_vo idea)) 
+         (VP_pas (V_tr_ed understood) 
+                 (NP (Noun_pro Xiaochen)))) 
+      .) 
+
+
+7 :	{[Sally] kissed [[an apple] in [a chief of staff]]} . 
+
+(ROOT (S (NP (Noun_pro Sally)) 
+         (VP_pas (V_tr_ed kissed) 
+                 (NP (NP (Det_vo an) 
+                         (Noun_vo apple)) 
+                     (PP (Prep in) 
+                         (NP (Det a) 
+                             (Noun chief 
+                                   of 
+                                   staff)))))) 
+      .) 
+
+
+8 :	{that {[[an idea] and [the apple]] ate [an apple] and kissed [the president]} jumped} . 
+
+(ROOT (S (NC_pas that 
+                 (S (NP (NP (Det_vo an) 
+                            (Noun_vo idea)) 
+                        (Conj and) 
+                        (NP (Det_vo the) 
+                            (Noun_vo apple))) 
+                    (VP_pas (VP_pas (V_tr_ed ate) 
+                                    (NP (Det_vo an) 
+                                        (Noun_vo apple))) 
+                            (Conj and) 
+                            (VP_pas (V_tr_ed kissed) 
+                                    (NP (Det the) 
+                                        (Noun president)))))) 
+         (VP_pas (V_in_ed jumped))) 
+      .) 
+
+
+9 :	will [Xiaochen] sigh ? 
+
+(ROOT (Aux will) 
+      (S_ori (NP (Noun_pro Xiaochen)) 
+             (VP_pre (V_in_ori sigh))) 
+      ?) 
+
+
+10 :	{[an idea] kissed [a chief of staff]} . 
+
+(ROOT (S (NP (Det_vo an) 
+             (Noun_vo idea)) 
+         (VP_pas (V_tr_ed kissed) 
+                 (NP (Det a) 
+                     (Noun chief 
+                           of 
+                           staff)))) 
+      .) 
+
+

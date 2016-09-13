@@ -1,0 +1,100 @@
+# Symbols in the grammar are case-sensitive.
+# 
+# This grammar uses a convention that
+#    - terminals are lowercase          (president)
+#    - preterminals are capitalized     (Noun)
+#    - other nonterminals are all-caps  (NP)
+# 
+# This convention just makes grammars more readable to humans.  Thus:
+#
+#    - When *you* are writing grammars in questions 3 and 6, you should 
+#      follow this convention unless you have a good reason not to.  
+#
+#    - But your *program* should still work with grammars that don't
+#      follow this convention.  So how can your program reliably tell
+#      the difference between terminal and nonterminal symbols?  If
+#      there is at least one rule for rewriting a symbol, then that
+#      symbol is a nonterminal and should be rewritten.
+#######################
+
+# Rules for creating full sentences.
+
+2	ROOT	S .
+1	ROOT	S !
+1	ROOT	is it true that S ?     # mixing terminals and nonterminals is ok.
+
+# The basic grammar rules.  Here's what the abbreviations stand for:
+#    S  = sentence
+#    NP = noun phrase
+#    VP = verb phrase
+#    PP = prepositional phrase
+#    Det = determiner (sometimes called "article")
+#    Prep = preposition
+#    Adj = adjective
+#    Conj = conjunction
+#    V_intran = intransitive verb
+#    N_clause = noun clause
+#    Adv = adverb
+#    Noun_pro = proper noun
+
+1   S     NP VP
+0.2 S     N_clause VP
+0.2 S     it Verb NP N_clause
+1   VP    Verb NP
+0.3 VP    Verb N_clause
+0.4 VP    V_intran
+0.4 VP    VP PP
+0.4 VP    VP Conj VP
+1   NP    Det Noun
+0.3 NP    NP PP
+0.6 NP    Noun_pro
+0.3 NP    NP Conj NP
+1   PP    Prep NP
+3   Noun	Adj Noun
+1   N_clause    that S
+1 Adj Adv Adj
+
+# Vocabulary.  Your program can see that "ate" is a terminal
+# symbol because there exists no rule for rewriting it.
+# Any symbol that can rewrite as a terminal (or a string of 
+# terminals, like "chief of staff") is called a "preterminal."  Notice 
+# that a preterminal is a special kind of nonterminal.
+
+1	Verb	ate
+1	Verb	wanted
+1	Verb	kissed
+1	Verb	understood
+0.3	Verb	pickled
+
+1   V_intran    sighed
+1   V_intran    jumped
+1   V_intran    flew
+
+1	Det	the
+1	Det	a
+0.5	Det	every
+
+1	Noun	president
+1	Noun	sandwich
+0.5	Noun	pickle
+0.5	Noun	chief of staff
+1	Noun	floor
+
+1   Noun_pro    Sally
+1   Noun_pro    Xiaochen
+
+1   Conj    and
+0.5 Conj    or
+
+1.5	Adj	fine
+1	Adj	delicious
+1	Adj	perplexed
+1	Adj	pickled
+
+1   Adv very
+1   Adv really
+
+1	Prep	with
+1.5	Prep	on
+1	Prep	under
+1.5	Prep	in

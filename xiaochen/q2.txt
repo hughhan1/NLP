@@ -1,0 +1,60 @@
+2a:
+
+The rule "NP -> NP PP" is responsible for all those long sentences. 
+To explain why, let's first name the nonterminals that are not preterminals "true-nonterminals" because they do not turn into terminals in one step. Mostly, one preterminal (except "Noun") will eventually turn into one word in the final sentence, while a true-nonterminal always turns into more than one words. So generally, true-nonterminals have more potential to generate long sentences.
+Looking at all the rules that turn true-nonterminals into other symbols, we can find that only two rules turn a true-nonterminal to more than one true-nonterminals. they are (1)"S -> NP VP" and (2)"NP -> NP PP". However, rule(1) is the only rule that turn "s" into other symbols, we have no other choice when there is "S" in the sentence. Things are different when it comes rule(2). We actually can turn "NP" into "Det Noun" by another rule; and if we use rule(2), "NP" becomes "NP PP". Because "PP" can only turn into "Prep NP", we have two "NP"s now: "NP Prep NP". So it's like an explosion: one "NP" gives us two, and two "NP"s give us more. All thanks to the rule "NP -> NP PP".
+
+2b:
+
+The intuition is that we have six rules that turn "Noun" into other symbol(s) while only one of them bring us an "Adj". 
+We can also do some calculation. Say there are NumberOfN "Noun"s. At each step, we choose a rule for "Noun" randomly. After one step, we have (5*NumberOfN)/6 words and NumberOfN/6 "Adj Noun". After the second step, we have (5*NumberOfN)/36 "Adj someNoun" and NumberOfN/36 "Adj Adj Noun". In fact, the expectation of "Adj"s E(Adj) can be calculated:
+E(Adj) = (1/6 + 1/6^2 + 1/6^3 + ...)*NumberOfN
+       = NumberOfN/5
+It's only a fifth of the number of Noun. No wonder we rarely find multiple adjectives in a row.
+
+2c:
+2d:
+
+I changed "1 NP -> NP PP" into "0.2 NP -> NP PP", and "1 Noun -> Adj Noun" into "3 Noun -> Adj Noun". 
+The first change solves problem 2a, for it decreased the occurence of the rule "NP -> NP PP", which is the guy who made the sentence extremely long, as I analyzed above.
+The second change solves problem 2b, for it increased the occurence of the rule "Noun -> Adj Noun". Now we have
+E(Adj) = NumberOfN*3/4,
+while gives us enough adjectives.
+
+2e:
+
+These are the changes:
+
+"2	ROOT	S ."
+Reason: "S ." occurs more than "S !" and "is it true that S ?" in English.
+
+"0.3	Verb	pickled"
+"0.5	Det	every"
+"0.5	Noun	pickle"
+"0.5	Noun	chief of staff"
+"1.5	Adj	fine"
+"1.5	Prep	on"
+"1.5	Prep	in"
+Reason: These changes are based on the word frequency in English and my preference: I don't like the word "pickle". :)
+
+Sample Sentences:
+
+1 :     the chief of staff wanted a pickle .
+
+2 :     the president pickled a president .
+
+3 :     the floor wanted every president on the sandwich on the sandwich !
+
+4 :     is it true that the president wanted every pickle ?
+
+5 :     a delicious pickled pickle wanted the sandwich !
+
+6 :     a chief of staff ate the sandwich .
+
+7 :     the pickled floor under the president with the pickled floor wanted the fine fine floor !
+
+8 :     a perplexed president under the fine pickled perplexed delicious sandwich ate the floor with the pickle with the floor .
+
+9 :     a chief of staff understood a floor !
+
+10 :    a floor kissed a perplexed perplexed sandwich .
