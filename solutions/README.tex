@@ -1,0 +1,96 @@
+\documentclass[11pt]{article}
+
+\usepackage{enumitem}               
+ 
+\usepackage{titlesec}
+
+\usepackage{listings}
+\usepackage{color}
+
+\definecolor{dkgreen}{rgb}{0,0.6,0}
+\definecolor{gray}{rgb}{0.5,0.5,0.5}
+\definecolor{mauve}{rgb}{0.58,0,0.82}
+
+\lstset{frame=tb,
+  language={},
+  aboveskip=3mm,
+  belowskip=3mm,
+  showstringspaces=false,
+  columns=flexible,
+  basicstyle={\small\ttfamily},
+  numbers=none,
+  numberstyle=\tiny\color{gray},
+  keywordstyle=\color{blue},
+  commentstyle=\color{dkgreen},
+  stringstyle=\color{mauve},
+  breaklines=true,
+  breakatwhitespace=true,
+  tabsize=3
+}
+
+\titleformat*{\section}{\bfseries}
+\titleformat*{\subsection}{\bfseries}
+\titleformat*{\subsubsection}{\bfseries}
+\titleformat*{\paragraph}{\bfseries}
+\titleformat*{\subparagraph}{\bfseries}
+
+\definecolor{codegray}{gray}{0.9}
+\newcommand{\code}[1]{\texttt{#1}}
+\newcommand{\codebox}[1]{\colorbox{codegray}{\texttt{#1}}}
+
+\newcommand{\mnote}[1]{\normalmarginpar \marginpar{\tiny #1}}
+\usepackage[margin=0.8in]{geometry}
+
+\setenumerate[0]{label=(\alph*)}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Document begins here %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{document}
+
+\noindent {\large {\bf HUGH HAN, XIAOCHEN LI, SHIJIE WU} \\ \\ {\bf 600.465 Natural Language Processing} \hfill {{\bf Fall 2016}}}\\
+{{\bf Homework \#1}} \hfill {{\bf Due:} 21 September 2016, 2pm} \\ \\
+\rule[0.1in]{\textwidth}{0.4pt}
+	
+\section{Random Sentence Generator}
+	The following output was produced using \code{./randsent grammar 10}.
+	
+	\begin{lstlisting}
+is it true that every sandwich under every floor kissed the sandwich ?
+is it true that the pickle under the pickle on a delicious pickled president pickled the president under the pickle ?
+the president on the president in every fine floor under the sandwich in every president under a chief of staff ate the floor under a chief of staff on the pickle on a floor in every chief of staff with the perplexed president on the president .
+a chief of staff pickled the sandwich in a floor on the sandwich with the president with the fine floor in every sandwich in a floor on a pickle on every sandwich with every sandwich under the pickle under a sandwich on the president under a pickled sandwich in the delicious floor on the pickled pickled pickle under the chief of staff in every president on the perplexed pickle on the pickle in every president on every floor on a sandwich in the chief of staff in every pickle in the pickle with a floor on the sandwich with every floor on a president with a chief of staff with a floor on every floor in every chief of staff in a sandwich on every floor on the president on the president under the chief of staff in every pickle under every chief of staff with every pickle with every pickle on every president on the pickle .
+a pickle on the sandwich with every sandwich on the chief of staff under the chief of staff on a chief of staff under every pickle with every president in a pickle under every pickle on a chief of staff with the pickle under every pickle on a chief of staff under every delicious sandwich under a pickle with every president under the president in the sandwich in every pickle in the sandwich under the pickled chief of staff with every sandwich under the floor with a delicious floor with a pickle in a pickled chief of staff under every floor under every sandwich in every floor under every chief of staff under every chief of staff in every sandwich with the chief of staff with the president under the pickle under every pickle with every pickle in the floor in every president with the president with a pickled sandwich on a president under a floor in the fine floor in a chief of staff under a chief of staff under every floor in a perplexed fine floor with a president with the president under a president in the delicious delicious floor on every pickle on the pickle under a fine pickle with the chief of staff with every chief of staff on the sandwich in every sandwich on every chief of staff in the sandwich under a pickle in every delicious perplexed sandwich with the floor with a perplexed chief of staff with the president on the floor on the pickle in a pickle under every floor ate the chief of staff !
+every delicious president wanted the fine pickle .
+is it true that the pickle wanted the sandwich ?
+a floor wanted a president !
+every pickle with every chief of staff kissed a delicious fine president with a president .
+a chief of staff with a floor pickled the perplexed perplexed fine sandwich .
+	\end{lstlisting}
+	
+\newpage
+
+\section{Questions}
+
+\begin{enumerate}
+\item 
+	The rule 
+	\begin{center} \code{NP} $\to$ \code{NP PP} \end{center}
+	is responsible for all these long sentences. 
+	
+To explain why, let's first name the nonterminals that are not preterminals "true-nonterminals" because they do not turn into terminals in one step. Mostly, one preterminal (except ``Noun'') will eventually turn into one word in the final sentence, while a true-nonterminal always turns into more than one words. So generally, true-nonterminals have more potential to generate long sentences.
+
+Looking at all the rules that turn true-nonterminals into other symbols, we can find that only two rules turn a true-nonterminal to more than one true-nonterminals. they are 
+\begin{enumerate}[label=(\roman*)]
+\item \code{S} $\to$ \code{NP VP},
+\item \code{NP} $\to$ \code{NP PP}.
+\end{enumerate}
+However, rule (i) is the only rule that turns \code{S} into other symbols---there is no other choice when \code{S} in the sentence. Things are different when it comes rule (ii). We actually can turn \code{NP} into \code{Det Noun} by another rule; and if we use rule (ii), \code{NP} becomes \code{NP PP}. Because \code{PP} can only turn into \code{Prep NP}, we have two \code{NP}s now: \code{NP Prep NP}. So it's like an explosion: one \code{NP} gives us two, and two \code{NP}s give us more. All thanks to the rule \code{NP} $\to$ \code{NP PP}.
+\item 
+\item 
+\item
+\item
+\end{enumerate}
+
+\end{document}
