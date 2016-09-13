@@ -1,0 +1,65 @@
+3a: Sally ate a sandwich .
+This sentence is about proper nouns. The only thing special about them is that a name does not have any determiner. So all the change I need to make is add the following rules:
+0.6 NP  Noun_pro
+1   Noun_pro    Sally
+1   Noun_pro    Xiaochen
+
+3b: Sally and the president wanted and ate a sandwich .
+This sentence is about conjunctions ("and" or "or"). A conjunction can bound two noun phrases or two verbs together. I add these rules to make this happen:
+0.3 NP  NP Conj Np
+0.4 VP  VP Conj VP
+1   Conj    and
+0.5 Conj    or
+
+3c: the president sighed .
+This sentence gives us intransitive verbs. An intransitive verb is not followed by object. These rules can help us about that:
+0.7 VP  V_intran
+1   V_intran    sighed
+1   V_intran    jumped
+1   V_intran    flew
+
+3d: the president thought that a sandwich sighed .
+These sentences are about noun clauses. First we can observe easily that a noun clause is "that" followed by a sentence. Therefore we have:
+1   N_clause    that S
+And noun clause can be the object of a sentence in this grammar:
+0.2 VP  Verb N_clause
+
+3e: it perplexed the president that a sandwich ate Sally .
+This sentence introduces to us a new structure: "it Verb NP N_clause". Therefore, I add this into the grammar:
+0.2 S   it Verb NP N_clause
+
+3f: that a sandwich ate Sally perplexed the president .
+In this sentence, noun clause can be the subject:
+0.2 S   N_clause VP
+
+3g: the very very very perplexed president ate a sandwich .
+This sentence has an adverb before an adjective. So I add these into the grammar:
+0.5 Adj Adv Adj
+1   Adv very
+1   Adv really
+
+3h: the president worked on every proposal on the desk .
+This sentence tells is that a verb phrase can be followed by a prepositional phrase. So I add this into the grammar:
+0.4 VP  VP PP
+
+################################################################################
+Sample Sentences:
+1 :     that it understood the sandwich that the pickle flew on every perplexed pickle sighed ! (3c, 3e, 3f, 3h)
+2 :     Xiaochen kissed that Sally kissed Sally and sighed under the delicious really perplexed floor under the fine president ! (3a, 3b, 3c, 3d, 3g, 3h)
+# Now I've showed that my new grammar can generate all types of sentences listed in problem 3. I'll show you eight more random examples:
+
+3 :     a fine sandwich with the floor or the fine very perplexed perplexed floor ate Sally and the floor !
+
+4 :     a perplexed perplexed sandwich understood Xiaochen in every president .
+
+5 :     that every fine chief of staff understood the president or a chief of staff wanted a really fine fine chief of staff or pickled Sally .
+
+6 :     is it true that every really perplexed pickle pickled every delicious pickle ?
+
+7 :     Xiaochen wanted a perplexed floor !
+
+8 :     it kissed Xiaochen that Sally on Xiaochen and the president sighed !
+
+9 :     is it true that a fine president wanted a sandwich with Xiaochen and a fine really pickled fine delicious really delicious very delicious chief of staff and a fine fine floor and Xiaochen ?
+
+10 :    Sally in every pickled sandwich flew under the very perplexed pickled floor .

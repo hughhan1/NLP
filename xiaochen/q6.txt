@@ -1,0 +1,77 @@
+6a:
+
+Our actual tree was:
+(ROOT (S (N_clause that 
+                   (S (N_clause that 
+                                (S (NP (NP (NP (NP (Noun_pro Sally))                      
+                                               (Conj and)                                 
+                                               (NP (Det a) 
+                                                   (Noun (Adj (Adv really)                
+                                                              (Adj fine))                 
+                                                         (Noun pickle))))                 
+                                           (Conj and) 
+                                           (NP (NP (Det the) 
+                                                   (Noun sandwich))                       
+                                               (PP (Prep in) 
+                                                   (NP (NP (NP (Noun_pro Xiaochen))       
+                                                           (PP (Prep in) 
+                                                               (NP (Noun_pro Sally))))    
+                                                       (PP (Prep with) 
+                                                           (NP (Det the) 
+                                                               (Noun sandwich)))))))      
+                                       (PP (Prep on) 
+                                           (NP (Det every) 
+                                               (Noun pickle))))                           
+                                   (VP (Verb wanted) 
+                                       (NP (Noun_pro Sally)))))                           
+                      (VP (VP (Verb kissed)                                               
+                              (NP (Det a) 
+                                  (Noun (Adj (Adv really)                                 
+                                             (Adj fine)) 
+                                        (Noun sandwich))))                                
+                          (Conj and) 
+                          (VP (Verb wanted) 
+                              (NP (Noun_pro Xiaochen))))))                                
+         (VP (V_intran flew)))                                                            
+      .)
+
+The parse guessed:
+(ROOT (S (N_clause that
+                   (S (N_clause that
+                                (S (NP (NP (NP (NP (NP (NP (Noun_pro Sally))
+                                                       (Conj and)
+                                                       (NP (NP (Det a)
+                                                               (Noun (Adj (Adv really)
+                                                                          (Adj fine))
+                                                                     (Noun pickle)))
+                                                           (Conj and)
+                                                           (NP (Det the)
+                                                               (Noun sandwich))))
+                                                   (PP (Prep in)
+                                                       (NP (Noun_pro Xiaochen))))
+                                               (PP (Prep in)
+                                                   (NP (Noun_pro Sally))))
+                                           (PP (Prep with)
+                                               (NP (Det the)
+                                                   (Noun sandwich))))
+                                       (PP (Prep on)
+                                           (NP (Det every)
+                                               (Noun pickle))))
+                                   (VP (Verb wanted)
+                                       (NP (Noun_pro Sally)))))
+                      (VP (VP (Verb kissed)
+                              (NP (Det a)
+                                  (Noun (Adj (Adv really)
+                                             (Adj fine))
+                                        (Noun sandwich))))
+                          (Conj and)
+                          (VP (Verb wanted)
+                              (NP (Noun_pro Xiaochen))))))
+         (VP (V_intran flew)))
+      .)
+
+The tree of a specific sentence could be ambiguous, depending on the grammar that was used to generate the sentence. If there are multiple possible trees that lead to the same sentence, the parser could guess a different tree than what was actually used when generating the sentence.
+
+In our example, our sentence contained several subtrees first split using the NP-Conj-NP rule, and later on split using the NP-PP rule. However, the parser guessed that the sentence was composed of subtrees that first split using the NP-PP rule, and later on split using the NP-Conj-NP rule.
+
+6b:

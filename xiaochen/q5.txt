@@ -1,0 +1,35 @@
+every sandwich with a pickle on the floor wanted a president .
+
+5a
+
+The first derivation (D1): 
+(ROOT (S (NP (NP (NP (Det every) 
+                     (Noun sandwich)) 
+                 (PP (Prep with) 
+                     (NP (Det a) 
+                         (Noun pickle)))) 
+             (PP (Prep on) 
+                 (NP (Det the) 
+                     (Noun floor)))) 
+         (VP (Verb wanted) 
+             (NP (Det a) 
+                 (Noun president))))
+      .)
+      
+Another derivation (D2) is as follow:
+(ROOT (S (NP (NP (Det every)
+                 (Noun sandwich)) 
+             (PP (Prep with) 
+                 (NP (NP (Det a) 
+                         (Noun pickle)))
+                     (PP (Prep on) 
+                         (NP (Det the) 
+                             (Noun floor)))))
+         (VP (Verb wanted) 
+             (NP (Det a) 
+                 (Noun president))))
+      .)
+
+5b
+
+In D1, the sandwich was on the floor, and the pickle was not. In D2, the pickle was on the floor, and the sandwich was not. These two santences has different meanings. Therefore, it's nessesary to distinguish between these.
