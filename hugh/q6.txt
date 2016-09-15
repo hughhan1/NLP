@@ -76,7 +76,11 @@ In our example, our sentence contained several subtrees first split using the NP
 
 6b:
 
-There are 5 ways to derive the given string from the NP symbol of the original grammar. [Need explanation: use parse -c to generate a tree to show all of the possible options.)
+There are 5 ways to derive the given string from the NP symbol of the original grammar. 
+[UNDONE: Need explanation: use parse -c to generate a tree to show all of the possible options.]
+every sandwich with a pickle on the floor under the chief of staff
+First I define "modify": In the rule NP1 -> NP2 PP, NP2 finally turns into a noun N, then I say PP modify N.
+In this sentence, "with a pickle" can only modify "sandwich"; "on the floor" can modify either "sandwich" or "pickle"; "under the chief of staff" can modify "sandwich" or "pickle" or "floor". So there should be 1*2*3 = 6 ways to parse this sentence. However, when "on the floor" modifying "sandwich", "under the chief of staff" cannot modify "sandwich". So in the end, there remains 5 ways to parse it.
 
 6d:
 
