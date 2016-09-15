@@ -7,6 +7,11 @@
 \usepackage{listings}
 \usepackage{color}
 
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage{amstext}
+\usepackage{amsmath}
+
 \definecolor{dkgreen}{rgb}{0,0.6,0}
 \definecolor{gray}{rgb}{0.5,0.5,0.5}
 \definecolor{mauve}{rgb}{0.58,0,0.82}
@@ -33,6 +38,11 @@
 \titleformat*{\subsubsection}{\bfseries}
 \titleformat*{\paragraph}{\bfseries}
 \titleformat*{\subparagraph}{\bfseries}
+
+\newcommand{\N}{\ensuremath{\mathbb N}}
+
+\newcommand{\prob}[1]{\ensuremath{\text{{\bf Pr}$\left[#1\right]$}}}
+\newcommand{\expct}[1]{\ensuremath{\text{{\bf E}$\left[#1\right]$}}}
 
 \definecolor{codegray}{gray}{0.9}
 \newcommand{\code}[1]{\texttt{#1}}
@@ -90,6 +100,151 @@ However, rule (i) is the only rule that turns \code{S} into other symbols---ther
 \item 
 \item 
 \item
+\item
+\end{enumerate}
+
+\section{}
+\begin{enumerate}
+\item
+\end{enumerate}
+
+\section{}
+\begin{enumerate}
+\item
+\end{enumerate}
+
+\section{}
+\begin{enumerate}
+\item
+\end{enumerate}
+
+\section{Parse}
+\begin{enumerate}
+\item
+\end{enumerate}
+
+\section{}
+\begin{enumerate}
+\item
+	The parser does not always recover the original derivation that was ``intended'' by \code{randsent}. In fact, we can give an example of a sentence for which \code{parse} ``misunderstood'' and found an alternative derivation. \vspace{4pt} \\
+	Our sentence was generated via the following tree:
+	\begin{lstlisting}
+	
+(ROOT (S (N_clause that 
+                   (S (N_clause that 
+                                (S (NP (NP (NP (NP (Noun_pro Sally))                      
+                                               (Conj and)                                 
+                                               (NP (Det a) 
+                                                   (Noun (Adj (Adv really)                
+                                                              (Adj fine))                 
+                                                         (Noun pickle))))                 
+                                           (Conj and) 
+                                           (NP (NP (Det the) 
+                                                   (Noun sandwich))                       
+                                               (PP (Prep in) 
+                                                   (NP (NP (NP (Noun_pro Xiaochen))       
+                                                           (PP (Prep in) 
+                                                               (NP (Noun_pro Sally))))    
+                                                       (PP (Prep with) 
+                                                           (NP (Det the) 
+                                                               (Noun sandwich)))))))      
+                                       (PP (Prep on) 
+                                           (NP (Det every) 
+                                               (Noun pickle))))                           
+                                   (VP (Verb wanted) 
+                                       (NP (Noun_pro Sally)))))                           
+                      (VP (VP (Verb kissed)                                               
+                              (NP (Det a) 
+                                  (Noun (Adj (Adv really)                                 
+                                             (Adj fine)) 
+                                        (Noun sandwich))))                                
+                          (Conj and) 
+                          (VP (Verb wanted) 
+                              (NP (Noun_pro Xiaochen))))))                                
+         (VP (V_intran flew)))                                                            
+      .)
+      
+	\end{lstlisting}
+	(This problem is continued on the next page.)
+	\newpage
+	
+	However, \code{parse} found an alternate derivation via the following tree:
+	\begin{lstlisting}
+	
+(ROOT (S (N_clause that
+                   (S (N_clause that
+                                (S (NP (NP (NP (NP (NP (NP (Noun_pro Sally))
+                                                       (Conj and)
+                                                       (NP (NP (Det a)
+                                                               (Noun (Adj (Adv really)
+                                                                          (Adj fine))
+                                                                     (Noun pickle)))
+                                                           (Conj and)
+                                                           (NP (Det the)
+                                                               (Noun sandwich))))
+                                                   (PP (Prep in)
+                                                       (NP (Noun_pro Xiaochen))))
+                                               (PP (Prep in)
+                                                   (NP (Noun_pro Sally))))
+                                           (PP (Prep with)
+                                               (NP (Det the)
+                                                   (Noun sandwich))))
+                                       (PP (Prep on)
+                                           (NP (Det every)
+                                               (Noun pickle))))
+                                   (VP (Verb wanted)
+                                       (NP (Noun_pro Sally)))))
+                      (VP (VP (Verb kissed)
+                              (NP (Det a)
+                                  (Noun (Adj (Adv really)
+                                             (Adj fine))
+                                        (Noun sandwich))))
+                          (Conj and)
+                          (VP (Verb wanted)
+                              (NP (Noun_pro Xiaochen))))))
+         (VP (V_intran flew)))
+      .)
+      
+	\end{lstlisting}
+	
+	(Note that the two trees are not equivalent.) \vspace{4pt} \\ \\ \\
+	The reason for this is that the ``correct'' tree of a specific sentence could be ambiguous, depending on the grammar that was used.  That is, if there is more than one unique tree that leads to the generated sentence, the parser could guess a tree that is different from what was actually used by the generator. \vspace{4pt} \\
+In our example, the sentence was composed of several subtrees first split using the \code{NP Conj NP} rule, and then later on split using the \code{NP PP} rule. However, the parser guessed that the sentence was composed of subtrees that consecutively split using the \code{NP PP} rule, and did not use the \code{NP Conj NP} rule to split until much later on.
+\newpage
+\item
+\item
+\item
+	\begin{enumerate}[label=(\roman*)]
+	\item
+		Why is \code{p(best parse)} so small? Well, we can examine the probabilities used to generate this sentence, by first taking a look at the probabilities given from \code{grammar}.
+		\begin{eqnarray*}
+			\prob{\text{this sentence}} &=&  \prob{\code{ROOT}} \cdot \prob{\code{S .} | \code{ROOT}} \cdot \prob{\code{NP VP} | \code{S}} \cdot \prob{\code{Det Noun} | \code{NP}} \cdot \\
+			&& \prob{\code{the} | \code{Det}} \cdot \prob{\code{president} | \code{Noun}} \cdot \prob{\code{Verb NP} | \code{VP}} \cdot \\
+			&& \prob{\code{ate} | \code{Verb}} \cdot \prob{\code{Det Noun} | \code{NP}} \cdot \prob{\code{the} | \code{Det}} \cdot \prob{\code{sandwich} | \code{Noun}}
+		\end{eqnarray*}
+		Fair enough. Those are a lot of expressions multiplied together, which will probably produce a small number. But what does it equate, exactly?
+		\begin{eqnarray*}
+			\prob{\code{ROOT}}             &=& 1 \\
+			\prob{\code{S .} | \code{ROOT}} &=& 1/3 \\
+                        	\prob{\code{NP VP} | \code{S}}        &=& 1 \\
+                        	\prob{\code{Det Noun} | \code{NP}}    &=& 1/2 \\
+                        	\prob{\code{the} | \code{Det}}        &=& 1/3 \\
+                        	\prob{\code{president} | \code{Noun}} &=& 1/6 \\
+                        	\prob{\code{Verb NP} | \code{VP}}     &=& 1 \\
+                        	\prob{\code{ate} | \code{Verb}}      &=& 1/5 \\
+                        	\prob{\code{Det Noun} | \code{NP}}    &=& 1/2 \\
+                        	\prob{\code{the} | \code{Det}}        &=& 1/3 \\
+                        	\prob{\code{sandwich} | \code{Noun}}  &=& 1/6 \\
+		\end{eqnarray*}
+		$\implies \prob{\text{this sentence}} = 5.144032922 \times 10^{-5}$ \vspace{4pt} \\
+		Let's call this number $p$, for simplicity purposes.
+		Now let's think about why \code{p(sentence)} is equivalent to \code{p(best\_parse)}. The probability of getting this specific sentence was $p$. Given that we have some $k \in \N$ number of possible parses of all of the possible sentences generated from \code{grammar}, the probability of getting the correct ``best'' parse of a sentence should \textit{also} be $p$. That is, there should probably only be one possible parsing of each sentence, although some ``types'' of sentences could be more likely to appear than others. \vspace{4pt} \\
+		Finally, we can think about why \code{p(best\_parse|sentence)} $= 1$. If we run: \vspace{4pt} \\
+		\codebox{\$ ./parse -c -g grammar \text{ }\text{ }\text{ }\text{ }\text{ }\text{ }\text{ }\text{ }} \\
+		\codebox{the president ate the sandwich .} \vspace{4pt} \\
+		we see that the number of possible parses of the sentence is 1. Therefore, there is only one possible ``best'' parse of the sentence, so the probability that the given parse is equivalent to the \textit{only} best parse is 100\%.
+	\item
+	\end{enumerate}
 \item
 \end{enumerate}
 
