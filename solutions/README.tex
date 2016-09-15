@@ -63,7 +63,7 @@
 {{\bf Homework \#1}} \hfill {{\bf Due:} 21 September 2016, 2pm} \\ \\
 \rule[0.1in]{\textwidth}{0.4pt}
 	
-\section{Random Sentence Generator}
+\section{Initial Implementation}
 	The following output was produced using \code{./randsent grammar 10}.
 	
 	\begin{lstlisting}
@@ -78,10 +78,10 @@ a floor wanted a president !
 every pickle with every chief of staff kissed a delicious fine president with a president .
 a chief of staff with a floor pickled the perplexed perplexed fine sandwich .
 	\end{lstlisting}
-	
+(Note: the indentation, or ``tabs'', seen in this LaTeX document were not present in the generation of these sentences. They are there to help distinguish each sentence from the other.)
 \newpage
 
-\section{Questions}
+\section{Initial Discussion}
 
 \begin{enumerate}
 \item 
@@ -89,41 +89,35 @@ a chief of staff with a floor pickled the perplexed perplexed fine sandwich .
 	\begin{center} \code{NP} $\to$ \code{NP PP} \end{center}
 	is responsible for all these long sentences. 
 	
-To explain why, let's first name the nonterminals that are not preterminals "true-nonterminals" because they do not turn into terminals in one step. Mostly, one preterminal (except ``Noun'') will eventually turn into one word in the final sentence, while a true-nonterminal always turns into more than one words. So generally, true-nonterminals have more potential to generate long sentences.
+To explain why, let's first name the nonterminals that are not preterminals "true-nonterminals" because they do not turn into terminals in one step. Mostly, a preterminal (except ``Noun'') will eventually turn into one word in the final sentence, while a true-nonterminal will always turn into more than one word. Generally, true-nonterminals have more potential to generate long sentences.
 
-Looking at all the rules that turn true-nonterminals into other symbols, we can find that only two rules turn a true-nonterminal to more than one true-nonterminals. they are 
+Looking at all the rules that turn true-nonterminals into other symbols, we can find two rules turn a true-nonterminal to more than one true-nonterminals. they are 
 \begin{enumerate}[label=(\roman*)]
 \item \code{S} $\to$ \code{NP VP},
 \item \code{NP} $\to$ \code{NP PP}.
 \end{enumerate}
-However, rule (i) is the only rule that turns \code{S} into other symbols---there is no other choice when \code{S} in the sentence. Things are different when it comes rule (ii). We actually can turn \code{NP} into \code{Det Noun} by another rule; and if we use rule (ii), \code{NP} becomes \code{NP PP}. Because \code{PP} can only turn into \code{Prep NP}, we have two \code{NP}s now: \code{NP Prep NP}. So it's like an explosion: one \code{NP} gives us two, and two \code{NP}s give us more. All thanks to the rule \code{NP} $\to$ \code{NP PP}.
+However, rule (i) is the only rule that turns \code{S} into other symbols---there are no other possible options  \code{S} is given. (And with our grammar, we are \textit{always} given \code{S} right after \code{ROOT}.) 
+
+When given \code{NP}, it's a bit different. We have the possibility of creating terminals (i.e. turning \code{NP} into \code{Det Noun}. However, if we use rule (ii) when \code{NP} is given, then \code{NP} becomes \code{NP PP}. Because \code{PP} can only turn into \code{Prep NP}, we are then left with an expression containing \textit{two} \code{NP}s: \code{NP Prep NP}. 
+
+Rule (ii) creates something sort of like an explosion: one \code{NP} could give us two, and two \code{NP}s could give us even more. And this is why we generate so many long sentences!
 \item 
 \item 
 \item
 \item
 \end{enumerate}
 
-\section{}
+\section{Modifications}
+
+\section{Trees, Pretty Prints, Brackets}
+
+\section{Alternate Derivations}
 \begin{enumerate}
 \item
-\end{enumerate}
-
-\section{}
-\begin{enumerate}
-\item
-\end{enumerate}
-
-\section{}
-\begin{enumerate}
 \item
 \end{enumerate}
 
 \section{Parse}
-\begin{enumerate}
-\item
-\end{enumerate}
-
-\section{}
 \begin{enumerate}
 \item
 	The parser does not always recover the original derivation that was ``intended'' by \code{randsent}. In fact, we can give an example of a sentence for which \code{parse} ``misunderstood'' and found an alternative derivation. \vspace{4pt} \\
@@ -237,14 +231,57 @@ In our example, the sentence was composed of several subtrees first split using 
                         	\prob{\code{sandwich} | \code{Noun}}  &=& 1/6 \\
 		\end{eqnarray*}
 		$\implies \prob{\text{this sentence}} = 5.144032922 \times 10^{-5}$ \vspace{4pt} \\
-		Let's call this number $p$, for simplicity purposes.
-		Now let's think about why \code{p(sentence)} is equivalent to \code{p(best\_parse)}. The probability of getting this specific sentence was $p$. Given that we have some $k \in \N$ number of possible parses of all of the possible sentences generated from \code{grammar}, the probability of getting the correct ``best'' parse of a sentence should \textit{also} be $p$. That is, there should probably only be one possible parsing of each sentence, although some ``types'' of sentences could be more likely to appear than others. \vspace{4pt} \\
-		Finally, we can think about why \code{p(best\_parse|sentence)} $= 1$. If we run: \vspace{4pt} \\
+		Let's call this number $p$, for simplicity purposes. \vspace{4pt} \\
+		Using Bayes' Rule, we know that the probability that this is the best parse is equal to the probability that this sentence occurs, multiplied with the probability that we get the best parse \textit{conditioned} on the event of this sentence occurring. That is, 
+		\begin{eqnarray*}
+			\text{\code{p(best\_parse)}} &=& \text{\code{p(best\_parse|sentence)}} \cdot \text{\code{p(sentence)}}
+		\end{eqnarray*}
+		We know that \text{\code{p(best\_parse|sentence)}} $= 1$, and we just calculated $p$. Therefore,
+		\begin{eqnarray*}
+			\text{\code{p(best\_parse)}} &=& 1 \cdot \prob{\text{this sentence}} \\
+			&=& 5.144032922 \times 10^{-5}
+		\end{eqnarray*}
+		Now let's think about why \code{p(sentence)} is equivalent to \code{p(best\_parse)}. 
+		
+		We can again use Bayes' Rule to mathematically argue this. But we can also think intuitively. \code{p(best\_parse)} is the probability that the given parse is the best possible parse. If we know that there is \textit{one} best parse for the specific generated sentence, it \textit{must} be that the probability that this parse is the best parse of \textit{all} best parses for \textit{all} possible sentences is equivalent to the probability of generating this sentence. \vspace{4pt} \\
+		Finally, we can think about why \code{p(best\_parse|sentence)} $= 1$. 
+		Using the same arguments as above, we know that there is only one possible ``best'' parse of the sentence. Therefore, the probability that the given parse is equivalent to the \textit{only} best parse is 100\%. \vspace{4pt} \\
+		We can then check our reasoning: \vspace{4pt} \\
 		\codebox{\$ ./parse -c -g grammar \text{ }\text{ }\text{ }\text{ }\text{ }\text{ }\text{ }\text{ }} \\
 		\codebox{the president ate the sandwich .} \vspace{4pt} \\
-		we see that the number of possible parses of the sentence is 1. Therefore, there is only one possible ``best'' parse of the sentence, so the probability that the given parse is equivalent to the \textit{only} best parse is 100\%.
+		and notice that there indeed is only 1 possible parse of the given sentence.
 	\item
+		Looking at the possibilities from \code{grammar}, we see that there is actually one other parse that could exist:
+		\begin{lstlisting}
+(ROOT (S (NP (NP (Det every)
+                   (Noun sandwich))
+               (PP (Prep with)
+                   (NP (NP (Det a)
+                            (Noun pickle))
+                        (PP (Prep on)
+                            (NP (Det the)
+                                 (Noun floor))))))
+           (VP (Verb wanted)
+                (NP (Det a)
+                     (Noun president))))
+      .)
+		\end{lstlisting}
+		Now looking at the probabilities from \code{grammar} we see that the event that ``on the floor'' is applied to ``a pickle'' is equally as likely as the event that ``on the floor'' is applied to ``every sandwich with a pickle''.
+		
+		Because there are only two possible events, and their probabilities are equal, it must be that the probability of each one happening is exactly 0.5.
+		\item
+		\item
+		\item
 	\end{enumerate}
+\end{enumerate}
+\section{}
+\begin{enumerate}
+\item
+\item
+\item
+\item
+\item
+\item
 \item
 \end{enumerate}
 
