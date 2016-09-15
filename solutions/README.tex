@@ -220,6 +220,22 @@ That is, the expected number of consecutive \code{Adj}s appearing next to each o
 In our example, the sentence was composed of several subtrees first split using the \code{NP Conj NP} rule, and then later on split using the \code{NP PP} rule. However, the parser guessed that the sentence was composed of subtrees that consecutively split using the \code{NP PP} rule, and did not use the \code{NP Conj NP} rule to split until much later on.
 \newpage
 \item
+	There are 5 ways to analyze the noun phrase \vspace{4pt} \\
+	\code{every sandwich with a pickle on the floor under the chief of staff} \vspace{4pt} \\
+	using the original grammar \code{grammar}. \vspace{4pt} \\
+	Let's first define the term ``modify'' as follows:
+	
+	Assume that the rule $\text{\code{NP}}_1 \to \text{\code{NP}}_2 \text{ \code{PP}}$ exists in our grammar. Then $\text{\code{PP}}$ modifies some $N \in \text{\code{Noun}}$ if $\text{\code{NP}}_2$ at some point generates $N$.
+	
+	In this sentence:
+	\begin{enumerate}[label=(\roman*)]
+	\item the \code{PP} ``with a pickle'' can only modify the \code{Noun} ``sandwich",
+	\item the \code{PP} ``on the floor'' can modify the \code{Noun}s ``sandwich" or ``pickle'',
+	\item the \code{PP} ``under the chief of staff'' can modify the \code{Noun}s ``sandwich", ``pickle'', or ``floor''.
+	\end{enumerate}
+	By this logic, there would seem to be $1 \cdot 2 \cdot 3 = 6$ ways to parse this sentence. \vspace{4pt} \\
+	However, when ``on the floor'' modifies ``sandwich'', ``under the chief of staff'' cannot simultaneously modify ``sandwich''. \vspace{4pt} \\
+	Thus, there remains 5 possible ways to parse the sentence.
 \item
 \item
 	\begin{enumerate}[label=(\roman*)]
