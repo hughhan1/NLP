@@ -101,7 +101,21 @@ However, rule (i) is the only rule that turns \code{S} into other symbols---ther
 When given \code{NP}, it's a bit different. We have the possibility of creating terminals (i.e. turning \code{NP} into \code{Det Noun}. However, if we use rule (ii) when \code{NP} is given, then \code{NP} becomes \code{NP PP}. Because \code{PP} can only turn into \code{Prep NP}, we are then left with an expression containing \textit{two} \code{NP}s: \code{NP Prep NP}. 
 
 Rule (ii) creates something sort of like an explosion: one \code{NP} could give us two, and two \code{NP}s could give us even more. And this is why we generate so many long sentences!
+
 \item 
+	The intuition here is that we have six rules--all of equal probability--that turn the symbol \code{Noun} into other symbol(s), with only one of those rules generating an \code{Adj}. 
+	(That rule is \code{Noun} $\to$ \code{Adj Noun}). \vspace{4pt} \\
+Now let's do some calculations. Suppose there are $n$ \code{Noun}s. Because the probability of any rule being applied is uniformly random, we can choose a rule for \code{Noun} uniformly randomly. \vspace{4pt} \\
+After one ``step'' of the rule is applied to all $n$ \code{Noun}s in the sentence, we will have an expected $\frac{5n}{6}$ words and $\frac{n}{6}$ \code{Adj Noun}s. After the second step, we have an expected $\frac{5n}{6^2}$ \code{Adj Noun}s and $\frac{n}{6^2}$ \code{Adj Adj Noun}s. \vspace{4pt} \\
+In fact, we can generalize the expected number of consecutive \code{Adj}s:
+\begin{eqnarray*}
+	\expct{\code{Adj}} &=& \frac{n}{6^2} + \frac{n}{6^3} + \frac{n}{6^4} + \cdots \\
+		&=& \sum\limits_{i=2}^\infty \frac{n}{6^i} \\
+		&=& \left( \sum\limits_{i=1}^\infty \frac{n}{6^i} \right) - \frac{n}{6} \\
+		&=& \frac{n}{5} - \frac{n}{6} \\
+		&=& \frac{n}{30} \\
+\end{eqnarray*}
+That is, the expected number of consecutive \code{Adj}s appearing next to each other is only one-thirtieth of the number of \code{Noun}s that appear in the sentence.
 \item 
 \item
 \item

@@ -1,0 +1,23 @@
+
+                                S
+                        NP
+            NP                           
+                   PP             PP             VP
+     NP                NP             NP               NP
+ det    noun   prep det  noun  prep det noun  verb  det  noun
+every sandwich with  a  pickle  on  the floor wanted a president .
+
+
+             /
+            /             PP
+           /            /    \   
+          /            /      NP
+         /            /    /     \
+        /            /    /       \    
+       /            /    /         PP               VP
+      /            /    /         /  \             /  \
+     NP           /    NP        /    NP          /    NP
+    /  \         /    /  \      /    /  \        /    /  \
+ det    noun   prep det  noun  prep det noun  verb  det  noun
+  |      |      |    |    |     |    |    |     |    |    |
+every sandwich with  a  pickle  on  the floor wanted a president .
