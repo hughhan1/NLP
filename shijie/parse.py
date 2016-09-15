@@ -2,6 +2,7 @@ from collections import defaultdict
 import os
 import sys
 import random
+import argparse
 
 def weighted_sample(choices, weights):
     sum_of_weights = sum(weights)
@@ -34,7 +35,7 @@ def read_file(filename):
             prob_of_rules[lhs].append(float(prob))
     return rules, prob_of_rules
 
-def generate_sentence(rules, prob_of_rules):
+def generate_sentence(rules, prob_of_rules, print_tree=False):
     '''
     Input Value:
     rules - must be the return of read_file
@@ -52,23 +53,35 @@ def generate_sentence(rules, prob_of_rules):
         # sample one RHS from all RHSs based on probability
         chosen_rule = weighted_sample(rhs, prob_of_rhs)
         reversed_rule = chosen_rule[::-1]
+
+        if print_tree:
+            stack.append('#)') # prefix '#' as a special internal symbol
         stack.extend(reversed_rule)
-    return ' '.join(sentence)
+        if print_tree:
+            stack.append('#(' + lhs) # same as above
+
+    # sentence post process
+    if print_tree:
+        # clean up '#' introduced by internal symbol
+        tree = ' '.join(sentence).replace('#', '')
+        return tree.replace(' )', ')').replace('( ', '(') # remove unnecessary space
+    else:
+        return ' '.join(sentence)
 
 def main():
-    if not os.path.isfile(sys.argv[1]):
+    parser = argparse.ArgumentParser(description='Generate some sentences.')
+    parser.add_argument('filename', help='the path and filename of the grammar file')
+    parser.add_argument('num_of_sentences', help='the number of generated sentence',
+                        default=1, type=int, nargs='?')
+    parser.add_argument('-t', help='print tree instead', action='store_true')
+    args = parser.parse_args()
+
+    if not os.path.isfile(args.filename):
         print 'grammar file doesn\'t exist'
         return
-    filename = sys.argv[1]
-    
-    num_of_sentences = 1
-    try:
-        num_of_sentences = int(sys.argv[2])
-    except:
-        pass
 
-    rules, prob_of_rules = read_file(filename)
-    for _ in xrange(num_of_sentences):
-        print generate_sentence(rules, prob_of_rules)
+    rules, prob_of_rules = read_file(args.filename)
+    for _ in xrange(args.num_of_sentences):
+        print generate_sentence(rules, prob_of_rules, args.t)
 
 main()

@@ -1,5 +1,6 @@
 import random
 import sys
+import argparse
 
 class Symbol:  
     '''
@@ -266,7 +267,6 @@ def myPrettyPrint(inString):
         
 def main(input = None):
     g = Grammar(input)
-    
     for i in range(10):
         s = Sentence(g)
         print i+1, ':\t', s.getSentence(), '\n'
@@ -275,9 +275,27 @@ def main(input = None):
     
     
 if __name__ == '__main__':
+    parser = argparse.ArgumentParser(description='Generate some sentences.')
+    parser.add_argument('grammar_name', help='the path and filename of the grammar file')
+    parser.add_argument('num_of_sentences', help='the number of generated sentence',
+                        default=1, type=int, nargs='?')
+    parser.add_argument('-t', help='print tree instead', action='store_true')
+    parser.add_argument('-b', help='print brackets instead', action='store_true')
+    args = parser.parse_args()
+    
     try:
-        input = file(sys.argv[1],'r')
+        input = file(args.grammar_name,'r')
     except IOError:
         sys.stderr.write('ERROR: Cannot read inputfile %s.\n' % sys.argv[1])
         sys.exit(1)
-    main(input)
+    # main(input)
+    
+    g = Grammar(input)
+    for i in range(args.num_of_sentences):
+        s = Sentence(g)
+        if args.t:
+            print s.getTree()
+        elif args.b:
+            print s.getSentence_b()
+        else:
+            print s.getSentence()
