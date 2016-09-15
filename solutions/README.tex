@@ -117,8 +117,54 @@ In fact, we can generalize the expected number of consecutive \code{Adj}s:
 \end{eqnarray*}
 That is, the expected number of consecutive \code{Adj}s appearing next to each other is only one-thirtieth of the number of \code{Noun}s that appear in the sentence.
 \item 
+	This has been implemented in \code{Grammar.py}.
 \item
+	To reduce the number of long sentences, we have to reduce the possibility that a nonterminal changes into another nonterminal. To increase the number of adjectives, we can simply increase the probability that a \code{Noun} changes into a \code{Adj Noun}. 
+	
+	In our grammar, we changed the rules:
+	\begin{enumerate} 
+	\item $\text{\code{1 NP}} -> \text{\code{NP PP}}$ into $\text{\code{0.2 NP}} -> \text{\code{NP PP}}$,
+	\item $\text{\code{1 Noun}} -> \text{\code{Adj Noun}}$ into $\text{\code{3 Noun}} -> \text{\code{Adj Noun}}$.
+	\end{enumerate}
+	Change (i) solves the problem of long sentences, in that it reduces the likelihood of a single nonterminal turning into multiple nonterminals.
+	
+	Change (ii) solves the problem of too few adjectives, in that it increases the likelihood of adjective generation.
 \item
+	The changes made for \code{grammar2} are:
+	\begin{center} \begin{tabular}{l l l}
+	\code{2}    & \code{ROOT} & \code{S .} \\
+	\code{\#}    & \code {...} & \ \\
+	\code{0.3} & \code{Verb} & \code{pickled} \\
+	\code{0.5} & \code{Det} & \code{every} \\
+	\code{0.5} & \code{Noun} & \code{pickle} \\
+	\code{0.5} & \code{Noun} & \code{chief of staff} \\
+	\code{1.5} & \code{Adj} & \code{fine} \\
+	\code{1.5} & \code{Prep} & \code{on} \\
+	\code{1.5} & \code{Prep} & \code{in} 
+	\end{tabular} \end{center}
+	
+	The reasoning for these changes are:
+        \begin{itemize}
+        \item[-] a sentence ending with a period is more common than either a sentence ending with an exclamation point or a sentence ending with a question mark,
+        \item[-] the verb ``picked'' is not frequently used in the English language,
+        \item[-] the frequencies are picked relative to the frequencies of other words of the same type.
+        \end{itemize}
+        
+        Ten sentences generated with the new grammar are pasted below:
+        \begin{lstlisting}
+the chief of staff wanted a pickle .
+the president pickled a president .
+the floor wanted every president on the sandwich on the sandwich !
+is it true that the president wanted every pickle ?
+a delicious pickled pickle wanted the sandwich !
+a chief of staff ate the sandwich .
+the pickled floor under the president with the pickled floor wanted the fine fine floor !
+a perplexed president under the fine pickled perplexed delicious sandwich ate the floor with the pickle with the floor .
+a chief of staff understood a floor !
+a floor kissed a perplexed perplexed sandwich .
+        \end{lstlisting}
+        (Note: the indentation, or ``tabs'', seen in this LaTeX document were not present in the generation of these sentences. They are there to help distinguish each sentence from the other.)
+	
 \end{enumerate}
 
 \section{Modifications}
