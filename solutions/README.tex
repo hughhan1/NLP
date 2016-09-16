@@ -167,6 +167,8 @@ a floor kissed a perplexed perplexed sandwich .
 	
 \end{enumerate}
 
+\newpage
+
 \section{Modifications}
 
 \newpage
@@ -269,6 +271,8 @@ is it true that {[Xiaochen] wanted [a fine sandwich]} ?
 	
 	These two sentences are both grammatically correct, but have different literal meanings in English. Therefore, it is necessary to note these differences.
 \end{enumerate}
+
+\newpage
 
 \section{Parse}
 \begin{enumerate}
@@ -442,16 +446,42 @@ In our example, the sentence was composed of several subtrees first split using 
 		\item
 		\item
 	\end{enumerate}
+	\item
+	\item
 \end{enumerate}
-\section{}
+\section{Extensions}
 \begin{enumerate}
 \item
+	We can use a new symbol \code{Det\_vo} to represent a determiner that can only be used before a word beginning with a vowel. In fact, there is only one word that \code{Det\_vo} turns into: \code{an}.
+	
+Note that in the English grammar, only a noun, adjective, or adverb can immediately follow a determiner.
+Thus, we also need to define the symbols \code{Noun\_vo}, \code{Adj\_vo}, and \code{Adv\_vo} to represent nouns, adjectives, and adverbs, respectively, that begin with vowels.
+
+To make the grammar file \code{grammar7} slightly easier to read, we can define \code{NOUN} to represent \textit{any} type of noun. That its, \code{NOUN} can turn into either \code{Noun} \textit{or} \code{Noun\_vo}.
+
+Similarly, we can define \code{ADJ} to represent any type of adjective. 
+
+Note that the new rules that have been added in the grammar for this question have comments along the lines of `` \code{\# this rule is for (7a)} ''.
 \item
-\item
-\item
-\item
-\item
-\item
+	To solve this problem, we can use the symbols in the below chart to represent verbs, sentences, verb phrases, and noun clauses in different tenses:
+\begin{center} \begin{tabular}{l l l l}
+    &                              \code{Past Tense} & \code{Present Tense} & \code{3rd-personal Singular Form}  \\
+\code{Transitive Verb}   & \code{V\_tr\_ed} & \code{V\_tr\_ori}  & \code{V\_tr\_s} \\
+\code{Intransitive Verb} & \code{V\_in\_ed} & \code{V\_in\_ori} & \code{V\_in\_s} \\
+\code{Sentence}            & \code{S\_pas}     & \code{S\_pre}      &     \\
+\code{Verb Phrase}       & \code{VP\_pas}   & \code{VP\_pre}   & \code{VPs\_pre} \\
+\code{Noun Clause}      & \code{NC\_pas}   & \code{NC\_pre}  &                            \\
+\end{tabular}\end{center}
+	Each of grammar rules that was implemented before this step is in the past tense. These symbols were changed for less ambiguity.
+	
+	A yes-no question is composed of an auxiliary word, a sentence whose verb is in its original form, and a question mark at the end. So all we need to do to implement a yes-no question is add the following rule:
+\begin{center}
+	\code{ROOT} $\to$ \code{Aux S\_ori ?}
+\end{center}
+along with a series of rules to expand \code{S\_ori}.
+
+Note that the new rules that have been added in the grammar for this question have comments along the lines of `` \code{\# this rule is for (7b)} ''.
 \end{enumerate}
+\section{English}
 
 \end{document}
