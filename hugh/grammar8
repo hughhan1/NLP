@@ -38,6 +38,8 @@
 #    Noun 		= noun that do not begin with vowel sound
 #    Noun_vo 	= noun that begin with vowel sound
 #    Noun_pro 	= proper noun
+#	 Noun_sub	= subject pronoun
+#	 Noun_obj	= object pronoun
 
 #    ADJ 	= adjective, no matter what sound it begins with
 #    Adj 	= adjective that do not begin with vowel sound
@@ -48,7 +50,7 @@
 #    Adv_vo = adverb that begin with vowel sound
 
 #                       Past Tense      Present Tense      
-#    Transitive Verb     V_tr_ed         V_tr_ori          # "ori" for "original"
+#    Transitive Verb     V_tr_pas        V_tr_pre          # "ori" for "original"
 #    Intransitive Verb   V_in_ed         V_in_ori          
 #    Sentence            S               S_ori           
 #    Verb Phrase         VP_pas          VP_pre            
@@ -56,20 +58,20 @@
 
 1	S 	NP 			VP_pas
 0.1 S   NC_pas 		VP_pas
-0.1 S   it V_tr_ed 	NP NC_pas
+0.1 S   it V_tr_pas NP NC_pas
 
 1	S_ori		NP VP_pre               # these three rules are for (7b)
 0.1 S_ori   	NC_pas VP_pre
-0.1 S_ori   	it V_tr_ori NP NC_pas
+0.1 S_ori   	it V_tr_pre NP NC_pas
 
-1	VP_pas  V_tr_ed NP
-0.2 VP_pas  V_tr_ed NC_pas
+1	VP_pas  V_tr_pas NP
+0.2 VP_pas  V_tr_pas NC_pas
 0.4 VP_pas  V_in_ed
 0.3 VP_pas  VP_pas PP
 0.3 VP_pas  VP_pas Conj VP_pas
 
-1	VP_pre  V_tr_ori NP             # these five rules are for (7b)
-0.2 VP_pre  V_tr_ori NC_pas
+1	VP_pre  V_tr_pre NP             # these five rules are for (7b)
+0.2 VP_pre  V_tr_pre NC_pas
 0.4 VP_pre  V_in_ori
 0.3 VP_pre  VP_pre PP
 0.3 VP_pre  VP_pre Conj VP_pre
@@ -83,6 +85,8 @@
 0.2 NP  	NP Conj NP
 
 1	PP		Prep NP
+0.5	PP 		Noun_pro
+0.5	PP 		Noun_obj
 
 1.5 Noun	Adj Noun
 0.7 Noun_vo Adj_vo NOUN  # this rule is for (7a)
@@ -100,17 +104,17 @@
 # terminals, like "chief of staff") is called a "preterminal."  Notice 
 # that a preterminal is a special kind of nonterminal.
 
-1	V_tr_ed     ate
-1	V_tr_ed     wanted
-1	V_tr_ed     kissed
-1	V_tr_ed     understood
-0.3	V_tr_ed     pickled
+1	V_tr_pas     ate
+1	V_tr_pas     wanted
+1	V_tr_pas     kissed
+1	V_tr_pas     understood
+0.3	V_tr_pas     pickled
 
-1	V_tr_ori    eat         # these five rules are for (7b)
-1	V_tr_ori	want
-1	V_tr_ori	kiss
-1	V_tr_ori	understand
-0.3	V_tr_ori	pickle
+1	V_tr_pre    eat         # these five rules are for (7b)
+1	V_tr_pre	want
+1	V_tr_pre	kiss
+1	V_tr_pre	understand
+0.3	V_tr_pre	pickle
 
 1   V_in_ed     sighed
 1   V_in_ed     jumped
@@ -120,13 +124,20 @@
 1   V_in_ori    jump
 1   V_in_ori    fly
 
-1   Aux did                 # these three rules are for (7b)
-1   Aux will
-1   Aux can
+1   Aux 		did                 # these three rules are for (7b)
+1   Aux 		will
+1   Aux 		can
 
-1	Det	the             
-2	Det	a
-0.5	Det	every
+3	Det	a
+0.2	Det	each
+0.2	Det	every
+0.1	Det	her
+0.1	Det	his
+0.1	Det	my
+2	Det	the
+0.5	Det	this
+0.1	Det	their
+0.1	Det	your
 
 1	Det_vo	the             # "the" and "every" belong to both "Det" and "Det_vo"
 2	Det_vo	an
@@ -143,20 +154,57 @@
 
 1   Noun_pro	Sally
 1   Noun_pro    Xiaochen
+1   Noun_pro    Hugh
+1   Noun_pro    Shijie
+1   Noun_pro    Donald Trump
+
+1	Noun_sub	I
+0.5	Noun_sub	you
+0.3	Noun_sub	he
+0.3	Noun_sub	she
+0.5	Noun_sub	it
+0.5	Noun_sub	they
+
+1	Noun_obj	me
+0.5	Noun_obj	you
+0.3	Noun_obj	him
+0.3	Noun_obj	her
+0.5	Noun_obj	it
+0.5	Noun_obj	them
 
 1   Conj    and
 0.5 Conj    or
+0.2	Conj 	for
+0.3	Conj 	but
+0.3	Conj 	so
 
-1.5	Adj	fine
+1	Adj	big
+0.2	Adj black
+0.2	Adj blue
 1	Adj	delicious
-1	Adj	perplexed
-1	Adj	pickled
+1	Adj	great
+0.2	Adj green
+1.5	Adj	fine
+1	Adj	large
+0.2	Adj red
+1	Adj	small
+1	Adj	tasty
+1	Adj	tiny
+0.2	Adj	pickled
+0.2	Adj purple
+1	Adj smelly
+0.2	Adj white
+0.2	Adj yellow
 
+1 	Adj_vo  amazing
 1   Adj_vo  ambivalent
+1   Adj_vo  anxious
 1   Adj_vo  eloquent
+0.1	Adj_vo  orange
 
 1   Adv 	very
 1   Adv 	somewhat
+1	Adv 	really
 
 1   Adv_vo 	extremely        
 
