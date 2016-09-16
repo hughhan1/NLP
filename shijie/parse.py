@@ -35,11 +35,12 @@ def read_file(filename):
             prob_of_rules[lhs].append(float(prob))
     return rules, prob_of_rules
 
-def generate_sentence(rules, prob_of_rules, print_tree=False):
+def generate_sentence(rules, prob_of_rules, print_tree=False, print_structure=False):
     '''
     Input Value:
     rules - must be the return of read_file
     '''
+    assert not(print_tree and print_structure), 'only print in 1 format'
     stack = []
     sentence = []
     stack.append('ROOT')
@@ -55,25 +56,35 @@ def generate_sentence(rules, prob_of_rules, print_tree=False):
         reversed_rule = chosen_rule[::-1]
 
         if print_tree:
-            stack.append('#)') # prefix '#' as a special internal symbol
+            stack.append('#)') # contain '#' as a special internal symbol
+        if print_structure:
+            if lhs == 'S':
+                stack.append('#}')
+            if lhs == 'NP':
+                stack.append('#]')
         stack.extend(reversed_rule)
         if print_tree:
-            stack.append('#(' + lhs) # same as above
+            stack.append('(# ' + lhs) # same as above
+        if print_structure:
+            if lhs == 'S':
+                stack.append('{#')
+            if lhs == 'NP':
+                stack.append('[#')
 
     # sentence post process
-    if print_tree:
-        # clean up '#' introduced by internal symbol
-        tree = ' '.join(sentence).replace('#', '')
-        return tree.replace(' )', ')').replace('( ', '(') # remove unnecessary space
-    else:
-        return ' '.join(sentence)
+    if print_tree or print_structure:
+        # clean up '#' introduced by internal symbol and unnecessary space
+        return ' '.join(sentence).replace(' #', '').replace('# ', '')
+    return ' '.join(sentence)
 
 def main():
     parser = argparse.ArgumentParser(description='Generate some sentences.')
     parser.add_argument('filename', help='the path and filename of the grammar file')
     parser.add_argument('num_of_sentences', help='the number of generated sentence',
                         default=1, type=int, nargs='?')
-    parser.add_argument('-t', help='print tree instead', action='store_true')
+    print_option = parser.add_mutually_exclusive_group()
+    print_option.add_argument('-t', help='print tree instead', action='store_true')
+    print_option.add_argument('-b', help='print structure instead', action='store_true')
     args = parser.parse_args()
 
     if not os.path.isfile(args.filename):
@@ -82,6 +93,6 @@ def main():
 
     rules, prob_of_rules = read_file(args.filename)
     for _ in xrange(args.num_of_sentences):
-        print generate_sentence(rules, prob_of_rules, args.t)
+        print generate_sentence(rules, prob_of_rules, args.t, args.b)
 
 main()
