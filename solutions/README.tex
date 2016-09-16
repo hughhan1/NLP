@@ -169,12 +169,105 @@ a floor kissed a perplexed perplexed sandwich .
 
 \section{Modifications}
 
+\newpage
+
 \section{Trees, Pretty Prints, Brackets}
+\begin{lstlisting}
+is it true that {[Xiaochen] ate [Xiaochen]} ? 
+(ROOT is 
+       it 
+       true 
+       that 
+       (S (NP (Name Xiaochen)) 
+           (VP (Verb ate) 
+                (NP (Name Xiaochen)))) 
+       ?) 
+       
+is it true that {[a very delicious chief of staff] understood [a perplexed floor]} ? 
+(ROOT is 
+       it 
+       true 
+       that 
+       (S (NP (Det a) 
+               (Noun (Adj (Adv very) 
+                           (Adj delicious)) 
+                      (Noun chief 
+                             of 
+                             staff))) 
+          (VP (Verb understood) 
+               (NP (Det a) 
+                    (Noun (Adj perplexed) 
+                           (Noun floor))))) 
+       ?) 
+       
+is it true that {[Xiaochen] wanted [a fine sandwich]} ? 
+(ROOT is 
+      it 
+      true 
+      that 
+      (S (NP (Name Xiaochen)) 
+          (VP (Verb wanted) 
+               (NP (Det a) 
+                    (Noun (Adj fine) 
+                           (Noun sandwich))))) 
+      ?) 
+      
+{it kissed [Xiaochen] that {[Sally] understood [Sally]}} . 
+(ROOT (S it 
+          (Verb kissed) 
+          (NP (Name Xiaochen)) 
+          (N_clause that 
+                    (S (NP (Name Sally)) 
+                       (VP (Verb understood) 
+                            (NP (Name Sally)))))) 
+      .) 
+      
+{[Xiaochen] flew} ! 
+(ROOT (S (NP (Name Xiaochen)) 
+          (VP (V_intran flew))) 
+      !) 
+\end{lstlisting}
 
 \section{Alternate Derivations}
 \begin{enumerate}
+\item 
+	The first (given) derivation is:
+\begin{lstlisting}
+(ROOT (S (NP (NP (NP (Det every) 
+                       (Noun sandwich)) 
+                   (PP (Prep with) 
+                       (NP (Det a) 
+                           (Noun pickle)))) 
+               (PP (Prep on) 
+                    (NP (Det the) 
+                         (Noun floor)))) 
+           (VP (Verb wanted) 
+                (NP (Det a) 
+                     (Noun president))))
+      .)
+\end{lstlisting}
+      
+      An alternate derivation is as follows:
+\begin{lstlisting}
+(ROOT (S (NP (NP (Det every)
+                   (Noun sandwich)) 
+               (PP (Prep with) 
+                   (NP (NP (Det a) 
+                           (Noun pickle)))
+                       (PP (Prep on) 
+                           (NP (Det the) 
+                               (Noun floor)))))
+           (VP (Verb wanted) 
+               (NP (Det a) 
+                   (Noun president))))
+      .)
+\end{lstlisting}
 \item
-\item
+	In the first derivation, the sandwich was on the floor, but the pickle was not. 
+	
+	In the second derivation, the pickle was on the floor, but the sandwich was not. 
+	
+	These two sentences are both grammatically correct, but have different literal meanings in English. Therefore, it is necessary to note these differences.
 \end{enumerate}
 
 \section{Parse}
