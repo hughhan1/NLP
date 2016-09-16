@@ -5,6 +5,7 @@ import random
 import argparse
 
 def weighted_sample(choices, weights):
+    assert len(choices) == len(weights), 'length of choices and weights should be equal'
     sum_of_weights = sum(weights)
     r = random.uniform(0, sum_of_weights)
     upto = 0
@@ -27,10 +28,9 @@ def read_file(filename):
         for line in f.readlines():
             line = line[:-1] # cleanup '\n'
             line = line.split('#', 1)[0] # cleanup comment
-            line = line.strip() # cleanup left/right space
-            if line == '': # skip empty line
-                continue
             tokens = line.split()
+            if tokens == []: # skip empty line
+                continue
             prob, lhs, rhs = tokens[0], tokens[1], tokens[2:]
             rules[lhs].append(rhs)
             prob_of_rules[lhs].append(float(prob))
