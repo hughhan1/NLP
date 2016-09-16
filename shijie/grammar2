@@ -21,11 +21,11 @@
 1	Verb	wanted
 1	Verb	kissed
 1	Verb	understood
-1	Verb	pickled
+0.5	Verb	pickled # This word is less frequent in Verb.
 
 1	Det	the
 1	Det	a
-1	Det	every
+0.5	Det	every # This word is less frequent in Det.
 
 1	Noun	president
 1	Noun	sandwich
@@ -36,7 +36,7 @@
 1	Adj	fine
 1	Adj	delicious
 1	Adj	perplexed
-1	Adj	pickled
+0.5	Adj	pickled # This word is less frequent in Adj
 
 1	Prep	with
 1	Prep	on
