@@ -5,6 +5,7 @@ import random
 import argparse
 
 def weighted_sample(choices, weights):
+    assert len(choices) == len(weights), 'length of choices and weights should be equal'
     sum_of_weights = sum(weights)
     r = random.uniform(0, sum_of_weights)
     upto = 0
@@ -27,11 +28,11 @@ def read_file(filename):
         for line in f.readlines():
             line = line[:-1] # cleanup '\n'
             line = line.split('#', 1)[0] # cleanup comment
-            line = line.strip() # cleanup left/right space
-            if line == '': # skip empty line
+            tokens = line.split()
+            if tokens == []: # skip empty line
                 continue
-            prob, lhs, rhs = line.split('\t', 2)
-            rules[lhs].append(rhs.split(' '))
+            prob, lhs, rhs = tokens[0], tokens[1], tokens[2:]
+            rules[lhs].append(rhs)
             prob_of_rules[lhs].append(float(prob))
     return rules, prob_of_rules
 
@@ -56,20 +57,15 @@ def generate_sentence(rules, prob_of_rules, print_tree=False, print_structure=Fa
         reversed_rule = chosen_rule[::-1]
 
         if print_tree:
-            stack.append('#)') # contain '#' as a special internal symbol
+            # contain '#' as a special internal symbol
+            reversed_rule = ['#)'] + reversed_rule + ['(# ' + lhs]
         if print_structure:
+            # same as above
             if lhs == 'S':
-                stack.append('#}')
+                reversed_rule = ['#}'] + reversed_rule + ['{#']
             if lhs == 'NP':
-                stack.append('#]')
+                reversed_rule = ['#]'] + reversed_rule + ['[#']
         stack.extend(reversed_rule)
-        if print_tree:
-            stack.append('(# ' + lhs) # same as above
-        if print_structure:
-            if lhs == 'S':
-                stack.append('{#')
-            if lhs == 'NP':
-                stack.append('[#')
 
     # sentence post process
     if print_tree or print_structure:
