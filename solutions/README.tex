@@ -380,6 +380,11 @@ In our example, the sentence was composed of several subtrees first split using 
 	However, when ``on the floor'' modifies ``sandwich'', ``under the chief of staff'' cannot simultaneously modify ``sandwich''. \vspace{4pt} \\
 	Thus, there remains 5 possible ways to parse the sentence.
 \item
+	Using \code{grammar}, longer sentences that were generated generally had a greater number of different parses---ranging up to integers larger than $2^{31}-1$ such that it caused a bit overflow. Shorter sentences had a smaller number---generally between 1 to 2 different parses. However, the number of different parses were either \textit{really} small or \textit{really} big, and rarely in between.
+	
+	Using \code{grammar3}, longer sentences occur much less frequently due to the fixes that were implemented to reduce repetitive sentences. Because of this, sentences were generally shorter and thus had a smaller number of different parses. However, even when the sentences were somewhat long, the number of different parses was often less than 100. 
+	
+	We suspect that long sentences have a large number of different parses when \code{grammar} is used, due to a lesser number of rules, which leads to ambiguity. When long sentences occur via \code{grammar3}, however, the sentences are more likely to be defined by more specific rules, and are therefore more restricted and less prone to ambiguity.
 \item
 	\begin{enumerate}[label=(\roman*)]
 	\item
