@@ -21,6 +21,20 @@ def weighted_sample(choices, weights):
     return choices[-1]
 
 class Grammar:
+    '''
+    for the following grammar file:
+        1 S NP VP
+        1 VP signed
+        2 VP find it
+        1 NP I
+    the parsed grammar will be:
+    rules = {'S': [['NP', 'VP']],
+            'VP': [['signed'], ['find', 'it']],
+            'NP': [['I']]}
+    prob_of_rules = {'S': [1],
+                     'VP': [1, 2],
+                     'NP': [1]}
+    '''
     def __init__(self, grammar_file):
         # key is LHS, value (list) is a list of RHSs, each RHS is a list
         self.rules = defaultdict(list)
@@ -46,6 +60,12 @@ class Grammar:
     def generate(self, rule_process_callback, posprocess_callback):
         '''
         helper function for generating sentence or tree
+        rule_process_callback - input: rule, lhs
+                                output: processed_rule
+                                for example, for chosen rule "S -> NP VP",
+                                rule is ['NP', 'VP'], lhs is 'S'
+        posprocess_callback - input: concated sentence
+                              output: processed sentence
         '''
         stack = []
         sentence = []
@@ -67,8 +87,8 @@ class Grammar:
         return posprocess_callback(' '.join(sentence))
 
     def gen_sentence(self):
-        rule_process_callback = lambda rule, lhs: rule
-        posprocess_callback = lambda sentence: sentence
+        rule_process_callback = lambda rule, lhs: rule # just return the rule
+        posprocess_callback = lambda sentence: sentence # just return the sentence
         return self.generate(rule_process_callback, posprocess_callback)
 
     def structure_posprocess(self, sentence):
