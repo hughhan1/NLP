@@ -390,9 +390,10 @@ In our example, the sentence was composed of several subtrees first split using 
 	\item
 		Why is \code{p(best parse)} so small? Well, we can examine the probabilities used to generate this sentence, by first taking a look at the probabilities given from \code{grammar}.
 		\begin{eqnarray*}
-			\prob{\text{this sentence}} &=&  \prob{\code{ROOT}} \cdot \prob{\code{S .} | \code{ROOT}} \cdot \prob{\code{NP VP} | \code{S}} \cdot \prob{\code{Det Noun} | \code{NP}} \cdot \\
-			&& \prob{\code{the} | \code{Det}} \cdot \prob{\code{president} | \code{Noun}} \cdot \prob{\code{Verb NP} | \code{VP}} \cdot \\
-			&& \prob{\code{ate} | \code{Verb}} \cdot \prob{\code{Det Noun} | \code{NP}} \cdot \prob{\code{the} | \code{Det}} \cdot \prob{\code{sandwich} | \code{Noun}}
+			\prob{\text{this sentence}} &=&  \prob{\code{ROOT}} \cdot \prob{\code{S . } | \code{ ROOT}} \cdot \prob{\code{NP VP } | \code{ S}} \cdot \prob{\code{Det Noun } | \code{ NP}} \cdot \\
+			&& \prob{\code{the } | \code{ Det}} \cdot \prob{\code{president } | \code{ Noun}} \cdot \prob{\code{Verb NP } | \code{ VP}} \cdot \\
+			&& \prob{\code{ate } | \code{ Verb}} \cdot \prob{\code{Det Noun } | \code{ NP}} \cdot \prob{\code{the } | \code{ Det}} \cdot \\
+			&& \prob{\code{sandwich } | \code{ Noun}}
 		\end{eqnarray*}
 		Fair enough. Those are a lot of expressions multiplied together, which will probably produce a small number. But what does it equate, exactly?
 		\begin{eqnarray*}
@@ -448,11 +449,54 @@ In our example, the sentence was composed of several subtrees first split using 
 		
 		Because there are only two possible events, and their probabilities are equal, it must be that the probability of each one happening is exactly 0.5.
 		\item
+			First, we calculate the log-probability of the two sentences
+			\begin{eqnarray*}
+				\text{log-probability} &=& - \log_2 p(s_1) - \log_2 p(s_2) \\
+					&=& - \log_2 \left(5.144032922 \times 10^-5 \right) - \log_2 \left(1.240362877 \times 10^-9 \right) \\
+					&=& 43.8333311993
+			\end{eqnarray*}
+			where $s_1$ and $s_2$ are the events that the first sentence and second sentence occur, respectively.
+			
+			Next, we can divide the log-probability by 18, the number of words. The resulting cross-entropy is 2.435185067.
+		\item 
+			We can calculate perplexity by raising 2 to the power of the cross-entropy.
+			\begin{eqnarray*}
+				\text{perplexity} &=& 2^{2.435185067} \\
+					&=& 5.4083370619
+			\end{eqnarray*}
 		\item
-		\item
+			The sentence ``\code{the sandwich ate .}'' is not a sentence that can occur using the grammar \code{grammar}. That is, 
+			\begin{eqnarray*}
+				\prob{\code{the sandwich ate .}} &=& 0
+			\end{eqnarray*}
+			Thus, taking the log-probability results in taking the negative logarithm of 0, which is undefined but approaches infinity.
 	\end{enumerate}
 	\item
+		Calculating the entropy of \code{grammar2}: \vspace{4pt} \\
+		\codebox{\$ ./randsent grammar2 1000 | ./parse -P -g grammar2 | ./prettyprint \ \ \ \ \ \ \ \ \ \ \ \ \ } \\
+		\codebox{\# cross-entropy = 2.192609841 bits = -(-24335.77663 log-prob. / 11099 words)\ \ \ \ }
+		
+		Calculating the entropy of \code{grammar3}: \vspace{4pt} \\
+		\codebox{\$ ./randsent grammar3 1000 | ./parse -P -g grammar3 | ./prettyprint \ \ \ \ \ \ \ \ \ \ \ \ \ } \\
+		\codebox{\# cross-entropy = 2.730945129 bits = -(-58756.28445 log-prob. / 21515 words)\ \ \ \ }		
 	\item
+		To compare the entropy of a corpus from \code{grammar2} to the grammar rules \code{grammar}, \code{grammar2}, and \code{grammar3}, it would be a good idea to keep the actual corpus constant. Thus, we can first generate a text file via \code{grammar2}, and then feed it into \code{parse} using \code{grammar}, \code{grammar2}, and \code{grammar3}.
+		
+		First, generating the corpus: \vspace{4pt} \\
+		\codebox{\$ ./randsent grammar2 1000 > corpus2 \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \  } \\
+		Next, feeding in the corpus to each \code{parse}, using each grammar: \vspace{4pt} \\
+		\codebox{\$ ./parse -P -g grammar < corpus2 | ./prettyprint \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \  } \\
+		\codebox{\$ ./parse -P -g grammar2 < corpus2 | ./prettyprint \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \  } \\
+		\codebox{\$ ./parse -P -g grammar3 < corpus2 | ./prettyprint \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \  } \\
+		
+		Finally, the outputs, respectively: \vspace{4pt} \\
+		\codebox{\# cross-entropy = 2.447528595 bits = -(-26467.57422 log-prob. / 10814 words)\ \ \ \ } \\
+		\codebox{\# cross-entropy = 2.185994451 bits = -(-23639.344 log-prob. / 10814 words)\ \ \ \ \ \ } \\
+		\codebox{\# cross-entropy = 2.598891774 bits = -(-28104.41565 log-prob. / 10814 words)\ \ \ \ } \\
+				
+		The prediction is correct; \code{grammar2} on average predicts this corpus better than \code{grammar} or \code{grammar3} does. 
+		
+		The reasoning for this could be that using the rules from \code{grammar} and \code{grammar3}, \code{parse} expects to see the sentences generated via \code{grammar2} less frequently than if using the rules from \code{grammar2} itself. 
 \end{enumerate}
 \section{Extensions}
 \begin{enumerate}
