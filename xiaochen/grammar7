@@ -21,8 +21,10 @@
 
 2	ROOT	S .
 1	ROOT	S !
+0.5	ROOT	that .
 0.5	ROOT	is it true that S ?
 0.5	ROOT	could it be that S ?
+
 2   ROOT    Aux S_ori ?                 # this rule is for (7b)
 
 # The basic grammar rules.  Here's what the abbreviations stand for:
@@ -47,6 +49,8 @@
 #    Adv 	= adverb that do not begin with vowel sound
 #    Adv_vo = adverb that begin with vowel sound
 
+#    V_that = a verb followed by "that"
+
 #                       Past Tense      Present Tense      
 #    Transitive Verb     V_tr_ed         V_tr_ori          # "ori" for "original"
 #    Intransitive Verb   V_in_ed         V_in_ori          
@@ -55,14 +59,13 @@
 #    Noun Clause         NC_pas          NC_pre            # "NC_pre" will not appear in this version of grammar.
 
 1	S 	NP 			VP_pas
-0.1 S   NC_pas 		VP_pas
 0.1 S   it V_tr_ed 	NP NC_pas
 
 1	S_ori		NP VP_pre               # these three rules are for (7b)
-0.1 S_ori   	NC_pas VP_pre
 0.1 S_ori   	it V_tr_ori NP NC_pas
 
 1	VP_pas  V_tr_ed NP
+0.2 VP_pas  V_that NC_pas
 0.2 VP_pas  V_tr_ed NC_pas
 0.4 VP_pas  V_in_ed
 0.3 VP_pas  VP_pas PP
@@ -119,6 +122,8 @@
 1   V_in_ori    sigh        # these three rules are for (7b)
 1   V_in_ori    jump
 1   V_in_ori    fly
+
+1   V_that      thought
 
 1   Aux did                 # these three rules are for (7b)
 1   Aux will
