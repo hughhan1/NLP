@@ -5,6 +5,9 @@ import random
 import argparse
 
 def weighted_sample(choices, weights):
+    '''
+    sample from choices propotion to weights
+    '''
     assert len(choices) == len(weights), 'length of choices and weights should be equal'
     sum_of_weights = sum(weights)
     r = random.uniform(0, sum_of_weights)
@@ -15,63 +18,77 @@ def weighted_sample(choices, weights):
         upto += w
     return choices[-1]
 
-def read_file(filename):
-    '''
-    Return Value:
-    rules - defaultdict(list), key is LHS, value (list) is a list of RHSs, each
-            RHS is a list
-    prob_of_rules - defaultdict(list), key is LHS, value (list) is a list of float
-    '''
-    rules = defaultdict(list)
-    prob_of_rules = defaultdict(list)
-    with open(filename, 'r') as f:
-        for line in f.readlines():
-            line = line[:-1] # cleanup '\n'
-            line = line.split('#', 1)[0] # cleanup comment
-            tokens = line.split()
-            if tokens == []: # skip empty line
+class Grammar:
+    def __init__(self, grammar_file):
+        # key is LHS, value (list) is a list of RHSs, each RHS is a list
+        self.rules = defaultdict(list)
+        # key is LHS, value (list) is a list of float
+        self.prob_of_rules = defaultdict(list)
+        self.read_file(grammar_file) # parse grammar file
+
+    def read_file(self, filename):
+        '''
+        helper function for parsing grammar file
+        '''
+        with open(filename, 'r') as f:
+            for line in f.readlines():
+                line = line[:-1] # cleanup '\n'
+                line = line.split('#', 1)[0] # cleanup comment
+                tokens = line.split()
+                if tokens == []: # skip empty line
+                    continue
+                prob, lhs, rhs = tokens[0], tokens[1], tokens[2:]
+                self.rules[lhs].append(rhs)
+                self.prob_of_rules[lhs].append(float(prob))
+
+    def generate(self, rule_process_callback, posprocess_callback):
+        '''
+        helper function for generating sentence or tree
+        '''
+        stack = []
+        sentence = []
+        stack.append('ROOT')
+        while len(stack) > 0:
+            lhs = stack.pop()
+            if lhs not in self.rules: # handle terminal symbols
+                sentence.append(lhs)
                 continue
-            prob, lhs, rhs = tokens[0], tokens[1], tokens[2:]
-            rules[lhs].append(rhs)
-            prob_of_rules[lhs].append(float(prob))
-    return rules, prob_of_rules
+            rhs = self.rules[lhs] # list of possible rhs(list)
+            # get list of probability of corresponding rhs
+            prob_of_rhs = self.prob_of_rules[lhs]
+            # sample one RHS from all RHSs based on probability
+            chosen_rule = weighted_sample(rhs, prob_of_rhs)
+            processed_rule = rule_process_callback(chosen_rule, lhs)
+            reversed_rule = processed_rule[::-1]
+            stack.extend(reversed_rule)
 
-def generate_sentence(rules, prob_of_rules, print_tree=False, print_structure=False):
-    '''
-    Input Value:
-    rules - must be the return of read_file
-    '''
-    assert not(print_tree and print_structure), 'only print in 1 format'
-    stack = []
-    sentence = []
-    stack.append('ROOT')
-    while len(stack) > 0:
-        lhs = stack.pop()
-        if lhs not in rules: # handle terminal symbols
-            sentence.append(lhs)
-            continue
-        rhs = rules[lhs]
-        prob_of_rhs = prob_of_rules[lhs]
-        # sample one RHS from all RHSs based on probability
-        chosen_rule = weighted_sample(rhs, prob_of_rhs)
-        reversed_rule = chosen_rule[::-1]
+        return posprocess_callback(' '.join(sentence))
 
-        if print_tree:
-            # contain '#' as a special internal symbol
-            reversed_rule = ['#)'] + reversed_rule + ['(# ' + lhs]
-        if print_structure:
-            # same as above
-            if lhs == 'S':
-                reversed_rule = ['#}'] + reversed_rule + ['{#']
-            if lhs == 'NP':
-                reversed_rule = ['#]'] + reversed_rule + ['[#']
-        stack.extend(reversed_rule)
+    def gen_sentence(self):
+        rule_process_callback = lambda rule, lhs: rule
+        posprocess_callback = lambda sentence: sentence
+        return self.generate(rule_process_callback, posprocess_callback)
 
-    # sentence post process
-    if print_tree or print_structure:
+    def structure_posprocess(self, sentence):
         # clean up '#' introduced by internal symbol and unnecessary space
-        return ' '.join(sentence).replace(' #', '').replace('# ', '')
-    return ' '.join(sentence)
+        return sentence.replace(' #', '').replace('# ', '')
+
+    def gen_sentence_in_tree(self):
+        def rule_process_callback(rule, lhs):
+            # contain '#' as a special internal symbol
+            return ['(# ' + lhs] + rule + ['#)']
+        return self.generate(rule_process_callback, self.structure_posprocess)
+
+    def gen_sentence_in_bracket(self):
+        def rule_process_callback(rule, lhs):
+            # contain '#' as a special internal symbol
+            if lhs == 'S':
+                return ['{#'] + rule + ['#}']
+            elif lhs == 'NP':
+                return ['[#'] + rule + ['#]']
+            else:
+                return rule
+        return self.generate(rule_process_callback, self.structure_posprocess)
 
 def main():
     parser = argparse.ArgumentParser(description='Generate some sentences.')
@@ -87,8 +104,14 @@ def main():
         print 'grammar file doesn\'t exist'
         return
 
-    rules, prob_of_rules = read_file(args.filename)
+    grammar = Grammar(args.filename)
     for _ in xrange(args.num_of_sentences):
-        print generate_sentence(rules, prob_of_rules, args.t, args.b)
+        if args.t: # print sentence in tree structure
+            print grammar.gen_sentence_in_tree()
+        elif args.b: # print sentence in bracket 
+            print grammar.gen_sentence_in_bracket()
+        else:
+            print grammar.gen_sentence()
 
-main()
+if __name__ == '__main__':
+    main()
