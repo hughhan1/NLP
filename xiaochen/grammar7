@@ -57,24 +57,27 @@
 #    Verb Phrase         VP_pas          VP_pre            
 #    Noun Clause         NC_pas          NC_pre            # "NC_pre" will not appear in this version of grammar.
 
+0.1 S	N_clause V_tr_ed NP
 1	S 	NP 			VP_pas
 0.1 S   it V_tr_ed 	NP NC_pas
 
+0.1 S_ori	    N_clause V_tr_ori NP
 1	S_ori		NP VP_pre               # these three rules are for (7b)
 0.1 S_ori   	it V_tr_ori NP NC_pas
 
 1	VP_pas  V_tr_ed NP
-0.2 VP_pas  V_that NC_pas
-0.2 VP_pas  V_tr_ed NC_pas
+0.2 VP_pas  V_that_ed NC_pas
 0.4 VP_pas  V_in_ed
 0.3 VP_pas  VP_pas PP
 0.3 VP_pas  VP_pas Conj VP_pas
+0.3 V_tr_ed V_tr_ed Conj V_tr_ed
 
-1	VP_pre  V_tr_ori NP             # these five rules are for (7b)
-0.2 VP_pre  V_tr_ori NC_pas
-0.4 VP_pre  V_in_ori
-0.3 VP_pre  VP_pre PP
-0.3 VP_pre  VP_pre Conj VP_pre
+1	VP_pre   V_tr_ori NP             # these five rules are for (7b)
+0.2 VP_pas   V_that_ori NC_pas
+0.4 VP_pre   V_in_ori
+0.3 VP_pre   VP_pre PP
+0.3 VP_pre   VP_pre Conj VP_pre
+0.3 V_tr_ori V_tr_ori Conj V_tr_ori
 
 1   NC_pas  that S
 
@@ -102,6 +105,14 @@
 # terminals, like "chief of staff") is called a "preterminal."  Notice 
 # that a preterminal is a special kind of nonterminal.
 
+1   V_tr_ed     worked on # In the sentence 'I worked on the homework', if we don't
+# add this rule, the parser will think 'worked' as a V_intran and 'on the homework'
+# as a PP. Using rule 'VP -> VP PP', the parser could parse this sentence thinking
+# it means that I worked while I am on top of the homework, which it is a uncommon
+# sentence. By adding this rule, the parser could also think 'worked on' as a Verb
+# and 'the homework' as a NP. Using rule 'VP -> Verb NP', the parser could also parse
+# this sentence thinking it means that I wrote the homework, which is is much more
+# common.
 1	V_tr_ed     ate
 1	V_tr_ed     wanted
 1	V_tr_ed     kissed
@@ -109,20 +120,24 @@
 0.3	V_tr_ed     pickled
 
 1	V_tr_ori    eat         # these five rules are for (7b)
+1   V_tr_ori    worked on
 1	V_tr_ori	want
 1	V_tr_ori	kiss
 1	V_tr_ori	understand
 0.3	V_tr_ori	pickle
 
+1   V_in_ed     worked
 1   V_in_ed     sighed
 1   V_in_ed     jumped
 1   V_in_ed     flew
 
 1   V_in_ori    sigh        # these three rules are for (7b)
+1   V_in_ori    work
 1   V_in_ori    jump
 1   V_in_ori    fly
 
-1   V_that      thought
+1   V_that_ed   thought
+1   V_that_ori  think
 
 1   Aux did                 # these three rules are for (7b)
 1   Aux will
@@ -160,6 +175,7 @@
 1   Adj_vo  eloquent
 
 1   Adv 	very
+1   Adv     really
 1   Adv 	somewhat
 
 1   Adv_vo 	extremely        
