@@ -453,11 +453,11 @@ In our example, the sentence was composed of several subtrees first split using 
 			\begin{eqnarray*}
 				\text{log-probability} &=& - \log_2 p(s_1) - \log_2 p(s_2) \\
 					&=& - \log_2 \left(5.144032922 \times 10^-5 \right) - \log_2 \left(1.240362877 \times 10^-9 \right) \\
-					&=& 43.8333311993
+                    &=& -43.8333311993
 			\end{eqnarray*}
 			where $s_1$ and $s_2$ are the events that the first sentence and second sentence occur, respectively.
 			
-			Next, we can divide the log-probability by 18, the number of words. The resulting cross-entropy is 2.435185067.
+            Next, we can divide the negative log-probability by 18, the number of words. The resulting cross-entropy is 2.435185067.
 		\item 
 			We can calculate perplexity by raising 2 to the power of the cross-entropy.
 			\begin{eqnarray*}
