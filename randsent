@@ -89,9 +89,9 @@ class Grammar:
         self.rules = defaultdict(list)
         # key is LHS, value (list) is a list of float
         self.prob_of_rules = defaultdict(list)
-        self.read_file(grammar_file) # parse grammar file
+        self.__read_file(grammar_file) # parse grammar file
 
-    def read_file(self, filename):
+    def __read_file(self, filename):
         '''
         helper function for parsing grammar file
         '''
@@ -118,21 +118,26 @@ class Grammar:
         '''
         stack = []
         sentence = []
+        # Depth-first iteration
         stack.append('ROOT')
         while len(stack) > 0:
             lhs = stack.pop()
             if lhs not in self.rules: # handle terminal symbols
                 sentence.append(lhs)
                 continue
-            rhs = self.rules[lhs] # list of possible rhs(list)
-            # get list of probability of corresponding rhs
+            rhs = self.rules[lhs] # list of possible RHSs(list)
+            # get list of probability of corresponding RHSs
             prob_of_rhs = self.prob_of_rules[lhs]
             # sample one RHS from all RHSs based on probability
             chosen_rule = weighted_sample(rhs, prob_of_rhs)
+            # process the rule to add special token for tree and backet output
             processed_rule = rule_process_callback(chosen_rule, lhs)
+            # travel the descendants from left to right, so added it in reversed oreder
             reversed_rule = processed_rule[::-1]
             stack.extend(reversed_rule)
 
+        # process the sentence before return, to clean up the special token
+        # introduced by preserving tree structure.
         return posprocess_callback(' '.join(sentence))
 
     def gen_sentence(self):
@@ -140,7 +145,7 @@ class Grammar:
         posprocess_callback = lambda sentence: sentence # just return the sentence
         return self.generate(rule_process_callback, posprocess_callback)
 
-    def structure_posprocess(self, sentence):
+    def __structure_posprocess(self, sentence):
         # clean up '#' introduced by internal symbol and unnecessary space
         return sentence.replace(' #', '').replace('# ', '')
 
@@ -148,7 +153,7 @@ class Grammar:
         def rule_process_callback(rule, lhs):
             # contain '#' as a special internal symbol
             return ['(# ' + lhs] + rule + ['#)']
-        return self.generate(rule_process_callback, self.structure_posprocess)
+        return self.generate(rule_process_callback, self.__structure_posprocess)
 
     def gen_sentence_in_bracket(self):
         def rule_process_callback(rule, lhs):
@@ -159,7 +164,7 @@ class Grammar:
                 return ['[#'] + rule + ['#]']
             else:
                 return rule
-        return self.generate(rule_process_callback, self.structure_posprocess)
+        return self.generate(rule_process_callback, self.__structure_posprocess)
 
 def main():
     parser = argparse.ArgumentParser(description='Generate some sentences.')
