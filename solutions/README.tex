@@ -78,7 +78,7 @@ a floor wanted a president !
 every pickle with every chief of staff kissed a delicious fine president with a president .
 a chief of staff with a floor pickled the perplexed perplexed fine sandwich .
 	\end{lstlisting}
-(Note: the indentation, or ``tabs'', seen in this \LaTeX \  document were not present in the generation of these sentences. They are there to help distinguish each sentence from the other.)
+(Note: the indentation, or ``tabs'', seen in this sample output were not present in the generation of these sentences. They are printed here to help distinguish each sentence from the other. The same applies for all of the sample outputs throughout this \LaTeX \ document.)
 \newpage
 
 \section{Initial Discussion}
@@ -163,7 +163,6 @@ a perplexed president under the fine pickled perplexed delicious sandwich ate th
 a chief of staff understood a floor !
 a floor kissed a perplexed perplexed sandwich .
         \end{lstlisting}
-        (Note: the indentation, or ``tabs'', seen in this \LaTeX \  document were not present in the generation of these sentences. They are there to help distinguish each sentence from the other.)
 	
 \end{enumerate}
 
@@ -184,8 +183,7 @@ is it true that a pickled fine perplexed sandwich thought that that it understoo
 the very really very very very pickled floor wanted the delicious floor .
 it understood the floor that the pickle flew and kissed a perplexed sandwich !
 \end{lstlisting}
-(Note: the indentation, or ``tabs'', seen in this \LaTeX \  document were not present in the generation of these sentences. They are there to help distinguish each sentence from the other.) \vspace{4pt} \\ \\
-(Continued on the next page.)
+(This problem is continued on the next page.)
 
 \newpage
 
@@ -450,6 +448,9 @@ In our example, the sentence was composed of several subtrees first split using 
 			&& \prob{\code{ate } | \code{ Verb}} \cdot \prob{\code{Det Noun } | \code{ NP}} \cdot \prob{\code{the } | \code{ Det}} \cdot \\
 			&& \prob{\code{sandwich } | \code{ Noun}}
 		\end{eqnarray*}
+		
+		\newpage
+		
 		Fair enough. Those are a lot of expressions multiplied together, which will probably produce a small number. But what does it equate, exactly?
 		\begin{eqnarray*}
 			\prob{\code{ROOT}}             &=& 1 \\
@@ -484,6 +485,8 @@ In our example, the sentence was composed of several subtrees first split using 
 		\codebox{\$ ./parse -c -g grammar \text{ }\text{ }\text{ }\text{ }\text{ }\text{ }\text{ }\text{ }} \\
 		\codebox{the president ate the sandwich .} \vspace{4pt} \\
 		and notice that there indeed is only 1 possible parse of the given sentence.
+		
+		\newpage
 	\item
 		Looking at the possibilities from \code{grammar}, we see that there is actually one other parse that could exist:
 		\begin{lstlisting}
@@ -575,6 +578,7 @@ In our example, the sentence was composed of several subtrees first split using 
 		The reasoning for this could be that using the rules from \code{grammar} and \code{grammar3}, \code{parse} expects to see the sentences generated via \code{grammar2} less frequently than if using the rules from \code{grammar2} itself. 
 \end{enumerate}
 \section{Extensions}
+The two parts we decided to table for this problem were \textbf{7}(a) and \textbf{7}(b).
 \begin{enumerate}
 \item
 	We can use a new symbol \code{Det\_vo} to represent a determiner that can only be used before a word beginning with a vowel. In fact, there is only one word that \code{Det\_vo} turns into: \code{an}.
@@ -607,6 +611,20 @@ along with a series of rules to expand \code{S\_ori}.
 
 Note that the new rules that have been added in the grammar for this question have comments along the lines of `` \code{\# this rule is for (7b)} ''.
 \end{enumerate}
+Sample output is provided below:
+\begin{lstlisting}
+can the extremely eloquent idea pickle a perplexed pickled floor and jump ?
+could it be that that Xiaochen worked on the perplexed fine president ate the idea ?
+Xiaochen kissed an apple .
+the apple or the idea pickled a pickle .
+that every idea ate an idea and wanted the pickle or wanted a sandwich worked on Sally in every extremely extremely pickled sandwich !
+the president with the perplexed president kissed an eloquent sandwich with Xiaochen in Sally in a president .
+can Sally work ?
+could it be that Xiaochen sighed ?
+the sandwich ate Xiaochen and kissed the pickle on a pickle !
+Sally flew on a sandwich !
+\end{lstlisting}
+
 \section{English}
 
 \end{document}
