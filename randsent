@@ -6,6 +6,55 @@ import sys
 import random
 import argparse
 
+def myPrettyPrint(inString):
+    '''
+    take a string that generated from SubSentence.getTree(), such as:
+    (ROOT (S (NP (Det every) (Noun president)) (VP (V_intran jumped))) .)
+    and return a pretty string like
+    (ROOT (S (NP (Det every) 
+                 (Noun president)) 
+             (VP (V_intran jumped)))
+          .)
+    
+    does not support comment (#).
+    implies that the input is right about left and right parenthesis.
+    '''
+    def hasLeftPar(word):
+        '''
+        is this word starts with '('?
+        a helper function of myPrettyPrint()
+        '''
+        return word.startswith('(')
+    def nOfRightPar(word):
+        '''
+        how many '('s is in the end of this word?
+        a helper function of myPrettyPrint()
+        '''
+        count = 0
+        length = len(word)
+        for i in range(length):
+            if word[length - i - 1] == ')': count += 1
+            else                          : break
+        return count
+        
+    indentStack = [0]                   # a stack that keeps the record of how much indentation is needed now
+                                        # initialized to 0 because the first line do not need indentation
+    inWords = inString.split()          # split the input string into words
+    resultList = []                     # string builder
+    for word in inWords:                # iterate over words
+        resultList.append(word+' ')     # add to the result this word and a whitespace
+        for i in range(nOfRightPar(word)):  
+                                        # the number of right parenthesis 
+            indentStack.pop()           # for each right parenthesis, pop the stack once
+                                        # popping the stack means that back to the last indentation level
+        if hasLeftPar(word):            # having left parenthesis means new indentation is needed
+            indentStack.append(indentStack[-1] + len(word) + 1)
+                                        # push the new indentation to the stack
+        else:                           # not having left parenthesis means that a new line is needed
+            resultList.append('\n' + ' '*indentStack[-1])
+                                        # add a new line
+    return ''.join(resultList)          # return the result  
+
 def weighted_sample(choices, weights):
     '''
     sample from choices propotion to weights
@@ -129,7 +178,7 @@ def main():
     grammar = Grammar(args.filename)
     for _ in xrange(args.num_of_sentences):
         if args.t: # print sentence in tree structure
-            print grammar.gen_sentence_in_tree()
+            print myPrettyPrint(grammar.gen_sentence_in_tree())
         elif args.b: # print sentence in bracket 
             print grammar.gen_sentence_in_bracket()
         else:
