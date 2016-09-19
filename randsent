@@ -6,6 +6,55 @@ import sys
 import random
 import argparse
 
+def myPrettyPrint(inString):
+    '''
+    take a string that generated from SubSentence.getTree(), such as:
+    (ROOT (S (NP (Det every) (Noun president)) (VP (V_intran jumped))) .)
+    and return a pretty string like
+    (ROOT (S (NP (Det every) 
+                 (Noun president)) 
+             (VP (V_intran jumped)))
+          .)
+    
+    does not support comment (#).
+    implies that the input is right about left and right parenthesis.
+    '''
+    def hasLeftPar(word):
+        '''
+        is this word starts with '('?
+        a helper function of myPrettyPrint()
+        '''
+        return word.startswith('(')
+    def nOfRightPar(word):
+        '''
+        how many '('s is in the end of this word?
+        a helper function of myPrettyPrint()
+        '''
+        count = 0
+        length = len(word)
+        for i in range(length):
+            if word[length - i - 1] == ')': count += 1
+            else                          : break
+        return count
+        
+    indentStack = [0]                   # a stack that keeps the record of how much indentation is needed now
+                                        # initialized to 0 because the first line do not need indentation
+    inWords = inString.split()          # split the input string into words
+    resultList = []                     # string builder
+    for word in inWords:                # iterate over words
+        resultList.append(word+' ')     # add to the result this word and a whitespace
+        for i in range(nOfRightPar(word)):  
+                                        # the number of right parenthesis 
+            indentStack.pop()           # for each right parenthesis, pop the stack once
+                                        # popping the stack means that back to the last indentation level
+        if hasLeftPar(word):            # having left parenthesis means new indentation is needed
+            indentStack.append(indentStack[-1] + len(word) + 1)
+                                        # push the new indentation to the stack
+        else:                           # not having left parenthesis means that a new line is needed
+            resultList.append('\n' + ' '*indentStack[-1])
+                                        # add a new line
+    return ''.join(resultList)          # return the result  
+
 def weighted_sample(choices, weights):
     '''
     sample from choices propotion to weights
@@ -40,9 +89,9 @@ class Grammar:
         self.rules = defaultdict(list)
         # key is LHS, value (list) is a list of float
         self.prob_of_rules = defaultdict(list)
-        self.read_file(grammar_file) # parse grammar file
+        self.__read_file(grammar_file) # parse grammar file
 
-    def read_file(self, filename):
+    def __read_file(self, filename):
         '''
         helper function for parsing grammar file
         '''
@@ -69,21 +118,26 @@ class Grammar:
         '''
         stack = []
         sentence = []
+        # Depth-first iteration
         stack.append('ROOT')
         while len(stack) > 0:
             lhs = stack.pop()
             if lhs not in self.rules: # handle terminal symbols
                 sentence.append(lhs)
                 continue
-            rhs = self.rules[lhs] # list of possible rhs(list)
-            # get list of probability of corresponding rhs
+            rhs = self.rules[lhs] # list of possible RHSs(list)
+            # get list of probability of corresponding RHSs
             prob_of_rhs = self.prob_of_rules[lhs]
             # sample one RHS from all RHSs based on probability
             chosen_rule = weighted_sample(rhs, prob_of_rhs)
+            # process the rule to add special token for tree and backet output
             processed_rule = rule_process_callback(chosen_rule, lhs)
+            # travel the descendants from left to right, so added it in reversed oreder
             reversed_rule = processed_rule[::-1]
             stack.extend(reversed_rule)
 
+        # process the sentence before return, to clean up the special token
+        # introduced by preserving tree structure.
         return posprocess_callback(' '.join(sentence))
 
     def gen_sentence(self):
@@ -91,7 +145,7 @@ class Grammar:
         posprocess_callback = lambda sentence: sentence # just return the sentence
         return self.generate(rule_process_callback, posprocess_callback)
 
-    def structure_posprocess(self, sentence):
+    def __structure_posprocess(self, sentence):
         # clean up '#' introduced by internal symbol and unnecessary space
         return sentence.replace(' #', '').replace('# ', '')
 
@@ -99,7 +153,7 @@ class Grammar:
         def rule_process_callback(rule, lhs):
             # contain '#' as a special internal symbol
             return ['(# ' + lhs] + rule + ['#)']
-        return self.generate(rule_process_callback, self.structure_posprocess)
+        return self.generate(rule_process_callback, self.__structure_posprocess)
 
     def gen_sentence_in_bracket(self):
         def rule_process_callback(rule, lhs):
@@ -110,7 +164,7 @@ class Grammar:
                 return ['[#'] + rule + ['#]']
             else:
                 return rule
-        return self.generate(rule_process_callback, self.structure_posprocess)
+        return self.generate(rule_process_callback, self.__structure_posprocess)
 
 def main():
     parser = argparse.ArgumentParser(description='Generate some sentences.')
@@ -129,7 +183,7 @@ def main():
     grammar = Grammar(args.filename)
     for _ in xrange(args.num_of_sentences):
         if args.t: # print sentence in tree structure
-            print grammar.gen_sentence_in_tree()
+            print myPrettyPrint(grammar.gen_sentence_in_tree())
         elif args.b: # print sentence in bracket 
             print grammar.gen_sentence_in_bracket()
         else:
