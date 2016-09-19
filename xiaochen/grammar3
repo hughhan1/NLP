@@ -22,7 +22,6 @@
 2   ROOT        S .
 1   ROOT        S !
 1   ROOT        is it true that S ?     # mixing terminals and nonterminals is ok.
-0.5 ROOT        that S .
 
 # The basic grammar rules.  Here's what the abbreviations stand for:
 #    S  = sentence
@@ -39,6 +38,7 @@
 #    Adv = adverb
 #    Noun_pro = proper noun
 
+0.2 S		 N_clause Verb NP
 1   S           NP VP
 0.2 S           it Verb NP N_clause
 1   VP          Verb NP
