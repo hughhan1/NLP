@@ -53,7 +53,7 @@
 1   PP          Prep NP
 3   Noun        Adj Noun
 1   N_clause    that S
-0.3 V_intran    V_intran Conj V_intran
+0.3 Verb        Verb Conj Verb
 1   Adj         Adv Adj
 
 # Vocabulary.  Your program can see that "ate" is a terminal
