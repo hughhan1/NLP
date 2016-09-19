@@ -53,16 +53,16 @@
 #                       Past Tense      Present Tense      
 #    Transitive Verb     V_tr_ed         V_tr_ori          # "ori" for "original"
 #    Intransitive Verb   V_in_ed         V_in_ori          
-#    Sentence            S               S_ori           
+#    Sentence            S               S_ori             # "S_ori" is a sentence whose main predicate verb is in its original form
 #    Verb Phrase         VP_pas          VP_pre            
 #    Noun Clause         NC_pas          NC_pre            # "NC_pre" will not appear in this version of grammar.
 
-0.1 S	N_clause V_tr_ed NP
+0.1 S	NC_pas V_tr_ed NP
 1	S 	NP 			VP_pas
 0.1 S   it V_tr_ed 	NP NC_pas
 
-0.1 S_ori	    N_clause V_tr_ori NP
-1	S_ori		NP VP_pre               # these three rules are for (7b)
+0.1 S_ori	    NC_pas V_tr_ori NP          # these three rules are for (7b)
+1	S_ori		NP VP_pre               
 0.1 S_ori   	it V_tr_ori NP NC_pas
 
 1	VP_pas  V_tr_ed NP
@@ -73,7 +73,7 @@
 0.3 V_tr_ed V_tr_ed Conj V_tr_ed
 
 1	VP_pre   V_tr_ori NP             # these five rules are for (7b)
-0.2 VP_pas   V_that_ori NC_pas
+0.2 VP_pre   V_that_ori NC_pas
 0.4 VP_pre   V_in_ori
 0.3 VP_pre   VP_pre PP
 0.3 VP_pre   VP_pre Conj VP_pre
@@ -105,14 +105,14 @@
 # terminals, like "chief of staff") is called a "preterminal."  Notice 
 # that a preterminal is a special kind of nonterminal.
 
-1   V_tr_ed     worked on # In the sentence 'I worked on the homework', if we don't
-# add this rule, the parser will think 'worked' as a V_intran and 'on the homework'
-# as a PP. Using rule 'VP -> VP PP', the parser could parse this sentence thinking
-# it means that I worked while I am on top of the homework, which it is a uncommon
-# sentence. By adding this rule, the parser could also think 'worked on' as a Verb
-# and 'the homework' as a NP. Using rule 'VP -> Verb NP', the parser could also parse
-# this sentence thinking it means that I wrote the homework, which is is much more
-# common.
+1   V_tr_ed     worked on   # In the sentence 'I worked on the homework', if we don't
+                            # add this rule, the parser will think 'worked' as a V_intran and 'on the homework'
+                            # as a PP. Using rule 'VP -> VP PP', the parser could parse this sentence thinking
+                            # it means that I worked while I am on top of the homework, which it is a uncommon
+                            # sentence. By adding this rule, the parser could also think 'worked on' as a Verb
+                            # and 'the homework' as a NP. Using rule 'VP -> Verb NP', the parser could also parse
+                            # this sentence thinking it means that I wrote the homework, which is is much more
+                            # common.
 1	V_tr_ed     ate
 1	V_tr_ed     wanted
 1	V_tr_ed     kissed
