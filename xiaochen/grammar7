@@ -137,7 +137,10 @@
 1   V_in_ori    fly
 
 1   V_that_ed   thought
+1   V_that_ed   understood
+
 1   V_that_ori  think
+1   V_that_ori  understand
 
 1   Aux did                 # these three rules are for (7b)
 1   Aux will
