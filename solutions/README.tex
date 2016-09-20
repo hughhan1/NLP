@@ -190,7 +190,7 @@ it understood the floor that the pickle flew and kissed a perplexed sandwich !
 \hspace{-22pt} There were a couple of things that we had to add to be able to generate the phenomena illustrated in each of the parts \textbf{3}(a) to \textbf{3}(h).
 \begin{enumerate}
 \item 
-	``Sally'' is a name, which is a proper noun. A proper noun, or \code{Noun\_pro}, was defined in \code{grammar3}, into which \code{NP} could turn. 
+	``Sally'' is a name, which is a proper noun. The thing special about is that a proper noun does not have any determiner. A proper noun, or \code{Noun\_pro}, was defined in \code{grammar3}, into which \code{NP} could turn. 
 \item 
 	Two transitive verbs must be able to be next to each other, separated only by a conjunction. A rule was implemented to allow \code{Verb} to turn into \code{Verb Conj Verb}. Note that a \code{Verb} is strictly a transitive verb. 
 	
@@ -205,7 +205,7 @@ it understood the floor that the pickle flew and kissed a perplexed sandwich !
 \item 
 	An intransitive verb, or \code{V\_intran}, was defined in \code{grammar3}. A rule was implemented to allow \code{VP} to turn into \code{V\_intran}.
 \item 
-	The word ``thought'' is a special verb that can be followed by \code{that S}. In fact, there are a whole class of verbs that can be followed by \code{that S}, including the words ``think'', ``believe'', ``decided'', etc. This class of verbs, or \code{V\_that} was defined in \code{grammar3}. \code{thought} was then defined as something that \code{V\_that} could turn into. A rule was implemented such that \code{VP} could turn into \code{V\_that N\_clause}, where \code{N\_clause} is a noun clause, which then turns into \code{that S}.
+	The word ``thought'' is a special verb that can be followed by \code{that S}. In fact, there are a whole class of verbs that can be followed by \code{that S}, including the words ``think'', ``understand'', ``believe'', ``decide'', etc. This class of verbs, or \code{V\_that} was defined in \code{grammar3}. \code{thought} was then defined as something that \code{V\_that} could turn into. A rule was implemented such that \code{VP} could turn into \code{V\_that N\_clause}, where \code{N\_clause} is a noun clause, which then turns into \code{that S}.
 \item 
 	We can think about the sentence as ``it'' is doing something to a noun phrase, such that something else happens. A new rule was implemented such that \code{S} could turn into \code{it Verb NP N\_clause}.
 \item 
@@ -588,7 +588,7 @@ Thus, we also need to define the symbols \code{Noun\_vo}, \code{Adj\_vo}, and \c
 
 To make the grammar file \code{grammar7} slightly easier to read, we can define \code{NOUN} to represent \textit{any} type of noun. That its, \code{NOUN} can turn into either \code{Noun} \textit{or} \code{Noun\_vo}.
 
-Similarly, we can define \code{ADJ} to represent any type of adjective. 
+Similarly, we can define \code{ADJ} and \code{ADV} to represent any type of adjective and adverb. 
 
 Note that the new rules that have been added in the grammar for this question have comments along the lines of `` \code{\# this rule is for (7a)} ''.
 \item
