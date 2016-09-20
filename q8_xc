@@ -1,0 +1,48 @@
+In grammar8, we want to capture sentences like these:
+
+Sally wanted to kiss every sandwich !               (1)
+Xiaochen failed to fly on every floor .             (2)
+The president managed to ate the floor .            (3)
+it is awesome to eat an apple and sigh.             (4)
+it is awesome for Sally to understand that a president sighed .
+                                                    (5)
+will it be possible for an apple to eat the floor ? (6)
+
+
+We introduce infinitive to generate these sentences.
+
+There are several kinds of infinitives, and infinitives have the ability to generate "infinitive phrase"s like "to fly on every floor", "to eat an apple", "to eat an apple and sigh", and "to understand that a president sighed". We use "INFP" to represent these infinitive phrases:
+INFP  to VP_pre
+
+This rule can capture the structure in sentence (1)-(3):
+VP_pas    V_inf_pas INFP
+
+Then we need some more rules to make this rule working well with in grammar7:
+VP_pre    V_inf_pre INFP
+
+V_inf_pas wanted
+V_inf_pas failed
+V_inf_pas managed
+
+V_inf_pre want
+V_inf_pre fail
+V_inf_pre manage
+
+We need to add this two rules to generate sentence (4):
+S   it is ADJ INFP
+Adj_vo  awesome
+
+We use ForToP (For-To Phrase) to describe structures like "for Sally to understand that a president sighed" and "for an apple to eat the floor". These two rule is for (5):
+ForToP  for NP INFP         
+S       it is ADJ ForToP .
+
+This group of rules captures the structure in sentence (6):
+ROOT   Modal it be ADJ INFP ?
+ROOT   Modal it be ADJ ForToP ?
+
+Modal   can
+Modal   could
+Modal   will
+Modal   should
+
+adj     possible
