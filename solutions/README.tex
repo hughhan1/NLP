@@ -684,9 +684,54 @@ This group of rules captures the structure in sentence (6):
 \code{Adj}   &\to&  \code{possible}
 \end{eqnarray*}
 
-\item
-Shijie
+\item Implementation of 7c and 7d
+In part(b), we implement the relative clauses and WH-word questions in
+question 7c and 7d. Following are some example
+\begin{lstlisting}
+the pickle kissed the president that ate the sandwich .
+the pickle kissed the sandwich that the president ate .
+the pickle kissed the sandwich that the president thought that Sally ate .
+what did the president think ?
+what did the president think that Sally ate ?
+what did Sally eat the sandwich with ?
+who ate the sandwich ?
+where did Sally eat the sandwich ?
+\end{lstlisting}
 
-blah blah\ldots
+This two types of sentences all have sub-sentence without object, subject or
+prepositional phrase. To represent this type of sub-sentence, we add
+the following rule to represent sentences in past tense without subject or
+object (including \code{Noun} in \code{PP} &\to& \code{Prep Noun}).
+
+\begin{eqnarray*}
+\code{S\_ed\_wo\_obj} &\to&  \code{NP V\_that\_ed that S\_ed\_wo\_obj}\\
+\code{S\_ed\_wo\_obj} &\to&  \code{NP V\_that\_ed that S\_ed\_wo\_sub}\\
+\code{S\_ed\_wo\_obj} &\to&  \code{NP V\_tr\_ed}\\
+\code{S\_ed\_wo\_obj} &\to&  \code{NP V\_tr\_ed PP}\\
+\code{S\_ed\_wo\_obj} &\to&  \code{NP VP\_pas Prep}\\
+\code{S\_ed\_wo\_obj} &\to&  \code{NP VP\_pas PP Prep}\\
+\code{S\_ed\_wo\_sub} &\to&  \code{VP\_pas}\\
+\end{eqnarray*}
+
+Similarly, we could define \code{S\_ori\_wo\_obj} and \code{S\_ori\_wo\_sub}.
+\begin{eqnarray*}
+\code{S\_ori\_wo\_obj} &\to&  \code{NP V\_that\_ori that S\_ori\_wo\_obj}\\
+\code{S\_ori\_wo\_obj} &\to&  \code{NP V\_that\_ori that S\_ori\_wo\_sub}\\
+\code{S\_ori\_wo\_obj} &\to&  \code{NP V\_tr\_ori}\\
+\code{S\_ori\_wo\_obj} &\to&  \code{NP V\_tr\_ori PP}\\
+\code{S\_ori\_wo\_obj} &\to&  \code{NP VP\_pre Prep}\\
+\code{S\_ori\_wo\_obj} &\to&  \code{NP VP\_pre PP Prep}\\
+\code{S\_ori\_wo\_sub} &\to&  \code{VP\_pre}\\
+\end{eqnarray*}
+
+With the following rule, we can generate the all of the example sentences.
+\begin{eqnarray*}
+\code{ROOT} &\to&  \code{what Aux S\_ori\_wo\_obj ?}\\
+\code{ROOT} &\to&  \code{who S\_ed\_wo\_sub ?}\\
+\code{ROOT} &\to&  \code{where Aux S\_ori ?}\\
+\code{NP}   &\to&  \code{the Noun that S\_ed\_wo\_sub}\\
+\code{NP}   &\to&  \code{the Noun that S\_ed\_wo\_obj}\\
+\end{eqnarray*}
+
 \end{enumerate}
 \end{document}
