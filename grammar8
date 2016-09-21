@@ -25,8 +25,16 @@
 1   ROOT    Aux S_ori ?        
 0.5 ROOT    Modal it be ADJ INFP ?      # this rule is for (8a)
 0.5 ROOT    Modal it be ADJ ForToP ?    # this rule is for (8a)    
+0.5 ROOT    what Aux S_ori_wo_obj ?     # this rule is for (8b)
+0.5 ROOT    who S_ed_wo_sub ?          # this rule is for (8b)
+0.5 ROOT    where Aux S_ori ?           # this rule is for (8b)
 
 # The basic grammar rules.  Here's what the abbreviations stand for:
+#    S_ori_wo_obj = sentense in present tense without a object
+#    S_ori_wo_sub = sentense in present tense without a subject
+#    S_ed_wo_obj  = sentense in past tense without a object
+#    S_ed_wo_sub  = sentense in past tense without a subject
+#
 #    NP 	= noun phrase
 #    PP 	= prepositional phrase
 #    Det 	= determiner that is used before non-vowel sound
@@ -74,6 +82,28 @@
 1	S_ori		NP VP_pre               
 0.1 S_ori   	it V_tr_ori NP NC_pas
 
+##########################################################
+# begin rule for (8b)
+0.5 S_ed_wo_obj   NP V_that_ed that S_ed_wo_obj
+0.5 S_ed_wo_obj   NP V_that_ed that S_ed_wo_sub
+1   S_ed_wo_obj   NP V_tr_ed
+1   S_ed_wo_obj   NP V_tr_ed PP
+1   S_ed_wo_obj   NP VP_pas Prep
+1   S_ed_wo_obj   NP VP_pas PP Prep
+
+1   S_ed_wo_sub   VP_pas
+
+0.5 S_ori_wo_obj   NP V_that_ori that S_ori_wo_obj
+0.5 S_ori_wo_obj   NP V_that_ori that S_ori_wo_sub
+1   S_ori_wo_obj   NP V_tr_ori
+1   S_ori_wo_obj   NP V_tr_ori PP
+1   S_ori_wo_obj   NP VP_pre Prep
+1   S_ori_wo_obj   NP VP_pre PP Prep
+
+1   S_ori_wo_sub   VP_pre
+# end rule for (8b)
+##########################################################
+
 1	VP_pas  V_tr_ed NP
 0.2 VP_pas  V_that_ed NC_pas
 0.4 VP_pas  V_in_ed
@@ -99,6 +129,8 @@
 0.2	NP		NP PP
 0.6 NP  	Noun_pro
 0.2 NP  	NP Conj NP
+0.3 NP      the Noun that S_ed_wo_sub  # rule for (8b)
+0.3 NP      the Noun that S_ed_wo_obj  # rule for (8b)
 
 1   INFP    to VP_pre       # this rule is for (8a)
 1   ForToP  for NP INFP     # this rule is for (8a)
