@@ -680,9 +680,9 @@ This group of rules captures the structure in sentence (6):
 \code{Adj}   &\to&  \code{possible}
 \end{eqnarray*}
 
-\item Implementation of 7c and 7d
-In part(b), we implement the relative clauses and WH-word questions in
-question 7c and 7d. Following are some example
+\item For the second part of \code{grammar8}, we would like to implement the phenomena described in \textbf{7}(c) and \textbf{7}(d).
+
+That is, relative clauses and WH-word questions were implemented into our grammar. Here are some examples of these phenomena:
 \begin{lstlisting}
 the pickle kissed the president that ate the sandwich .
 the pickle kissed the sandwich that the president ate .
@@ -694,10 +694,7 @@ who ate the sandwich ?
 where did Sally eat the sandwich ?
 \end{lstlisting}
 
-This two types of sentences all have sub-sentence without object, subject or
-prepositional phrase. To represent this type of sub-sentence, we add
-the following rule to represent sentences in past tense without subject or
-object (including \code{Noun} in \code{PP} $\to$ \code{Prep Noun}).
+These types of sentences all have sub-sentences without a direct object, subject or prepositional phrase. To represent these types of sub-sentences, we added the following rules for sentences in the past tense. (including \code{Noun} in \code{PP} $\to$ \code{Prep Noun}).
 
 \begin{eqnarray*}
 \code{S\_ed\_wo\_obj} &\to&  \code{NP V\_that\_ed that S\_ed\_wo\_obj}\\
@@ -709,7 +706,7 @@ object (including \code{Noun} in \code{PP} $\to$ \code{Prep Noun}).
 \code{S\_ed\_wo\_sub} &\to&  \code{VP\_pas}\\
 \end{eqnarray*}
 
-Similarly, we could define \code{S\_ori\_wo\_obj} and \code{S\_ori\_wo\_sub}.
+Similarly, we could define \code{S\_ori\_wo\_obj} and \code{S\_ori\_wo\_sub} for sentences in the present tense.
 \begin{eqnarray*}
 \code{S\_ori\_wo\_obj} &\to&  \code{NP V\_that\_ori that S\_ori\_wo\_obj}\\
 \code{S\_ori\_wo\_obj} &\to&  \code{NP V\_that\_ori that S\_ori\_wo\_sub}\\
@@ -720,7 +717,7 @@ Similarly, we could define \code{S\_ori\_wo\_obj} and \code{S\_ori\_wo\_sub}.
 \code{S\_ori\_wo\_sub} &\to&  \code{VP\_pre}\\
 \end{eqnarray*}
 
-With the following rule, we can generate the all of the example sentences.
+And with the following rules, we can generate all of the above example sentences.
 \begin{eqnarray*}
 \code{ROOT} &\to&  \code{what Aux S\_ori\_wo\_obj ?}\\
 \code{ROOT} &\to&  \code{who S\_ed\_wo\_sub ?}\\
