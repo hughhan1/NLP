@@ -25,15 +25,18 @@
 1   ROOT    Aux S_ori ?        
 0.5 ROOT    Modal it be ADJ INFP ?      # this rule is for (8a)
 0.5 ROOT    Modal it be ADJ ForToP ?    # this rule is for (8a)    
-0.5 ROOT    what Aux S_ori_wo_obj ?     # this rule is for (8b)
-0.5 ROOT    who S_ed_wo_sub ?          # this rule is for (8b)
-0.5 ROOT    where Aux S_ori ?           # this rule is for (8b)
+0.5 ROOT    W_word_obj Aux S_ori_wo_obj ?     # this rule is for (8b)
+0.5 ROOT    W_word_obj S_ed_wo_sub ?          # this rule is for (8b)
+0.5 ROOT    W_word Aux S_ori ?           # this rule is for (8b)
 
 # The basic grammar rules.  Here's what the abbreviations stand for:
 #    S_ori_wo_obj = sentense in present tense without a object
 #    S_ori_wo_sub = sentense in present tense without a subject
 #    S_ed_wo_obj  = sentense in past tense without a object
 #    S_ed_wo_sub  = sentense in past tense without a subject
+#
+#    W_word_obj   = WH-word can be referred to a Noun
+#    W_word       = other WH-word
 #
 #    NP 	= noun phrase
 #    PP 	= prepositional phrase
@@ -243,3 +246,11 @@
 1.5	Prep	on
 1	Prep	under
 1.5	Prep	in
+
+1   W_word  how         # rule for (8b)
+1   W_word  why
+1   W_word  when
+1   W_word  where
+
+1   W_word_obj who      # rule for (8b)
+1   W_word_obj what

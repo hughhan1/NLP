@@ -694,7 +694,10 @@ who ate the sandwich ?
 where did Sally eat the sandwich ?
 \end{lstlisting}
 
-These types of sentences all have sub-sentences without a direct object, subject or prepositional phrase. To represent these types of sub-sentences, we added the following rules for sentences in the past tense. (including \code{Noun} in \code{PP} $\to$ \code{Prep Noun}).
+These types of sentences all have sub-sentences without a direct object (or a
+\code{Noun} after \code{Prep} in prepositional phrase), subject or
+prepositional phrase. To represent these types of sub-sentences, we added the
+following rules for sentences in the past tense.
 
 \begin{eqnarray*}
 \code{S\_ed\_wo\_obj} &\to&  \code{NP V\_that\_ed that S\_ed\_wo\_obj}\\
@@ -717,11 +720,16 @@ Similarly, we could define \code{S\_ori\_wo\_obj} and \code{S\_ori\_wo\_sub} for
 \code{S\_ori\_wo\_sub} &\to&  \code{VP\_pre}\\
 \end{eqnarray*}
 
-And with the following rules, we can generate all of the above example sentences.
+And with the following rules, we can generate all of the above example
+sentences. We also generalize the WH-word including "what", "who", "when",
+"why", "how" and "where". We distinguish WH-word based on whether it can refer
+to a Noun. For example, "what" and "who" can be used to refer a Noun while the
+other WH-word cannot. We use \code{W\_word\_obj} to refer "what" and "who". For
+the rest of WH-word, we use \code{W\_word}.
 \begin{eqnarray*}
-\code{ROOT} &\to&  \code{what Aux S\_ori\_wo\_obj ?}\\
-\code{ROOT} &\to&  \code{who S\_ed\_wo\_sub ?}\\
-\code{ROOT} &\to&  \code{where Aux S\_ori ?}\\
+\code{ROOT} &\to&  \code{W\_word\_obj Aux S\_ori\_wo\_obj ?}\\
+\code{ROOT} &\to&  \code{W\_word\_obj S\_ed\_wo\_sub ?}\\
+\code{ROOT} &\to&  \code{W\_word Aux S\_ori ?}\\
 \code{NP}   &\to&  \code{the Noun that S\_ed\_wo\_sub}\\
 \code{NP}   &\to&  \code{the Noun that S\_ed\_wo\_obj}\\
 \end{eqnarray*}
