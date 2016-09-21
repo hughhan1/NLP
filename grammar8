@@ -22,9 +22,9 @@
 2	ROOT	S .
 1	ROOT	S !
 0.5	ROOT	is it true that S ?
-0.5	ROOT	could it be that S ?
-
-2   ROOT    Aux S_ori ?                 # this rule is for (7b)
+1   ROOT    Aux S_ori ?        
+0.5 ROOT    Modal it be ADJ INFP ?      # this rule is for (8a)
+0.5 ROOT    Modal it be ADJ ForToP ?    # this rule is for (8a)    
 
 # The basic grammar rules.  Here's what the abbreviations stand for:
 #    NP 	= noun phrase
@@ -50,18 +50,27 @@
 
 #    V_that = a verb followed by "that"
 
-#                       Past Tense      Present Tense      
-#    Transitive Verb     V_tr_ed         V_tr_ori          # "ori" for "original"
-#    Intransitive Verb   V_in_ed         V_in_ori          
-#    Sentence            S               S_ori             # "S_ori" is a sentence whose main predicate verb is in its original form
-#    Verb Phrase         VP_pas          VP_pre            
-#    Noun Clause         NC_pas          NC_pre            # "NC_pre" will not appear in this version of grammar.
+
+#                                       Past Tense      Present Tense      
+#    Transitive Verb                     V_tr_ed         V_tr_ori          # "ori" for "original"
+#    Intransitive Verb                   V_in_ed         V_in_ori    
+#    Verb that "that" clauses follow     V_that_ed       V_that_ori
+#    Verb that infinitive clauses follow V_inf_ed        V_inf_ori
+#    Sentence                            S               S_ori             # "S_ori" is a sentence whose main predicate verb is in its original form
+#    Verb Phrase                         VP_pas          VP_pre            
+#    Noun Clause                         NC_pas          NC_pre            # "NC_pre" will not appear in this version of grammar.
+
+#    # The following symbols are for question 8.
+#    INFP = infinitive phrase
+#    ForToP = for-to phrase (more explaination in README section 8)
 
 0.1 S	NC_pas V_tr_ed NP
 1	S 	NP 			VP_pas
 0.1 S   it V_tr_ed 	NP NC_pas
+0.1 S   it is ADJ INFP              # this rule is for (8a)
+0.1 S   it is ADJ ForToP            # this rule is for (8a)
 
-0.1 S_ori	    NC_pas V_tr_ori NP          # these three rules are for (7b)
+0.1 S_ori	    NC_pas V_tr_ori NP         
 1	S_ori		NP VP_pre               
 0.1 S_ori   	it V_tr_ori NP NC_pas
 
@@ -70,32 +79,39 @@
 0.4 VP_pas  V_in_ed
 0.3 VP_pas  VP_pas PP
 0.3 VP_pas  VP_pas Conj VP_pas
+0.3 VP_pas  V_inf_ed INFP          # this rule is for (8a)
+
 0.3 V_tr_ed V_tr_ed Conj V_tr_ed
 
-1	VP_pre   V_tr_ori NP             # these five rules are for (7b)
+1	VP_pre   V_tr_ori NP          
 0.2 VP_pre   V_that_ori NC_pas
 0.4 VP_pre   V_in_ori
 0.3 VP_pre   VP_pre PP
 0.3 VP_pre   VP_pre Conj VP_pre
+0.3 VP_pre    V_inf_ori INFP        # this rule is for (8a)
+
 0.3 V_tr_ori V_tr_ori Conj V_tr_ori
 
 1   NC_pas  that S
 
 1	NP		Det Noun
-0.5 NP  	Det_vo Noun_vo      # this rule is for (7a)
+0.5 NP  	Det_vo Noun_vo    
 0.2	NP		NP PP
 0.6 NP  	Noun_pro
 0.2 NP  	NP Conj NP
 
+1   INFP    to VP_pre       # this rule is for (8a)
+1   ForToP  for NP INFP     # this rule is for (8a)
+
 1	PP		Prep NP
 
 1.5 Noun	Adj Noun
-0.7 Noun_vo Adj_vo NOUN  # this rule is for (7a)
+0.7 Noun_vo Adj_vo NOUN 
 2   NOUN   	Noun
 1   NOUN   	Noun_vo
 
 1   Adj Adv Adj
-1   Adj_vo  Adv_vo ADJ   # these three rules are for (7a)
+1   Adj_vo  Adv_vo ADJ  
 1   ADJ 	Adj
 1   ADJ 	Adj_vo
 
@@ -105,21 +121,14 @@
 # terminals, like "chief of staff") is called a "preterminal."  Notice 
 # that a preterminal is a special kind of nonterminal.
 
-1   V_tr_ed     worked on   # In the sentence 'I worked on the homework', if we don't
-                            # add this rule, the parser will think 'worked' as a V_intran and 'on the homework'
-                            # as a PP. Using rule 'VP -> VP PP', the parser could parse this sentence thinking
-                            # it means that I worked while I am on top of the homework, which it is a uncommon
-                            # sentence. By adding this rule, the parser could also think 'worked on' as a Verb
-                            # and 'the homework' as a NP. Using rule 'VP -> Verb NP', the parser could also parse
-                            # this sentence thinking it means that I wrote the homework, which is is much more
-                            # common.
+1   V_tr_ed     worked on   
 1	V_tr_ed     ate
 1	V_tr_ed     wanted
 1	V_tr_ed     kissed
 1	V_tr_ed     understood
 0.3	V_tr_ed     pickled
 
-1	V_tr_ori    eat         # these five rules are for (7b)
+1	V_tr_ori    eat        
 1   V_tr_ori    worked on
 1	V_tr_ori	want
 1	V_tr_ori	kiss
@@ -131,25 +140,39 @@
 1   V_in_ed     jumped
 1   V_in_ed     flew
 
-1   V_in_ori    sigh        # these three rules are for (7b)
+1   V_in_ori    sigh      
 1   V_in_ori    work
 1   V_in_ori    jump
 1   V_in_ori    fly
 
 1   V_that_ed   thought
 1   V_that_ed   understood
-1   V_that_ori  think
+
+1   V_that_ori  think     
 1   V_that_ori  understand
 
-1   Aux did                 # these three rules are for (7b)
+1   V_inf_ed wanted         # these rules are for (8a)
+1   V_inf_ed failed
+1   V_inf_ed managed
+
+1   V_inf_ori want          # these rules are for (8a)
+1   V_inf_ori fail
+1   V_inf_ori manage
+
+1   Aux did              
 1   Aux will
 1   Aux can
+
+1   Modal   can             # these rules are for (8a)
+1   Modal   could
+1   Modal   will
+1   Modal   should
 
 1	Det	the             
 2	Det	a
 0.5	Det	every
 
-1	Det_vo	the             # "the" and "every" belong to both "Det" and "Det_vo"
+1	Det_vo	the            
 2	Det_vo	an
 0.5	Det_vo	every
 
@@ -172,9 +195,11 @@
 1	Adj	delicious
 1	Adj	perplexed
 1	Adj	pickled
+1   Adj possible            # this rule is for (8a)
 
 1   Adj_vo  ambivalent
 1   Adj_vo  eloquent
+0.8 Adj_vo  awesome         # this rule is for (8a)
 
 1   Adv 	very
 1   Adv     really
