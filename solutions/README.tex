@@ -627,21 +627,17 @@ Sally flew on a sandwich !
 
 \section{English}
 \begin{enumerate}
-\item
-Infinitives
-
-In part(a) of grammar8, we want to capture the structures of sentences like these:
+\item For the first part of \code{grammar8}, we would like to implement verbs in the infinitive form. That is, we want to be able to capture the structures of sentences like the following:
 \begin{lstlisting}
 Sally wanted to kiss every sandwich !               
 Xiaochen failed to fly on every floor .             
-The president managed to ate the floor .            
+the president managed to eat the floor .            
 it is awesome to eat an apple and sigh .            
 it is awesome for Sally to understand that a president sighed .
 will it be possible for an apple to eat the floor ? 
 \end{lstlisting}
-We introduce infinitive to generate these sentences.
 
-There are several kinds of infinitives, and infinitives have the ability to generate "infinitive phrase"s like "to fly on every floor", "to eat an apple", "to eat an apple and sigh", and "to understand that a president sighed". We use \code{INFP} to represent these infinitive phrases:
+There are several kinds of infinitives, and infinitives have the ability to generate ``infinitive phrase''s such as ``to fly on every floor'', ``to eat an apple'', ``to eat an apple and sigh'', and ``to understand that a president sighed''. We defined a new symbol \code{INFP} to represent these infinitive phrases:
 \begin{eqnarray*}
 	\code{INFP} &\to& \code{to VP\_pre}
 \end{eqnarray*}
@@ -701,7 +697,7 @@ where did Sally eat the sandwich ?
 This two types of sentences all have sub-sentence without object, subject or
 prepositional phrase. To represent this type of sub-sentence, we add
 the following rule to represent sentences in past tense without subject or
-object (including \code{Noun} in \code{PP} &\to& \code{Prep Noun}).
+object (including \code{Noun} in \code{PP} $\to$ \code{Prep Noun}).
 
 \begin{eqnarray*}
 \code{S\_ed\_wo\_obj} &\to&  \code{NP V\_that\_ed that S\_ed\_wo\_obj}\\
