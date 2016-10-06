@@ -1,0 +1,378 @@
+\documentclass[11pt]{article}
+
+\usepackage{epsfig}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage{amstext}
+\usepackage{amsmath}
+\usepackage{xspace}
+\usepackage{theorem}
+\usepackage{hyperref}
+\usepackage{fullpage}
+\usepackage{framed}
+
+\usepackage{enumitem}                     
+\usepackage{listings}
+\usepackage{color}
+
+\usepackage{titlesec}
+
+\definecolor{dkgreen}{rgb}{0,0.6,0}
+\definecolor{gray}{rgb}{0.5,0.5,0.5}
+\definecolor{mauve}{rgb}{0.58,0,0.82}
+
+\titleformat*{\section}{\bfseries}
+\titleformat*{\subsection}{\bfseries}
+\titleformat*{\subsubsection}{\bfseries}
+\titleformat*{\paragraph}{\bfseries}
+\titleformat*{\subparagraph}{\bfseries}
+
+\newenvironment{proof}{{\bf Proof:  }}{\hfill\rule{2mm}{2mm}}
+\newenvironment{proofof}[1]{{\bf Proof of #1:  }}{\hfill\rule{2mm}{2mm}}
+\newenvironment{proofofnobox}[1]{{\bf#1:  }}{}
+\newenvironment{example}{{\bf Example:  }}{\hfill\rule{2mm}{2mm}}
+
+\newtheorem{fact}{Fact}
+\newtheorem{lemma}[fact]{Lemma}
+\newtheorem{theorem}[fact]{Theorem}
+\newtheorem{definition}[fact]{Definition}
+\newtheorem{corollary}[fact]{Corollary}
+\newtheorem{proposition}[fact]{Proposition}
+\newtheorem{claim}[fact]{Claim}
+\newtheorem{exercise}[fact]{Exercise}
+
+% math notation
+\newcommand{\N}{\ensuremath{\mathbb N}}
+\newcommand{\Z}{\ensuremath{\mathbb Z}}
+\newcommand{\Q}{\ensuremath{\mathbb Q}}
+\newcommand{\R}{\ensuremath{\mathbb R}}
+\newcommand{\F}{\ensuremath{\mathcal F}}
+\newcommand{\SymGrp}{\ensuremath{\mathfrak S}}
+
+\newcommand{\size}[1]{\ensuremath{\left|#1\right|}}
+\newcommand{\ceil}[1]{\ensuremath{\left\lceil#1\right\rceil}}
+\newcommand{\floor}[1]{\ensuremath{\left\lfloor#1\right\rfloor}}
+\newcommand{\poly}{\operatorname{poly}}
+\newcommand{\polylog}{\operatorname{polylog}}
+
+% anupam's abbreviations
+\newcommand{\e}{\epsilon}
+\newcommand{\half}{\ensuremath{\frac{1}{2}}}
+\newcommand{\junk}[1]{}
+\newcommand{\sse}{\subseteq}
+\newcommand{\union}{\cup}
+\newcommand{\meet}{\wedge}
+
+\newcommand{\prob}[1]{\ensuremath{\text{{\bf Pr}$\left[#1\right]$}}}
+\newcommand{\expct}[1]{\ensuremath{\text{{\bf E}$\left[#1\right]$}}}
+\newcommand{\Event}{{\mathcal E}}
+
+\newcommand{\mnote}[1]{\normalmarginpar \marginpar{\tiny #1}}
+
+
+\lstset{frame=tb,
+  language={},
+  aboveskip=3mm,
+  belowskip=3mm,
+  showstringspaces=false,
+  columns=flexible,
+  basicstyle={\small\ttfamily},
+  numbers=none,
+  numberstyle=\tiny\color{gray},
+  keywordstyle=\color{blue},
+  commentstyle=\color{dkgreen},
+  stringstyle=\color{mauve},
+  breaklines=true,
+  breakatwhitespace=true,
+  tabsize=3
+}
+
+\definecolor{codegray}{gray}{0.9}
+\newcommand{\code}[1]{\texttt{#1}}
+\newcommand{\codebox}[1]{\colorbox{codegray}{\texttt{#1}}}
+
+\setenumerate[0]{label=\arabic*.}
+
+\newlength\tindent
+\setlength{\tindent}{\parindent}
+\setlength{\parindent}{0pt}
+\renewcommand{\indent}{\hspace*{\tindent}}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Document begins here %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{document}
+
+\noindent {\bf{HUGH HAN} \vspace{4pt} \\ \large {\bf 600.465 Natural Language Processing} \hfill {{\bf Fall 2016}}}\\
+{{\bf Homework \#2}} \hfill {{\bf Due:} 27 September 2016, 5:00pm} \\
+\rule[0.1in]{\textwidth}{0.4pt}
+
+\begin{enumerate}
+\item % PROBLEM 1
+	The log probability for each sample corpus, training on the \texttt{switchboard-small} corpus, is calculated as follows.
+	\begin{lstlisting}
+	-12111.3    speech/sample1
+	-7388.84    speech/sample2
+	-7468.29    speech/sample3
+	\end{lstlisting}
+	To calculate the perplexity of each corpus, we can simply raise 2 to the power of each \textit{negated} log probability. That is, we can simply do the following.
+	\begin{eqnarray*}
+		2^{12111.3} &\text{for}& \texttt{speech/sample1}\\
+		2^{7388.84} &\text{for}& \texttt{speech/sample2}\\
+		2^{7468.29} &\text{for}& \texttt{speech/sample3}\\
+	\end{eqnarray*}
+	To calculate the perplexity per word, we first need to calculate the cross-entropy by dividing each negated log proability by the number of words in its respective corpus.
+
+	The number of words in each corpus is calculated as follows.
+	\begin{lstlisting}
+	1686    speech/sample1
+    978    speech/sample2
+    985    speech/sample3
+    \end{lstlisting}
+    Then we see that the perplexity per word of each file is the following.
+    \begin{eqnarray*}
+		2^{\frac{12111.3}{1686}} &\text{for}& \texttt{speech/sample1}\\
+		2^{\frac{7388.84}{978}} &\text{for}& \texttt{speech/sample2}\\
+		2^{\frac{7468.29}{985}} &\text{for}& \texttt{speech/sample3}
+	\end{eqnarray*}
+	We obtain the following approximated perplexity-per-word values.
+	\begin{eqnarray*}
+		145.36 &\text{for}& \texttt{speech/sample1}\\
+		188.06 &\text{for}& \texttt{speech/sample2}\\
+		191.61 &\text{for}& \texttt{speech/sample3}
+	\end{eqnarray*}
+
+	Training on the larger \texttt{switchboard} corpus, we get the following log probabilities for the following sample corpuses, respectively:
+	\begin{lstlisting}
+	-12561.5    speech/sample1
+	-7538.27    speech/sample2
+	-7938.95    speech/sample3
+	\end{lstlisting}
+	% TODO - figure out the reason why
+	Note that each of the log-probabilities grew more negative for its respective sample corpus. Thus, the each perplexity must also be smaller for its respective sample corpus. The reason for this is because if we increase the size of our training data, then we introduce a greater number of possible sentences. That is, the probability that the sentences in our specific test files appear would be much smaller, in that there is a greater variety of possibilities to choose from.
+
+\item % PROBLEM 2
+\item % PROBLEM 3 
+	I chose to do spam detection.
+
+	When classifying the sample files containing genuine messages, I received the following output:
+	\begin{lstlisting}
+		178 looked more like gen_spam/train/gen (98.89%)
+		2 looked more like gen_spam/train/spam (1.11%)
+	\end{lstlisting}
+	When classifying the sample files containing spam messages, I received the following output:
+	\begin{lstlisting}
+		66 looked more like gen_spam/train/gen (73.33%)
+		24 looked more like gen_spam/train/spam (26.67%)
+	\end{lstlisting}
+
+	That is, we had the following error rates for the different data sets.
+	\begin{eqnarray*}
+		\texttt{gen} &\colon& \text{error-rate } = \ 1.11\% \\
+		\texttt{spam} &\colon& \text{error-rate } = \ 73.33\% \\
+	\end{eqnarray*}
+
+	\begin{enumerate}[label=(\alph*)]
+	\item % a
+		Each classification decision is based on probability. That is, whichever training corpus yields a higher cross-entropy with each test file is the training corpus to which that test file will be classified. 
+
+		However, we cannot necessarily deduce that the lowest cross-entropy occurs with the lowest error rate. With a low error rate, it could just be that the opposite incorrect corpus has a higher cross-entropy than the correct corpus, instead of the correct corpus having the lowest possible cross-entropy.
+
+		Thus, we are forced to do some type of guess-and-check to find the value of the lowest cross-entropy. We proceeded by doing a human version of binary search. 
+
+		Using our binary search, we find the following two values of the approximate smallest log-probabilities.
+		\begin{eqnarray*}
+			\texttt{gen} &\colon& \text{log-probability } \approx \ -423681 \\
+			\texttt{spam} &\colon& \text{log-probability } \approx \ -280362 
+		\end{eqnarray*}
+		Using these values, we can obtain the approximate smallest cross-entropies.
+
+		%TODO: Calculate cross entropy
+		\begin{eqnarray*}
+			\texttt{gen} &\colon& \text{log-probability } \approx \ -423681 \\
+			\texttt{spam} &\colon& \text{log-probability } \approx \ -280362 
+		\end{eqnarray*}
+
+		The $\lambda$ values that were used in finding these minimum cross-entropies were as follows.
+		\begin{eqnarray*}
+			\texttt{gen} &\colon& \lambda \ = \ 0.01357 \\
+			\texttt{spam} &\colon& \lambda \ = \ 0.0083
+		\end{eqnarray*}
+
+	\item % b
+		We can do binary search again, but let's think of how we can be a little smarter this time. We already have 
+		\begin{eqnarray*}
+			\lambda_{\texttt{gen}} &=& 0.01357 \\
+			\lambda_{\texttt{spam}} &=& 0.0083
+		\end{eqnarray*}
+		so we can use them as critical points. We see that:
+		\begin{enumerate}[label=(\roman*)]
+		\item all $\lambda < \lambda_{\texttt{spam}}$ cause increasing log-probabilities
+		\item all $\lambda > \lambda_{\texttt{gen}}$ cause increasing log-probabilities
+		\end{enumerate}
+		Then the following must be true. 
+		\begin{eqnarray*}
+			\lambda_{\texttt{spam}} \ \le \ \lambda^* \ \le \ \lambda_{\texttt{gen}}
+		\end{eqnarray*}
+		So now we can do a smarter guess-and-check binary search, and we find the following value of $\lambda^*$.
+		\begin{eqnarray*}
+			\lambda^* &\approx& 0.0104
+		\end{eqnarray*}
+	\item % c
+		First, let's try to classify the test files containing genuine messages.
+		\begin{lstlisting}
+		347 looked more like gen_spam/train/gen (96.39%)
+		13 looked more like gen_spam/train/spam (3.61%)
+		\end{lstlisting}
+		Next, let's try to classify the test files containing spam messages.
+		\begin{lstlisting}
+		50 looked more like gen_spam/train/gen (27.78%)
+		130 looked more like gen_spam/train/spam (72.22%)
+		\end{lstlisting}
+		So then we get the following error rates.
+		\begin{eqnarray*}
+			\texttt{gen} &\colon& \text{error-rate } = \ 3.61\% \\
+			\texttt{spam} &\colon& \text{error-rate } = \ 27.78\% \\
+		\end{eqnarray*}
+	\item % d
+	\item % e
+	\end{enumerate}
+\item % PROBLEM 4 
+	\begin{enumerate}[label=(\alph*)]
+	\item % a
+		Let's say that we take $V =$ 19,999. 
+
+		\begin{enumerate}[label=\roman*.]
+		\item
+			Using the UNIFORM estimate, if we see a word that is out of the vocabulary, we would have no choice but to assign that \textsc{oov} word a probability of 0, due to it being the 20,000th word of a vocabulary of size 19,999. That is, the sum of the probabilities of all other words already sum to 1, and we cannot have a probability greater than 1.
+			\begin{eqnarray*}
+				\sum\limits_{i=1}^{V}{\frac{1}{V}} &=& 1
+			\end{eqnarray*}
+			However, this is an bad estimation, simply because no word can have a probability of 0, regardless of whether that word was observed in the training data.
+		\item
+			% TODO: answer the question
+			Using the ADDL estimate, 
+		\end{enumerate}
+	\item % b
+		% TODO: be more thorough
+		If we let $\lambda = 0$, then we are not modifying our probability at all. That is, we get the following from our probabiliy estimate.
+		\begin{eqnarray*}
+			\hat{p}(z \mid xy) &=& \frac{c(xyz) + \lambda}{c(xy) + \lambda V} 	\\
+							   &=& \frac{c(xyz) + 0}{c(xy) + 0} 				\\
+							   &=& \frac{c(xyz)}{c(xy)} 						\\
+		\end{eqnarray*}
+	\item % c
+	\item % d
+	\end{enumerate}
+\item % PROBLEM 5
+	\begin{enumerate}[label=(\alph*)]
+	\item % a
+		\texttt{IMPLEMENTATION PROBLEM}
+	\item % b
+		\begin{itemize}
+			\item[] \hspace{-24pt} 
+				\textbf{cross-entropies for the switchboard corpora}
+				% TODO : Write up this problem
+			\item[] \hspace{-24pt} 
+				\textbf{text categorization error rates for gen/spam} \vspace{4pt} \\
+				Using $\lambda^* = 0.014$, as calculated in problem \textbf{3}(c), we receive the following classifications for \texttt{gen} and \texttt{spam} test files, respectively.
+				\begin{lstlisting}
+		209 looked more like gen_spam/train/gen (58.06%)
+		151 looked more like gen_spam/train/spam (41.94%)
+				\end{lstlisting}
+				\begin{lstlisting}
+		7 looked more like gen_spam/train/gen (3.89%)
+		173 looked more like gen_spam/train/spam (96.11%)
+				\end{lstlisting}
+				From these outputs, we can see that using our calculated $\lambda^*$value, switching from ADDL to BACKOFF\_ADDL causes the error rates for classifying spam files to decrease extraordinarily, but at the cost of spiking up error rates for classifying genuine files.
+		\end{itemize}
+	\item % c
+		\textit{Extra credit.}
+	\end{enumerate}
+\item % PROBLEM 6
+	\begin{enumerate}[label=(\alph*)]
+	\item % a
+	\item % b
+	\item % c
+	\item % d
+	\item % e
+		\textit{Extra credit.}
+	\item % f
+	\item % g
+		\begin{enumerate}[label=\roman*.]
+		\item % i
+		\item % ii
+		\item % iii
+		\item % iv
+		\item % v
+		\item % vi
+		\item % vii
+		\end{enumerate}
+	\end{enumerate}
+\item % PROBLEM 7
+\item % PROBLEM 8
+	\begin{enumerate}[label=(\alph*)]
+	\item
+	\item
+	\item
+	\end{enumerate}
+\item % PROBLEM 9
+	\textit{Extra credit.}
+\item % PROBLEM 10
+	\textit{Extra credit.}
+	\begin{enumerate}[label=(\alph*)]
+	\item
+	\item
+	\item
+	\item
+	\item
+		\begin{enumerate}[label=\roman*.]
+		\item
+		\item
+		\item
+		\end{enumerate}
+	\item
+	\item
+	\end{enumerate}
+\item % PROBLEM 11
+	\textit{Extra credit.}
+
+\end{enumerate}
+
+\end{document}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
