@@ -1,0 +1,120 @@
+3.
+(d) We divide the range of possible file length into 10 buckets. For instance, the first bucket contains the classification result from the files with length in [0, 40), the second bucket contains those in range [40, 80), and so on. The last bucket is special because the classification result in it come from files with length larger than 400. We can notice that the first bucket is the baseline which represents the lowest accuracy(75%). The reason is small files containing less information so that they are hard to classify.
+
+(e) It is easy to realize that with the growth of training data size, the accuracy also grows. But increasing the size of training set can not solve all problems because when we switch from gen-times4 to gen-times8, the accuracy is improved only a little. 
+
+4.
+(c) When c(xyz) = c(xyz') = 0, the probability p(z|xy) becomes (lambda * V * p(z|y)) / (c(xy) + lambda * V). Therefore the difference between p(z|xy) and p(z'|xy) is the value of p(z|y) and p(z'|y). And we can not guarantee that p(z|y) = p(z'|y). For example, we may never meet "kiss the tree" and "kiss the Jupiter", but obviously "the tree" is more common than "the Jupiter", which shows that p(z|y) != p(z'|y).
+When c(xyz) = c(xyz') = 1, we just subtract p(z'|xy) from p(z|xy), then we go back to a similar situation when c(xyz) = c(xyz') = 0. Hence the conclusion remains the same.
+
+(d) Not sure how to analyze this part.
+
+5.
+(b)  cross-entropies for the switchboard corpora:
+-10040.1	/usr/local/data/cs465/hw-lm/speech/sample1
+-6039.31	/usr/local/data/cs465/hw-lm/speech/sample2
+-6413.95	/usr/local/data/cs465/hw-lm/speech/sample3
+
+! lambda should be 0.0104, not 0.014
+
+why do you use gen_spam/train/gen instead of gen_spam/test/gen ? 
+
+// result when using lamdda = 0.0104:
+337 looked more like gen (0.936111111111%)
+23 looked more like spam (0.0638888888889%)
+
+17 looked more like gen (0.0944444444444%)
+163 looked more like spam (0.905555555556%)
+
+// The above result are the same as we use lambda = 0.1, but the cross entropy is higher than using lambda = 0.1
+
+
+(c)
+new lambda: 0.1(The accuracy seems not sensitive to lambda?)
+gen:
+337 looked more like gen (0.936111111111%)
+23 looked more like spam (0.0638888888889%)
+
+spam:
+17 looked more like gen (0.0944444444444%)
+163 looked more like spam (0.905555555556%)
+
+7.
+When we want to do the classification, we may want to consider P(w is spam|w). According to Bayes's Theorem, we can write the following equation: 
+P(w is spam|w) = P(w|w is spam) * P(spam) / P(w)
+               = P(w|w is spam) * P(spam) / (P(w|w is spam) * P(spam) + P(w|w is gen) * P(gen))
+
+P(w|w is spam) and P(w|w is gen) are the probabilities generated separately from the two models we train using spam and gen corpus.
+Also, since we know that P(spam) = 1 / 3, P(gen) = (1 - P(spam)) = 2 / 3. We can rewrite P(w is spam|w) = 1 / [1 + 2 * (P(w|w is gen) / P(w|w is spam))] to calculate the probability of P(w is spam|w). Obviously we don't need priori when training the model.
+
+In order to implement this method, firstly we need to train gen model and store the probabilities for all test files, then train spam model and store the probabilities again. Then we iterate all P(w|w is gen) and P(w|w is spam) we have so as to calculate P(w is spam|w).
+
+When we test this method using add0.00001, which means basically no smoothing at all, the program classifys 33% of the test data to be spam. The result is very close to priori we have.
+
+8.
+(a) According to Bayes’ Theorem, we can express the probability P(w|U) we want in the following equation:
+P(w|U) = P(U|w) * P(w) / P(U)
+
+In order to maximize P(w|U), we can instead maximize log2(P(w|U)), which equals to log2(P(U|w)) + log2(P(w)) - log2(U).
+
+Since log2(U) remains the same for all possible w, we just need to maximize log2(P(U|w)) + log2(P(w)). Luckily, log2(P(U|w)) is provieded in the input files. All we need to do is calculate log2(P(w)) using trigram model to see whether it looks like English or not.
+
+So we iterate all the 9 candidates and compute log2(P(U|w)) + log2(P(w)) to find out the candidate with the highest probability P(w|U).
+
+(b) IMPLEMENTATION PROBLEM
+
+(c) Some trigrams in unrestricted data are very uncommon due to the existence of words like uh, um, huh inside the sentences.
+Therefore in order to overcome this problem we need to use backoff skill. In pratice we set the value of lambda to 0.01 according to our experiment on development data.
+
+Overall error rate for 3-gram model:
+test/easy: 0.141
+test/unrestricted: 0.380
+
+Overall error rate for 2-gram model:
+test/easy: 0.159
+test/unrestricted: 0.396
+
+Overall error rate for 1-gram model:
+test/easy: 0.210
+test/unrestricted: 0.408
+
+#### include the following functions in Probs.py for bigram and unigram:
+def prob_bigram(self, y, z):
+    if self.smoother == "UNIFORM":
+      return float(1) / self.vocab_size
+    elif self.smoother == "ADDL":
+      if y not in self.vocab:
+        y = OOV
+      if z not in self.vocab:
+        z = OOV
+      return ((self.tokens.get((y, z), 0) + self.lambdap) /
+        (self.tokens.get((y), 0) + self.lambdap * self.vocab_size))
+
+    elif self.smoother == "BACKOFF_ADDL":
+      if y not in self.vocab:
+        y = OOV
+      if z not in self.vocab:
+        z = OOV
+
+      lambdap_v = self.lambdap * self.vocab_size
+      p_z = (self.tokens.get(z, 0) + self.lambdap) / (self.tokens.get('', 0) + lambdap_v)
+      p_zy = (self.tokens.get((y, z), 0) + lambdap_v * p_z) / (self.tokens.get(y, 0) + lambdap_v)
+      return p_zy
+    elif self.smoother == "BACKOFF_WB":
+      sys.exit("BACKOFF_WB is not implemented yet (that's your job!)")
+    else:
+      sys.exit("%s has some weird value" % self.smoother)
+
+  def prob_unigram(self, z):
+    if self.smoother == "UNIFORM":
+      return float(1) / self.vocab_size
+    elif self.smoother == "ADDL" or self.smoother == "BACKOFF_ADDL":
+      if z not in self.vocab:
+        z = OOV
+      return ((self.tokens.get(z, 0) + self.lambdap) /
+        (self.tokens.get('', 0) + self.lambdap * self.vocab_size))
+
+    elif self.smoother == "BACKOFF_WB":
+      sys.exit("BACKOFF_WB is not implemented yet (that's your job!)")
+    else:
+      sys.exit("%s has some weird value" % self.smoother)
