@@ -104,8 +104,8 @@
 
 \begin{document}
 
-\noindent {\bf{HUGH HAN} \vspace{4pt} \\ \large {\bf 600.465 Natural Language Processing} \hfill {{\bf Fall 2016}}}\\
-{{\bf Homework \#2}} \hfill {{\bf Due:} 27 September 2016, 5:00pm} \\
+\noindent {\bf{HUGH HAN, PEIYI ZHENG} \vspace{4pt} \\ \large {\bf 600.465 Natural Language Processing} \hfill {{\bf Fall 2016}}}\\
+{{\bf Homework \#3}} \hfill {{\bf Due:} 27 September 2016, 5:00pm} \vspace{6pt} \\
 \rule[0.1in]{\textwidth}{0.4pt}
 
 \begin{enumerate}
@@ -153,15 +153,17 @@
 	Note that each of the log-probabilities grew more negative for its respective sample corpus. Thus, the each perplexity must also be smaller for its respective sample corpus. The reason for this is because if we increase the size of our training data, then we introduce a greater number of possible sentences. That is, the probability that the sentences in our specific test files appear would be much smaller, in that there is a greater variety of possibilities to choose from.
 
 \item % PROBLEM 2
+	\texttt{IMPLEMENTATION PROBLEM}
+	
 \item % PROBLEM 3 
-	I chose to do spam detection.
+	We chose to do spam detection.
 
-	When classifying the sample files containing genuine messages, I received the following output:
+	When classifying the sample files containing genuine messages, we received the following output:
 	\begin{lstlisting}
 		178 looked more like gen_spam/train/gen (98.89%)
 		2 looked more like gen_spam/train/spam (1.11%)
 	\end{lstlisting}
-	When classifying the sample files containing spam messages, I received the following output:
+	When classifying the sample files containing spam messages, we received the following output:
 	\begin{lstlisting}
 		66 looked more like gen_spam/train/gen (73.33%)
 		24 looked more like gen_spam/train/spam (26.67%)
@@ -236,7 +238,9 @@
 			\texttt{spam} &\colon& \text{error-rate } = \ 27.78\% \\
 		\end{eqnarray*}
 	\item % d
+		For this problem, we can all of the possible file lengths into 10 buckets of file length intervals. For instance, the first bucket would contain the classification results from the files with lengths in the range [0, 40), the second bucket would contain those in the range [40, 80), and so on. We can reserve our last bucket as a ``special'' bucket. That is, this special bucket will contain the classificatioon results of all of the files with lengths greater than 400. Now note that the first bucket can serve as a baseline, which represents the lowest accuracy of 75\%. The reason for this is that small files containing less information, so they could be more difficult to classify.
 	\item % e
+		It is easy to see that as the training data size increases, the classification accuracy also increases. But increasing the size of the training set does not necessarily solve all classification accuracy issues. At some point, it will level off. For example, it was noted that when we switched from \texttt{gen-times4} to \texttt{gen-times8}, the classification accuracy was improved only slightly.
 	\end{enumerate}
 \item % PROBLEM 4 
 	\begin{enumerate}[label=(\alph*)]
@@ -263,7 +267,29 @@
 							   &=& \frac{c(xyz)}{c(xy)} 						\\
 		\end{eqnarray*}
 	\item % c
+
+		\begin{enumerate}[label=\roman*.]
+		\item
+			First, let's think about the case when $c(xyz) = c(xyz') = 0$. \vspace{4pt}
+
+			We see that
+			\begin{eqnarray*}
+				\hat{p}(z\mid xy) &=& \frac{\lambda V \cdot \hat{p}(z \mid y)}{c(xy) + \lambda V}
+			\end{eqnarray*}
+
+			Then the difference between $\hat{p}(z\mid xy)$ and $\hat{p}(z' \mid xy)$ is the  possible differing values of $\hat{p}(z \mid y)$ and $\hat{p}(z'|y)$. However, we cannot guarantee that $\hat{p}(z \mid y)$ = $\hat{p}(z' \mid y)$. \vspace{4pt}
+
+			For example, we might never see either of the phrases ``kiss the tree'' and ``kiss the Jupiter''. However, when we backoff, it is possible that we have seen both of the phrases ``the tree'' and ``the Jupiter''. \vspace{4pt}
+
+			And in English, it is much more likely that the phrase ``the tree'' is more common than ``the Jupiter'', which demonstrates a case in which that $\hat{p}(z \mid y) \neq \hat{p}(z' \mid y)$.
+			
+		\item
+			% TODO: Clarify this answer
+			Now let's think about the case when $c(xyz) = c(xyz') = 1$.
+		\end{enumerate}
+
 	\item % d
+		% TODO: Answer this question
 	\end{enumerate}
 \item % PROBLEM 5
 	\begin{enumerate}[label=(\alph*)]
@@ -272,11 +298,17 @@
 	\item % b
 		\begin{itemize}
 			\item[] \hspace{-24pt} 
-				\textbf{cross-entropies for the switchboard corpora}
-				% TODO : Write up this problem
+				\textbf{cross-entropies for the switchboard corpora} \vspace{4pt} \\
+				
+				\begin{lstlisting}
+		-10040.1	/usr/local/data/cs465/hw-lm/speech/sample1
+		-6039.31	/usr/local/data/cs465/hw-lm/speech/sample2
+		-6413.95	/usr/local/data/cs465/hw-lm/speech/sample3
+				\end{lstlisting}
+
 			\item[] \hspace{-24pt} 
 				\textbf{text categorization error rates for gen/spam} \vspace{4pt} \\
-				Using $\lambda^* = 0.014$, as calculated in problem \textbf{3}(c), we receive the following classifications for \texttt{gen} and \texttt{spam} test files, respectively.
+				Using $\lambda^* = 0.0104$, as calculated in problem \textbf{3}(c), we receive the following classifications for \texttt{gen} and \texttt{spam} test files, respectively.
 				\begin{lstlisting}
 		209 looked more like gen_spam/train/gen (58.06%)
 		151 looked more like gen_spam/train/spam (41.94%)
@@ -311,6 +343,35 @@
 		\end{enumerate}
 	\end{enumerate}
 \item % PROBLEM 7
+	Let $w$ denote an arbitrary word. When we want to do the classification, we may want to consider the probability $P(w \text{ is spam} \mid w)$. According to Bayes's Theorem, we can write the following equation.
+	\begin{eqnarray*}
+		P(w \text{ is \texttt{spam}} \mid w) &=& \frac{P(w \mid w \text{ is \texttt{spam}}) \cdot P(\texttt{spam})}{P(w)} \\
+	               &=& \frac{P(w \mid w \text{ is \texttt{spam}}) \cdot P(\texttt{spam})}{P(w \mid w \text{ is \texttt{spam}}) \cdot P(\texttt{spam}) + P(w \mid w \text{ is \texttt{gen}}) \cdot P(\texttt{gen})}
+	\end{eqnarray*}
+
+
+	$P(w \text{ is \texttt{spam}} \mid w)$ and $P(w \mid w \text{ is \texttt{gen}})$ are the probabilities generated separately from the two models we train using the \texttt{spam} and \texttt{gen} corpora.
+
+	Now we know the following.
+	\begin{eqnarray*}
+		P(\texttt{spam}) &=& \frac{1}{3}
+	\end{eqnarray*}
+	Then the following naturally follows. 
+	\begin{eqnarray*}
+		P(\texttt{gen}) &=& 1 - P(\texttt{spam}) \\
+			&=& \frac{2}{3}
+	\end{eqnarray*}
+
+	We can rewrite then rewrite the following.
+	\begin{eqnarray*}
+		P(w \text{ is \texttt{spam}} \mid w) &=& \frac{1}{1 + \frac{2P(w \mid w \text{ is \texttt{gen}})}{P(w \mid w \text{ is \texttt{spam}})}}
+	\end{eqnarray*}
+
+	By doing this, we can calculate the probability $P(w \text{ is \texttt{spam}} \mid w)$. Obviously we don't need \textit{priori} when training the model.
+
+	In order to implement this method, firstly we need to train the \texttt{gen} model and store the probabilities for all test files, then train the \texttt{spam} model and store the probabilities again. Finally, we can iterate all $P(w|w is gen)$ and $P(w|w is spam)$, we have so as to calculate $P(w is spam|w)$.
+
+	When we test this method using add0.00001, which means basically no smoothing at all, the program classifys 33\% of the test data to be spam. The result is very close to priori.
 \item % PROBLEM 8
 	\begin{enumerate}[label=(\alph*)]
 	\item
@@ -341,38 +402,3 @@
 \end{enumerate}
 
 \end{document}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
