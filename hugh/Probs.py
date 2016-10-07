@@ -12,6 +12,7 @@ import math
 import random
 import re
 import sys
+import numpy
 
 # TODO for TA: Currently, we use the same token for BOS and EOS as we only have
 # one sentence boundary symbol in the word embedding file.  Maybe we should
@@ -37,9 +38,9 @@ class LanguageModel:
         # The word vector for w can be found at self.vectors[w].
         # You can check if a word is contained in the lexicon using
         #    if w in self.vectors:
-        self.vectors = None    # loaded using read_vectors()
+        self.vectors = None     # loaded using read_vectors()
 
-        self.vocab = None    # set of words included in the vocabulary
+        self.vocab = None       # set of words included in the vocabulary
         self.vocab_size = None  # V: the total vocab size including OOV.
 
         self.tokens = None      # the c(...) function
@@ -55,6 +56,10 @@ class LanguageModel:
         # dimensional lists.
         self.U, self.V = None, None  
 
+        self.Z_dict = None # maps from (x,y)   pairs   to their Z(x,y)   values
+        self.u_dict = None # maps from (x,y,z) triples to their u(xyz)   values
+        self.p_dict = None # maps from (z,x,y) triples to their p(z|x,y) values
+
         # self.tokens[(x, y, z)] = # of times that xyz was observed during training.
         # self.tokens[(y, z)]    = # of times that yz was observed during training.
         # self.tokens[z]         = # of times that z was observed during training.
@@ -65,6 +70,86 @@ class LanguageModel:
         # self.types_after[y]       = # of distinct word types that were
         #                             observed to follow y during training.
         # self.types_after[""]      = # of distinct word types observed during training.
+
+
+    def __get_theta_and_f(self, x, y, z, theta=None, f=None):
+
+        if theta is None:                                 # If we are not passed a theta or f
+            theta = numpy.zeros(2 * self.dim * self.dim)  # vector, we can just initialize them
+        if f is None:                                     # to vectors of size 2 * d^2.
+            f = numpy.zeros(2 * self.dim * self.dim)
+
+        x_vec = self.vectors[x]
+        y_vec = self.vectors[y]
+        z_vec = self.vectors[z]
+
+        idx = 0                                      # Here, we iterate through the
+        for i in xrange(0, self.dim):                # elements of the matrix U and
+            for j in xrange(0, self.dim):            # add its values to their
+                theta[idx] = self.U[i][j]            # corresponding indices in theta.
+                f[idx]     = x_vec[i] * z_vec[j]     # We then calculate theta's
+                idx += 1                             # corresponding elements for f.
+
+        for i in xrange(0, self.dim):                # Next, we iterate through the
+            for j in xrange(0, self.dim):            # elements of the matrix V, and
+                theta[idx] = self.V[i][j]            # perform the same calculations,
+                f[idx]     = y_vec[i] * z_vec[j]     # also to be added to their
+                idx += 1                             # corresponding indices in theta.
+
+        return theta, f
+
+
+    def __loglin_calc_probs(self, tokens_list):
+
+        if self.u_dict is None:
+            self.u_dict = dict()
+        if self.Z_dict is None:
+            self.Z_dict = dict()
+        if self.p_dict is None:
+            self.p_dict = dict()
+
+        for i in range(self.N):
+
+            x, y, z = tokens_list[i - 2], tokens_list[i - 1], tokens_list[i]
+
+            # We need to calculate the value of u(xyz). To do this, we first need to get
+            # the values of theta and f. 
+
+            theta, f = self.__get_theta_and_f(x, y, z)
+
+            # Now, we can simply calculate u(xyz) by taking e to the power of the product
+            # of theta and f. We will store this value in a dictionary, so that we can use
+            # dynamic programming.
+
+            self.u_dict[(x,y,z)] = numpy.exp(theta * f)
+
+            if (x, y) not in self.Z_dict:
+
+                summation = 0
+                for zp in self.vocab:
+                    if zp == OOV:
+                        zp = OOL
+                    zp_vec = self.vectors[zp]
+
+                    if (x, y, zp) not in self.u_dict:
+
+                        # If the tuple (x, y, z') hasn't been seen, then we need to
+                        # calculate u(xyz'). We use the same procedure as above to do so,
+                        # and like above, will then store it into the dictionary.
+
+                        theta_temp, f_temp = self.__get_theta_and_f(x, y, zp)
+                        self.u_dict[(x, y, zp)] = numpy.exp(theta_temp * f_temp) 
+
+                    up = self.u_dict[(x, y, zp)]  # Fetch our value of u' from our u dict,
+                    summation += up               # and add it to the value of Z
+
+                self.Z_dict[(x, y)] = summation
+
+            u = self.u_dict[(x,y,z)]      # Now let's get the value of u from the u dict
+            Z = self.Z_dict[(x, y)]       # Similary, get the value of Z from the Z dict
+
+            self.p_dict[(z,x,y)] = u / Z  # Store the calculated probability in our
+                                          # probability dictionary
 
 
     def prob(self, x, y, z):
@@ -118,7 +203,7 @@ class LanguageModel:
         elif self.smoother == "BACKOFF_WB":
             sys.exit("BACKOFF_WB is not implemented yet (that's your job!)")
         elif self.smoother == "LOGLINEAR":
-            sys.exit("LOGLINEAR is not implemented yet (that's your job!)")
+
             if x not in self.vocab:
                 x = OOV
             if y not in self.vocab:
@@ -126,8 +211,11 @@ class LanguageModel:
             if z not in self.vocab:
                 z = OOV
 
+            return self.p_dict(z, x, y)
+
         else:
             sys.exit("%s has some weird value" % self.smoother)
+
 
     def filelogprob(self, filename):
         """Compute the log probability of the sequence of tokens in file.
@@ -146,6 +234,7 @@ class LanguageModel:
         logprob += math.log(self.prob(x, y, EOS))
         corpus.close()
         return logprob
+
 
     def read_vectors(self, filename):
         """Read word vectors from an external file.  The vectors are saved as
@@ -222,47 +311,39 @@ class LanguageModel:
             self.V = [[0.0 for _ in range(self.dim)] for _ in range(self.dim)]
 
             # Optimization parameters
-            gamma0 = 0.1              # initial learning rate, used to compute actual learning rate
-            theta0 = [0] * 2 * d*d    # set original theta0 to the 0 vector
-            epochs = 10               # number of passes
+            gamma0 = 0.1                                # initial learning rate, used to 
+                                                        #     compute actual learning rate
+            theta0 = numpy.zeros(2*self.dim*self.dim)   # set original theta to the 0 vector
+            f0     = numpy.zeros(2*self.dim*self.dim)   # set original f to the 0 vector
+            epochs = 10                                 # number of passes
 
             self.N = len(tokens_list) - 2  # number of training instances
 
-            # ******** COMMENT *********
-            # In log-linear model, you will have to do some additional computation at
-            # this point.  You can enumerate over all training trigrams as following.
-            #
-            for i in range(self.N):
-                x, y, z = tokens_list[i - 2], tokens_list[i - 1], tokens_list[i]
-                theta   = []
-                f       = []
-                for i in xrange(0, self.dim):
-                    for j in xrange(0, self.dim):
-                        theta.append(self.U[i][j])
-                        f.append(x[i]*z[j])
-                for i in xrange(0, self.dim):
-                    for j in xrange(0, self.dim):
-                        theta.append(self.V[i][j])
-                        f.append(y[i]*z[j])
-
-
-            # Note2: You can use self.show_progress() to log progress.
-            #
-            # **************************
+            self.__loglin_calc_probs(tokens_list)
 
             sys.stderr.write("Start optimizing.\n")
 
-            #####################
-            # TODO: Implement your SGD here
-            #####################
+            ######################### BEGIN Stochastic Gradient Ascent #########################
 
             theta = theta0
-            t     = 0           # updates so far
+            f     = f0
+            t     = 0
             for e in range(epochs):
                 for i in range(self.N):
+
                     gamma = gamma0 / (1 + gamma0 * (self.lambdap/self.N) * t)
-                    theta = theta + gamma # *
+
+                    summation = 0
+                    for (z, x, y) in self.p_dict:
+                        probability = self.p_dict[(z, x, y)]
+                        _, fp = self.__get_theta_and_f(x, y, z, theta0, f0)  # fp denotes f(xyz')
+                        summation += probability + fp
+
+                    F_gradient = f - summation - (2*self.lambdap / self.N) * theta
+                    theta = theta + gamma * F_gradient
                     t += 1
+
+            ########################## END Stochastic Gradient Ascent ##########################
 
         sys.stderr.write("Finished training on %d tokens\n" % self.tokens[""])
 
