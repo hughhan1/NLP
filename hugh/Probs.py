@@ -111,56 +111,6 @@ class LanguageModel:
         according to the language model.
         """
 
-        if self.u_dict is None:
-            self.u_dict = dict()
-        if self.Z_dict is None:
-            self.Z_dict = dict()
-        if self.p_dict is None:
-            self.p_dict = dict()
-
-        if x not in self.vocab:
-            x = OOV
-        if y not in self.vocab:
-            y = OOV
-        if z not in self.vocab:
-            z = OOV
-
-        theta, f = self.__get_theta_and_f(x, y, z)
-
-        # Now, we can simply calculate u(xyz) by taking e to the power of the product
-        # of theta and f. We will store this value in a dictionary, so that we can use
-        # dynamic programming.
-
-        self.u_dict[(x, y, z)] = numpy.exp(numpy.dot(theta, f))
-
-        if (x, y) not in self.Z_dict:
-
-            summation = 0
-            for zp in self.vocab:
-                if zp not in self.vectors:
-                    zp = OOL
-                zp_vec = self.vectors[zp]
-
-                if (x, y, zp) not in self.u_dict:
-
-                    # If the tuple (x, y, z') hasn't been seen, then we need to
-                    # calculate u(xyz'). We use the same procedure as above to do so,
-                    # and like above, will then store it into the dictionary.
-
-                    theta_temp, f_temp = self.__get_theta_and_f(x, y, zp)
-                    self.u_dict[(x, y, zp)] = numpy.exp(numpy.dot(theta_temp, f_temp)) 
-
-                up = self.u_dict[(x, y, zp)]  # Fetch our value of u' from our u dict,
-                summation += up               # and add it to the value of Z
-
-            self.Z_dict[(x, y)] = summation
-
-        u = self.u_dict[(x, y, z)]    # Now let's get the value of u from the u dict
-        Z = self.Z_dict[(x, y)]       # Similary, get the value of Z from the Z dict
-
-        self.p_dict[(z,x,y)] = u / Z  # Store the calculated probability in our
-                                      # probability dictionary
-
         if self.smoother == "UNIFORM":         # With uniform smoothing, we can simply
             return float(1) / self.vocab_size  # assign 1/V probability to everything.
 
@@ -195,7 +145,7 @@ class LanguageModel:
             # to build into the probability of z given y, which is finally used to build into
             # the probability of z given x, y.
 
-            prob_z = ((self.tokens.get((z), 0) + self.lambdap * self.vocab_size) / 
+            prob_z = ((self.tokens.get((z), 0) + self.lambdap) / 
                       (self.tokens.get((''), 0) + self.lambdap * self.vocab_size))
 
             prob_zy = ((self.tokens.get((y, z), 0) + self.lambdap * self.vocab_size * prob_z) /
@@ -208,6 +158,13 @@ class LanguageModel:
             sys.exit("BACKOFF_WB is not implemented yet (that's your job!)")
         elif self.smoother == "LOGLINEAR":
 
+            if self.u_dict is None:
+                self.u_dict = dict()
+            if self.Z_dict is None:
+                self.Z_dict = dict()
+            if self.p_dict is None:
+                self.p_dict = dict()
+
             if x not in self.vocab:
                 x = OOV
             if y not in self.vocab:
@@ -215,7 +172,43 @@ class LanguageModel:
             if z not in self.vocab:
                 z = OOV
 
-            return self.p_dict[(z, x, y)]
+            theta, f = self.__get_theta_and_f(x, y, z)
+
+            # Now, we can simply calculate u(xyz) by taking e to the power of the product
+            # of theta and f. We will store this value in a dictionary, so that we can use
+            # dynamic programming.
+
+            self.u_dict[(x, y, z)] = numpy.exp(numpy.dot(theta, f))
+
+            if (x, y) not in self.Z_dict:
+
+                summation = 0
+                for zp in self.vocab:
+                    if zp not in self.vectors:
+                        zp = OOL
+                    zp_vec = self.vectors[zp]
+
+                    if (x, y, zp) not in self.u_dict:
+
+                        # If the tuple (x, y, z') hasn't been seen, then we need to
+                        # calculate u(xyz'). We use the same procedure as above to do so,
+                        # and like above, will then store it into the dictionary.
+
+                        theta_temp, f_temp = self.__get_theta_and_f(x, y, zp)
+                        self.u_dict[(x, y, zp)] = numpy.exp(numpy.dot(theta_temp, f_temp)) 
+
+                    up = self.u_dict[(x, y, zp)]  # Fetch our value of u' from our u dict,
+                    summation += up               # and add it to the value of Z
+
+                self.Z_dict[(x, y)] = summation
+
+            u = self.u_dict[(x, y, z)]    # Now let's get the value of u from the u dict
+            Z = self.Z_dict[(x, y)]       # Similary, get the value of Z from the Z dict
+            p = u / Z
+
+            self.p_dict[(z,x,y)] = p      # Store the calculated probability in our
+                                          # probability dictionary
+            return p
 
         else:
             sys.exit("%s has some weird value" % self.smoother)
