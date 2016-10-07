@@ -79,6 +79,13 @@ class LanguageModel:
         if f is None:                                     # to vectors of size 2 * d^2.
             f = numpy.zeros(2 * self.dim * self.dim)
 
+        if x not in self.vectors:
+            x = OOL
+        if y not in self.vectors:
+            y = OOL
+        if z not in self.vectors:
+            z = OOL
+
         x_vec = self.vectors[x]
         y_vec = self.vectors[y]
         z_vec = self.vectors[z]
@@ -99,7 +106,10 @@ class LanguageModel:
         return theta, f
 
 
-    def __loglin_calc_probs(self, tokens_list):
+    def prob(self, x, y, z):
+        """Computes a smoothed estimate of the trigram probability p(z | x,y)
+        according to the language model.
+        """
 
         if self.u_dict is None:
             self.u_dict = dict()
@@ -108,54 +118,48 @@ class LanguageModel:
         if self.p_dict is None:
             self.p_dict = dict()
 
-        for i in range(self.N):
+        if x not in self.vocab:
+            x = OOV
+        if y not in self.vocab:
+            y = OOV
+        if z not in self.vocab:
+            z = OOV
 
-            x, y, z = tokens_list[i - 2], tokens_list[i - 1], tokens_list[i]
+        theta, f = self.__get_theta_and_f(x, y, z)
 
-            # We need to calculate the value of u(xyz). To do this, we first need to get
-            # the values of theta and f. 
+        # Now, we can simply calculate u(xyz) by taking e to the power of the product
+        # of theta and f. We will store this value in a dictionary, so that we can use
+        # dynamic programming.
 
-            theta, f = self.__get_theta_and_f(x, y, z)
+        self.u_dict[(x, y, z)] = numpy.exp(numpy.dot(theta, f))
 
-            # Now, we can simply calculate u(xyz) by taking e to the power of the product
-            # of theta and f. We will store this value in a dictionary, so that we can use
-            # dynamic programming.
+        if (x, y) not in self.Z_dict:
 
-            self.u_dict[(x,y,z)] = numpy.exp(theta * f)
+            summation = 0
+            for zp in self.vocab:
+                if zp not in self.vectors:
+                    zp = OOL
+                zp_vec = self.vectors[zp]
 
-            if (x, y) not in self.Z_dict:
+                if (x, y, zp) not in self.u_dict:
 
-                summation = 0
-                for zp in self.vocab:
-                    if zp == OOV:
-                        zp = OOL
-                    zp_vec = self.vectors[zp]
+                    # If the tuple (x, y, z') hasn't been seen, then we need to
+                    # calculate u(xyz'). We use the same procedure as above to do so,
+                    # and like above, will then store it into the dictionary.
 
-                    if (x, y, zp) not in self.u_dict:
+                    theta_temp, f_temp = self.__get_theta_and_f(x, y, zp)
+                    self.u_dict[(x, y, zp)] = numpy.exp(numpy.dot(theta_temp, f_temp)) 
 
-                        # If the tuple (x, y, z') hasn't been seen, then we need to
-                        # calculate u(xyz'). We use the same procedure as above to do so,
-                        # and like above, will then store it into the dictionary.
+                up = self.u_dict[(x, y, zp)]  # Fetch our value of u' from our u dict,
+                summation += up               # and add it to the value of Z
 
-                        theta_temp, f_temp = self.__get_theta_and_f(x, y, zp)
-                        self.u_dict[(x, y, zp)] = numpy.exp(theta_temp * f_temp) 
+            self.Z_dict[(x, y)] = summation
 
-                    up = self.u_dict[(x, y, zp)]  # Fetch our value of u' from our u dict,
-                    summation += up               # and add it to the value of Z
+        u = self.u_dict[(x, y, z)]    # Now let's get the value of u from the u dict
+        Z = self.Z_dict[(x, y)]       # Similary, get the value of Z from the Z dict
 
-                self.Z_dict[(x, y)] = summation
-
-            u = self.u_dict[(x,y,z)]      # Now let's get the value of u from the u dict
-            Z = self.Z_dict[(x, y)]       # Similary, get the value of Z from the Z dict
-
-            self.p_dict[(z,x,y)] = u / Z  # Store the calculated probability in our
-                                          # probability dictionary
-
-
-    def prob(self, x, y, z):
-        """Computes a smoothed estimate of the trigram probability p(z | x,y)
-        according to the language model.
-        """
+        self.p_dict[(z,x,y)] = u / Z  # Store the calculated probability in our
+                                      # probability dictionary
 
         if self.smoother == "UNIFORM":         # With uniform smoothing, we can simply
             return float(1) / self.vocab_size  # assign 1/V probability to everything.
@@ -211,7 +215,7 @@ class LanguageModel:
             if z not in self.vocab:
                 z = OOV
 
-            return self.p_dict(z, x, y)
+            return self.p_dict[(z, x, y)]
 
         else:
             sys.exit("%s has some weird value" % self.smoother)
@@ -319,29 +323,27 @@ class LanguageModel:
 
             self.N = len(tokens_list) - 2  # number of training instances
 
-            self.__loglin_calc_probs(tokens_list)
-
             sys.stderr.write("Start optimizing.\n")
 
             ######################### BEGIN Stochastic Gradient Ascent #########################
 
-            theta = theta0
-            f     = f0
-            t     = 0
-            for e in range(epochs):
-                for i in range(self.N):
+            # theta = theta0
+            # f     = f0
+            # t     = 0
+            # for e in range(epochs):
+            #     for i in range(self.N):
 
-                    gamma = gamma0 / (1 + gamma0 * (self.lambdap/self.N) * t)
+            #         gamma = gamma0 / (1 + gamma0 * (self.lambdap/self.N) * t)
 
-                    summation = 0
-                    for (z, x, y) in self.p_dict:
-                        probability = self.p_dict[(z, x, y)]
-                        _, fp = self.__get_theta_and_f(x, y, z, theta0, f0)  # fp denotes f(xyz')
-                        summation += probability + fp
+            #         summation = 0
+            #         for (z, x, y) in self.p_dict:
+            #             probability = self.p_dict[(z, x, y)]
+            #             _, fp = self.__get_theta_and_f(x, y, z, theta0, f0)  # fp denotes f(xyz')
+            #             summation += probability + fp
 
-                    F_gradient = f - summation - (2*self.lambdap / self.N) * theta
-                    theta = theta + gamma * F_gradient
-                    t += 1
+            #         F_gradient = f - summation - (2*self.lambdap / self.N) * theta
+            #         theta = theta + gamma * F_gradient
+            #         t += 1
 
             ########################## END Stochastic Gradient Ascent ##########################
 
