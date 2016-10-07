@@ -12,7 +12,7 @@ import math
 import random
 import re
 import sys
-import numpy
+import numpy as np
 
 # TODO for TA: Currently, we use the same token for BOS and EOS as we only have
 # one sentence boundary symbol in the word embedding file.  Maybe we should
@@ -54,11 +54,11 @@ class LanguageModel:
         # the two weight matrices U and V used in log linear model
         # They are initialized in train() function and represented as two
         # dimensional lists.
-        self.U, self.V = None, None  
+        self.U, self.V = None, None
 
-        self.Z_dict = None # maps from (x,y)   pairs   to their Z(x,y)   values
-        self.u_dict = None # maps from (x,y,z) triples to their u(xyz)   values
-        self.p_dict = None # maps from (z,x,y) triples to their p(z|x,y) values
+        self.Z_dict = None # maps from (x,y)   pairs   to their Z(x, y)   values
+        self.u_dict = None # maps from (x,y,z) triples to their u(xyz)    values
+        self.p_dict = None # maps from (x,y,z) triples to their p(z| x,y) values
 
         # self.tokens[(x, y, z)] = # of times that xyz was observed during training.
         # self.tokens[(y, z)]    = # of times that yz was observed during training.
@@ -75,9 +75,9 @@ class LanguageModel:
     def __get_theta_and_f(self, x, y, z, theta=None, f=None):
 
         if theta is None:                                 # If we are not passed a theta or f
-            theta = numpy.zeros(2 * self.dim * self.dim)  # vector, we can just initialize them
+            theta = np.zeros(2 * self.dim * self.dim)     # vector, we can just initialize them
         if f is None:                                     # to vectors of size 2 * d^2.
-            f = numpy.zeros(2 * self.dim * self.dim)
+            f = np.zeros(2 * self.dim * self.dim)
 
         if x not in self.vectors:
             x = OOL
@@ -86,24 +86,86 @@ class LanguageModel:
         if z not in self.vectors:
             z = OOL
 
-        x_vec = self.vectors[x]
-        y_vec = self.vectors[y]
-        z_vec = self.vectors[z]
+        vec_x = self.vectors[x]
+        vec_y = self.vectors[y]
+        vec_z = self.vectors[z]
 
         idx = 0                                      # Here, we iterate through the
         for i in xrange(0, self.dim):                # elements of the matrix U and
             for j in xrange(0, self.dim):            # add its values to their
                 theta[idx] = self.U[i][j]            # corresponding indices in theta.
-                f[idx]     = x_vec[i] * z_vec[j]     # We then calculate theta's
+                f[idx]     = vec_x[i] * vec_z[j]     # We then calculate theta's
                 idx += 1                             # corresponding elements for f.
 
         for i in xrange(0, self.dim):                # Next, we iterate through the
             for j in xrange(0, self.dim):            # elements of the matrix V, and
                 theta[idx] = self.V[i][j]            # perform the same calculations,
-                f[idx]     = y_vec[i] * z_vec[j]     # also to be added to their
+                f[idx]     = vec_y[i] * vec_z[j]     # also to be added to their
                 idx += 1                             # corresponding indices in theta.
 
         return theta, f
+
+
+    def __get_XZ_and_YZ(self, x, y, z, XZ=None, YZ=None):
+
+        if XZ is None:                                 # If we are not passed a theta or f
+            XZ = np.zeros((self.dim, self.dim))          # vector, we can just initialize them
+        if YZ is None:                                 # to vectors of size 2 * d^2.
+            YZ = np.zeros((self.dim, self.dim))
+
+        if x not in self.vectors:
+            x = OOL
+        if y not in self.vectors:
+            y = OOL
+        if z not in self.vectors:
+            z = OOL
+
+        vec_x = self.vectors[x]
+        vec_y = self.vectors[y]
+        vec_z = self.vectors[z]
+
+        for i in xrange(0, self.dim):                # elements of the matrix U and
+            for j in xrange(0, self.dim):            # add its values to their
+                XZ[i][j] = vec_x[i] * vec_z[j]            # corresponding indices in theta.
+                YZ[i][j] = vec_y[i] * vec_z[j]            # corresponding indices in theta.
+
+        return XZ, YZ
+
+
+    def __loglin_estimated_prob(self, x, y, z):
+        """Computes a smoothed estimate of the trigram probability p(z | x,y)
+        according to the language model.
+        """
+        if x not in self.vocab:
+            x = OOV
+        if y not in self.vocab:
+            y = OOV
+        if z not in self.vocab:
+            z = OOV
+
+        theta, f = self.__get_theta_and_f(x, y, z)
+
+        # Now, we can simply calculate u(xyz) by taking e to the power of the product
+        # of theta and f. We will store this value in a dictionary, so that we can use
+        # dynamic programming.
+
+        u_xyz = np.exp(np.dot(theta, f))
+
+        if (x, y) not in self.Z_dict:
+                                                                       # iterate and calculate the
+            summation = 0                                              # summation of u(xyz') for
+            for z_ in self.vocab:                                      # for all z'
+
+                if z_ not in self.vectors:                             # if z' is not in the
+                    z_ = OOL                                           # lexicon, set it to OOL
+
+                theta_temp, f_temp = self.__get_theta_and_f(x, y, z_)  # get theta and feature f
+                u_xyz_ = np.exp(np.dot(theta_temp, f_temp))      # calculate u(xyz')
+                summation += u_xyz_                                    # add u(xyz') to summation
+
+            Z_xy = summation                                           # set Z(xy) to summation
+
+        return u_xyz / Z_xy                                            # this is p(z | xy)
 
 
     def prob(self, x, y, z):
@@ -155,7 +217,9 @@ class LanguageModel:
                     (self.tokens.get((x, y), 0) + self.lambdap * self.vocab_size))
 
         elif self.smoother == "BACKOFF_WB":
+
             sys.exit("BACKOFF_WB is not implemented yet (that's your job!)")
+
         elif self.smoother == "LOGLINEAR":
 
             if self.u_dict is None:
@@ -178,24 +242,23 @@ class LanguageModel:
             # of theta and f. We will store this value in a dictionary, so that we can use
             # dynamic programming.
 
-            self.u_dict[(x, y, z)] = numpy.exp(numpy.dot(theta, f))
+            self.u_dict[(x, y, z)] = np.exp(np.dot(theta, f))
 
             if (x, y) not in self.Z_dict:
 
                 summation = 0
-                for zp in self.vocab:
-                    if zp not in self.vectors:
-                        zp = OOL
-                    zp_vec = self.vectors[zp]
+                for z_ in self.vocab:
+                    if z_ not in self.vectors:
+                        z_ = OOL
 
-                    if (x, y, zp) not in self.u_dict:
+                    if (x, y, z_) not in self.u_dict:
 
                         # If the tuple (x, y, z') hasn't been seen, then we need to
                         # calculate u(xyz'). We use the same procedure as above to do so,
                         # and like above, will then store it into the dictionary.
 
                         theta_temp, f_temp = self.__get_theta_and_f(x, y, zp)
-                        self.u_dict[(x, y, zp)] = numpy.exp(numpy.dot(theta_temp, f_temp)) 
+                        self.u_dict[(x, y, zp)] = np.exp(np.dot(theta_temp, f_temp)) 
 
                     up = self.u_dict[(x, y, zp)]  # Fetch our value of u' from our u dict,
                     summation += up               # and add it to the value of Z
@@ -206,7 +269,7 @@ class LanguageModel:
             Z = self.Z_dict[(x, y)]       # Similary, get the value of Z from the Z dict
             p = u / Z
 
-            self.p_dict[(z,x,y)] = p      # Store the calculated probability in our
+            self.p_dict[(x,y,z)] = p      # Store the calculated probability in our
                                           # probability dictionary
             return p
 
@@ -303,16 +366,22 @@ class LanguageModel:
         if self.smoother == 'LOGLINEAR': 
             # Train the log-linear model using SGD.
 
+            for i in range(2, len(tokens_list)):
+                x, y, z = tokens_list[i - 2], tokens_list[i - 1], tokens_list[i]
+                self.trigrams.append((x, y, z))
+
             # Initialize parameters
-            self.U = [[0.0 for _ in range(self.dim)] for _ in range(self.dim)]
-            self.V = [[0.0 for _ in range(self.dim)] for _ in range(self.dim)]
+            # self.U = [[0.0 for _ in range(self.dim)] for _ in range(self.dim)]
+            # self.V = [[0.0 for _ in range(self.dim)] for _ in range(self.dim)]
+            self.U = np.zeros((self.dim, self.dim))
+            self.V = np.zeros((self.dim, self.dim))
 
             # Optimization parameters
-            gamma0 = 0.1                                # initial learning rate, used to 
-                                                        #     compute actual learning rate
-            theta0 = numpy.zeros(2*self.dim*self.dim)   # set original theta to the 0 vector
-            f0     = numpy.zeros(2*self.dim*self.dim)   # set original f to the 0 vector
-            epochs = 10                                 # number of passes
+            gamma0 = 0.1                                    # initial learning rate, used to 
+                                                            #     compute actual learning rate
+            theta0 = np.zeros(2 * self.dim * self.dim)   # set original theta to the 0 vector
+            f0     = np.zeros(2 * self.dim * self.dim)   # set original f to the 0 vector
+            epochs = 10                                     # number of passes
 
             self.N = len(tokens_list) - 2  # number of training instances
 
@@ -320,23 +389,53 @@ class LanguageModel:
 
             ######################### BEGIN Stochastic Gradient Ascent #########################
 
-            # theta = theta0
-            # f     = f0
-            # t     = 0
-            # for e in range(epochs):
-            #     for i in range(self.N):
+            theta = theta0
+            f     = f0
+            t     = 0
+            for e in range(epochs):
+                for i in range(self.N):
 
-            #         gamma = gamma0 / (1 + gamma0 * (self.lambdap/self.N) * t)
+                    x, y, z = self.trigrams[i]       # Here, we take the i-th trigram (x, y, z) in
+                                                # our training data.
+                    if x not in self.vectors:
+                        x = OOL                 # If any piece of the trigram is not in the
+                    if y not in self.vectors:   # lexicon, we set it to the value OOL, meaning
+                        y = OOL                 # 'out of lexixon'.
+                    if z not in self.vectors:
+                        z = OOL
 
-            #         summation = 0
-            #         for (z, x, y) in self.p_dict:
-            #             probability = self.p_dict[(z, x, y)]
-            #             _, fp = self.__get_theta_and_f(x, y, z, theta0, f0)  # fp denotes f(xyz')
-            #             summation += probability + fp
+                    theta, f = self.__get_theta_and_f(x, y, z)
 
-            #         F_gradient = f - summation - (2*self.lambdap / self.N) * theta
-            #         theta = theta + gamma * F_gradient
-            #         t += 1
+                    gamma = gamma0 / (1 + gamma0 * (self.lambdap/self.N) * t)
+
+                    XZ, YZ = self.__get_XZ_and_YZ(x, y, z)
+
+                    gradient_U = XZ - self.U    # Here, we calculate part of the gradient using the
+                    gradient_V = YZ - self.V    # first term and third term. We calculate the
+                                                # second term in the following loop.
+                    summation = 0.0
+                    for z_ in self.vocab:
+
+                        if z_ not in self.vectors:   # if z' is not in the lexicon, set it to OOL.
+                            z_ = OOL
+
+                        vec_z_ = self.vectors[z_]
+                                                                    # Now, we can calculate the
+                        p = self.__loglin_estimated_prob(x, y, z_)  # probability p(z'| xy), and
+                        gradient_U -= p * vec_x * vec_z_            # use it to calculate the
+                        gradient_V -= p * vec_y * vec_z_            # gradients of U and V.
+
+                    self.U += gamma * gradient_U                    # Finally, we need to update
+                    self.V += gamma * gradient_V                    # U and V using the gradient.
+
+                    # Note that after U and V are updated, theta and f should be updated as well
+                    # Since our algorithm is focused around theta and f, we can retrieve our
+                    # value of theta, and continue the iterations until the SGA is finished. This
+                    # code can probably be optimized, but let's try to get a working version first
+                    # before confusing ourselves with optimization!
+
+                    theta, _ = self.__get_theta_and_f()
+                    t += 1
 
             ########################## END Stochastic Gradient Ascent ##########################
 
