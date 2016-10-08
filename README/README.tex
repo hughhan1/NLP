@@ -296,28 +296,44 @@
 	\item % a
 		\texttt{IMPLEMENTATION PROBLEM}
 	\item % b
+		Using $\lambda^* = 0.0104$, as calculated in problem \textbf{3}(b), we can calculate the cross-entropies for the switchboard corpora and analyze the text categorization error rates for \texttt{gen}/\texttt{spam}. The following generalizations are made with the assumption that $\lambda^* = 0.0104$.
 		\begin{itemize}
 			\item[] \hspace{-24pt} 
 				\textbf{cross-entropies for the switchboard corpora} \vspace{4pt} \\
-				
+				% TODO: calculate these
+				Below contains output using ADDL for switchboard corpora.
+				\begin{lstlisting}
+		WE MUST 	/usr/local/data/cs465/hw-lm/speech/sample1
+		CALCULATE	/usr/local/data/cs465/hw-lm/speech/sample2
+		THESE VALS	/usr/local/data/cs465/hw-lm/speech/sample3
+				\end{lstlisting}
+
+				Below contains output using BACKOFF\_ADDL for switchboard corpora.
 				\begin{lstlisting}
 		-10040.1	/usr/local/data/cs465/hw-lm/speech/sample1
 		-6039.31	/usr/local/data/cs465/hw-lm/speech/sample2
 		-6413.95	/usr/local/data/cs465/hw-lm/speech/sample3
 				\end{lstlisting}
+				TODO : Make generalization
 
 			\item[] \hspace{-24pt} 
 				\textbf{text categorization error rates for gen/spam} \vspace{4pt} \\
-				Using $\lambda^* = 0.0104$, as calculated in problem \textbf{3}(c), we receive the following classifications for \texttt{gen} and \texttt{spam} test files, respectively.
+				Below contains output using BACKOFF\_ADDL for \texttt{gen} test files.
 				\begin{lstlisting}
 		209 looked more like gen_spam/train/gen (58.06%)
 		151 looked more like gen_spam/train/spam (41.94%)
 				\end{lstlisting}
+
+				Below contains output using BACKOFF\_ADDL for \texttt{spam} test files.
 				\begin{lstlisting}
 		7 looked more like gen_spam/train/gen (3.89%)
 		173 looked more like gen_spam/train/spam (96.11%)
 				\end{lstlisting}
-				From these outputs, we can see that using our calculated $\lambda^*$value, switching from ADDL to BACKOFF\_ADDL causes the error rates for classifying spam files to decrease extraordinarily, but at the cost of spiking up error rates for classifying genuine files.
+				From these outputs, we can see that the error rates calculated using BACKOFF\_ADDL were lower than the error rates calculated using ADDL as in \textbf{3}(c) for \texttt{spam} test files. \vspace{4pt}
+
+				At the same time, the error rates calculated using BACKOFF\_ADDL were higher than the error rates calculated using ADDL as in \textbf{3}(c) for \texttt{gen} test files. \vspace{4pt}
+
+				We can conclude that switching from ADDL to BACKOFF\_ADDL causes the error rates for classifying spam files to decrease extraordinarily, but at the cost of spiking up error rates for classifying genuine files.
 		\end{itemize}
 	\item % c
 		\textit{Extra credit.}
@@ -349,7 +365,6 @@
 	               &=& \frac{P(w \mid w \text{ is \texttt{spam}}) \cdot P(\texttt{spam})}{P(w \mid w \text{ is \texttt{spam}}) \cdot P(\texttt{spam}) + P(w \mid w \text{ is \texttt{gen}}) \cdot P(\texttt{gen})}
 	\end{eqnarray*}
 
-
 	$P(w \text{ is \texttt{spam}} \mid w)$ and $P(w \mid w \text{ is \texttt{gen}})$ are the probabilities generated separately from the two models we train using the \texttt{spam} and \texttt{gen} corpora.
 
 	Now we know the following.
@@ -369,14 +384,55 @@
 
 	By doing this, we can calculate the probability $P(w \text{ is \texttt{spam}} \mid w)$. Obviously we don't need \textit{priori} when training the model.
 
-	In order to implement this method, firstly we need to train the \texttt{gen} model and store the probabilities for all test files, then train the \texttt{spam} model and store the probabilities again. Finally, we can iterate all $P(w|w is gen)$ and $P(w|w is spam)$, we have so as to calculate $P(w is spam|w)$.
+	In order to implement this method, we need to
+	\begin{enumerate}[label=\roman*.]
+		\item
+			train the \texttt{gen} model and store the probabilities for all test files,
+		\item
+			train the \texttt{spam} model and store the probabilities for all test files,
+		\item
+			iterate through all $P(w \mid w \text{ is } \texttt{gen})$ and $P(w \mid w \text{ is } \texttt{spam})$, so that we can calculate $P(w \text{ is } \texttt{spam} \mid w)$.
 
-	When we test this method using add0.00001, which means basically no smoothing at all, the program classifys 33\% of the test data to be spam. The result is very close to priori.
+	\end{enumerate}
+
+	\textit{Extra credit:} We implemented this change in \texttt{problem7.py}. We tested our implementation using an extremely small value for $\lambda$ (which was \texttt{add0.00001} in our case). From this specific test, the program successfully classified approximately $33.3\%$ of the test data to be spam. That is, the result is extremely close to \textit{priori}.
+
 \item % PROBLEM 8
 	\begin{enumerate}[label=(\alph*)]
 	\item
+		Using Bayes’ Theorem, we can express the probability $P(\vec{w} \mid U)$ in the following equation.
+
+		\begin{eqnarray*}
+			P(\vec{w} \mid U) &=& \frac{P(U \mid \vec{w}) * P(\vec{w})}{P(U)}
+		\end{eqnarray*}
+
+		Now in order to maximize $P(\vec{w} \mid U)$, we can think about maximizing $log_2(P(\vec{w} \mid U))$. Using the rules of logarithms, note that the following statement is true.
+		\begin{eqnarray*}
+			log_2(P(\vec{w} \mid U)) &=& log_2(P(U \mid \vec{w})) + log_2(P(\vec{w})) - log_2(U)
+		\end{eqnarray*}
+
+		Since $log_2(U)$ remains constant for all of the possible $\vec{w}$ being considered, we can ignore the final term on the right side of the equation when maximizing $log_2(P(\vec{w} \mid U))$. \vspace{4pt}
+
+		That is, we only need to worry about maximizing the two other terms, $log_2(P(U \mid \vec{w})) + log_2(P(\vec{w}))$. Luckiily, $log_2(P(U \mid \vec{w}))$ is provided to us in the input files. Then all we need to do is calculate $log_2(P(\vec{w}))$ using our trigram model, which will measure the extent to which it looks like English. \vspace{4pt}
+
+		So we iterate all 9 candidates and compute $log_2(P(U \mid \vec{w})) + log_2(P(\vec{w}))$, and can thus find the candidate with the highest probability $P(\vec{w} \mid U)$.
 	\item
+		\texttt{IMPLEMENTATION PROBLEM}
 	\item
+		Some trigrams in unrestricted data are very uncommon due to the existence of words like ``uh'', ``um'', or ``huh'' intertwined inside of the sentences. \vspace{4pt}
+
+		Therefore in order to overcome this problem we need to utilize backing off. In pratice, we set the value of $\lambda$ to be 0.01 according to our experiments on development data. We can see the overall error rates in the table below. \\
+
+		\begin{center}\begin{tabular}{| r || c | c |}
+			\hline
+			\ 				&	test/easy	&	test/unrestricted 	\\
+			\hline \hline
+			3-gram model 	&	0.141		&	0.380				\\
+			2-gram model 	&	0.159		&	0.396				\\
+			1-gram model 	&	0.210		&	0.408				\\
+			\hline	
+		\end{tabular}\end{center}
+
 	\end{enumerate}
 \item % PROBLEM 9
 	\textit{Extra credit.}
