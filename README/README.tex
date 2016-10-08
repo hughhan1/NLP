@@ -17,6 +17,10 @@
 
 \usepackage{titlesec}
 
+\usepackage{tikz}
+\usepackage{graphicx}
+\usetikzlibrary{positioning}
+
 \definecolor{dkgreen}{rgb}{0,0.6,0}
 \definecolor{gray}{rgb}{0.5,0.5,0.5}
 \definecolor{mauve}{rgb}{0.58,0,0.82}
@@ -243,10 +247,32 @@
 			\texttt{spam} &\colon& \text{error-rate } = \ 27.78\% \\
 		\end{eqnarray*}
 	\item % d
-		For this problem, we can all of the possible file lengths into 10 buckets of file length intervals. For instance, the first bucket would contain the classification results from the files with lengths in the range [0, 40), the second bucket would contain those in the range [40, 80), and so on. We can reserve our last bucket as a ``special'' bucket. That is, this special bucket will contain the classificatioon results of all of the files with lengths greater than 400. Now note that the first bucket can serve as a baseline, which represents the lowest accuracy of 75\%. The reason for this is that small files containing less information, so they could be more difficult to classify.
+		For this problem, we can all of the possible file lengths into 10 buckets of file length intervals. For instance, the first bucket would contain the classification results from the files with lengths in the range [0, 40), the second bucket would contain those in the range [40, 80), and so on. We can reserve our last bucket as a ``special'' bucket. That is, this special bucket will contain the classificatioon results of all of the files with lengths greater than 400. Now note that the first bucket can serve as a baseline, which represents the lowest accuracy of 75\%. The reason for this is that small files containing less information, so they could be more difficult to classify. \vspace{4pt}
+
+		The plot is shown below.
+
+		\begin{figure}[htb]
+			\begin{tikzpicture}
+			  \node[anchor=center] (d)  {\includegraphics[scale=0.95]{d.png}};
+			  \node[below=of d, node distance=0cm, yshift=1cm] {Bucket Number};
+			  \node[left=of d, node distance=0cm, rotate=90, anchor=center, yshift=-1cm] {Classifiation Accuracy (\%)};
+			\end{tikzpicture}
+		\end{figure}
+
+	\newpage
 	\item % e
 		It is easy to see that as the training data size increases, the classification accuracy also increases. But increasing the size of the training set does not necessarily solve all classification accuracy issues. At some point, it will level off. For example, it was noted that when we switched from \texttt{gen-times4} to \texttt{gen-times8}, the classification accuracy was improved only slightly.
+
+		\begin{figure}[htb]
+			\begin{tikzpicture}
+			  \node[anchor=center] (e)  {\includegraphics[scale=0.95]{e.png}};
+			  \node[below=of e, node distance=0cm, yshift=1cm] {Training Size};
+			  \node[left=of e, node distance=0cm, rotate=90, anchor=center, yshift=-1cm] {Classifiation Accuracy (\%)};
+			\end{tikzpicture}
+		\end{figure}
 	\end{enumerate}
+
+\newpage
 \item % PROBLEM 4 
 	\begin{enumerate}[label=(\alph*)]
 	\item % a
@@ -279,6 +305,8 @@
 							   &=& \frac{c(xyz)}{c(xy)} 						\\
 		\end{eqnarray*}
 		This ends up being the naive estimate of $\hat{p}(z \mid xy)$. If no smoothing occurs, then the probabilitiy given to any trigram that did not appear in the training corpus is 0, which is not well represntative of natural language.
+
+	\newpage
 	\item % c
 
 		\begin{enumerate}[label=\roman*.]
@@ -319,12 +347,14 @@
 		\begin{eqnarray*}
 			\hat{p}(z\mid xy) &=& \frac{c(xyz) + \lambda V \cdot \hat{p}(z \mid y)}{c(xy) + \lambda V}
 		\end{eqnarray*}
-		If we were to increase the value of $\lambda$, we would be smoothing at a greater rate. That is, we would be more heavily weighting the value of $\hat{p}(z \mid y)$ into our calculation of $\hat{p}(z \mid xy)$. 
+		If we were to increase the value of $\lambda$, we would be smoothing at a greater rate. That is, we would be more heavily weighting the value of $\hat{p}(z \mid y)$ into our calculation of $\hat{p}(z \mid xy)$.
 
-		Now note that $\hat{p}(z \mid y)$ backs off onto $\hat{p}(z)$, which is calculated using the naive estimate. So if we more heavily weight the value of $\hat{p}(z \mid y)$, we are implicitly 
+		So increasing the value of $\lambda$ would push our probabilities $\hat{p}(z \mid xy)$ closer to the probabilities $\hat{p}(z \mid y)$.
 
-		I DON'T KNOW!
+		Now note that $\hat{p}(z \mid y)$ backs off onto $\hat{p}(z)$, which is calculated using the naive estimate. Also ote that the calculation of $\hat{p}(z \mid y)$ is \textit{also} influenced by $\lambda$ (i.e. larger values of $\lambda$ push it towards $\hat{p}(z)$). So if we increase $\lambda$ to be large enough, we would eventually push the probabilities $\hat{p}(z \mid xy)$ towards $1/V$, or the uniform distribution.
 	\end{enumerate}
+
+\newpage
 \item % PROBLEM 5
 	\begin{enumerate}[label=(\alph*)]
 	\item % a
