@@ -132,7 +132,7 @@ class LanguageModel:
         return XZ, YZ
 
 
-    def __loglin_estimated_prob(self, x, y, z):
+    def __Z(self, x, y):
         """Computes a smoothed estimate of the trigram probability p(z | x,y)
         according to the language model.
         """
@@ -140,32 +140,18 @@ class LanguageModel:
             x = OOV
         if y not in self.vocab:
             y = OOV
-        if z not in self.vocab:
-            z = OOV
+                                                                   # iterate and calculate the
+        Z_xy = 0                                                   # summation of u(xyz') for
+        for z_ in self.vocab:                                      # for all z'
 
-        theta, f = self.__get_theta_and_f(x, y, z)
+            if z_ not in self.vectors:                             # if z' is not in the
+                z_ = OOL                                           # lexicon, set it to OOL
 
-        # Now, we can simply calculate u(xyz) by taking e to the power of the product
-        # of theta and f. We will store this value in a dictionary, so that we can use
-        # dynamic programming.
+            theta_temp, f_temp = self.__get_theta_and_f(x, y, z_)  # get theta and feature f
+            u_xyz_ = np.exp(np.dot(theta_temp, f_temp))            # calculate u(xyz')
+            Z_xy += u_xyz_                                         # add u(xyz') to Z(xy)
 
-        u_xyz = np.exp(np.dot(theta, f))
-
-        if (x, y) not in self.Z_dict:
-                                                                       # iterate and calculate the
-            summation = 0                                              # summation of u(xyz') for
-            for z_ in self.vocab:                                      # for all z'
-
-                if z_ not in self.vectors:                             # if z' is not in the
-                    z_ = OOL                                           # lexicon, set it to OOL
-
-                theta_temp, f_temp = self.__get_theta_and_f(x, y, z_)  # get theta and feature f
-                u_xyz_ = np.exp(np.dot(theta_temp, f_temp))      # calculate u(xyz')
-                summation += u_xyz_                                    # add u(xyz') to summation
-
-            Z_xy = summation                                           # set Z(xy) to summation
-
-        return u_xyz / Z_xy                                            # this is p(z | xy)
+        return Z_xy
 
 
     def prob(self, x, y, z):
@@ -392,8 +378,12 @@ class LanguageModel:
             theta = theta0
             f     = f0
             t     = 0
+
             for e in range(epochs):
+
                 for i in range(self.N):
+
+                    print i
 
                     x, y, z = self.trigrams[i]       # Here, we take the i-th trigram (x, y, z) in
                                                 # our training data.
@@ -404,26 +394,41 @@ class LanguageModel:
                     if z not in self.vectors:
                         z = OOL
 
-                    theta, f = self.__get_theta_and_f(x, y, z)
-
                     gamma = gamma0 / (1 + gamma0 * (self.lambdap/self.N) * t)
 
                     XZ, YZ = self.__get_XZ_and_YZ(x, y, z)
+                                                                              # Now we calculate
+                    gradient_U = XZ - (2.0 * self.lambdap / self.N) * self.U  # part of the
+                    gradient_V = YZ - (2.0 * self.lambdap / self.N) * self.V  # gradient using the
+                                                                              # 1st and 3rd terms.
 
-                    gradient_U = XZ - self.U    # Here, we calculate part of the gradient using the
-                    gradient_V = YZ - self.V    # first term and third term. We calculate the
-                                                # second term in the following loop.
-                    summation = 0.0
-                    for z_ in self.vocab:
+                    Z_xy = self.__Z(x, y)   # Calculate the value of Z(xy) for this theta value.
 
-                        if z_ not in self.vectors:   # if z' is not in the lexicon, set it to OOL.
+                    for z_ in self.vocab:           # Now we iterate through all possible values
+                                                    # of z' and finish calculating the gradient
+                        if z_ not in self.vectors:  # using the 2nd term.    
                             z_ = OOL
 
-                        vec_z_ = self.vectors[z_]
-                                                                    # Now, we can calculate the
-                        p = self.__loglin_estimated_prob(x, y, z_)  # probability p(z'| xy), and
-                        gradient_U -= p * vec_x * vec_z_            # use it to calculate the
-                        gradient_V -= p * vec_y * vec_z_            # gradients of U and V.
+                        XZ_, YZ_ = self.__get_XZ_and_YZ(x, y, z_)
+
+                        # Below, we calculate the probability p(z'| xy) by first calculating the
+                        # value of u(xyz') and dividing by the value of Z(xy). Note that Z(xy)
+                        # remains constaint for this entire inner loop.
+
+                        theta, f = self.__get_theta_and_f(x, y, z_)
+                        u_xyz_ = np.exp(np.dot(theta, f)) 
+                        p = u_xyz_ / Z_xy                                        
+
+                        gradient_U -= p * XZ_      # Now we use p(z'| xy) to calculate the
+                        gradient_V -= p * YZ_      # gradients of U and V.
+
+                        # Note: in the traditional stochastic gradient ascent algorithm, the
+                        #       summation of the products of p(z'| xy) and yz' are calculated,
+                        #       then subtracted from the gradient.
+                        #
+                        #       In our implementation, however, we iterate through the elements z'
+                        #       and instead of summing up all of ther products, we subtract a
+                        #       single piece of the summation on every iteration.
 
                     self.U += gamma * gradient_U                    # Finally, we need to update
                     self.V += gamma * gradient_V                    # U and V using the gradient.
@@ -434,7 +439,7 @@ class LanguageModel:
                     # code can probably be optimized, but let's try to get a working version first
                     # before confusing ourselves with optimization!
 
-                    theta, _ = self.__get_theta_and_f()
+                    theta, _ = self.__get_theta_and_f(x, y, z)
                     t += 1
 
             ########################## END Stochastic Gradient Ascent ##########################
