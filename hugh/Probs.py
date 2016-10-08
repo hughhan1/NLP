@@ -124,10 +124,13 @@ class LanguageModel:
 		vec_y = self.vectors[y]
 		vec_z = self.vectors[z]
 
-		for i in xrange(0, self.dim):
-			for j in xrange(0, self.dim):
-				XZ[i][j] = vec_x[i] * vec_z[j]
-				YZ[i][j] = vec_y[i] * vec_z[j]
+		XY = np.outer(vec_x, vec_z)
+		YZ = np.outer(vec_y, vec_z)
+
+		# for i in xrange(0, self.dim):
+		# 	for j in xrange(0, self.dim):
+		# 		XZ[i][j] = vec_x[i] * vec_z[j]
+		# 		YZ[i][j] = vec_y[i] * vec_z[j]
 
 		return XZ, YZ
 
@@ -434,14 +437,13 @@ class LanguageModel:
 			t     = 0
 
 			sys.stderr.write(("Using:\n"
-								"\tC=%d\n"
-								"\td=%f\n") % (self.lambdap, gamma0))
+							  "\tC=%d\n"
+							  "\td=%f\n") % (self.lambdap, gamma0))
 
 			for e in range(epochs):
 
 				F_theta = 0
-				sum_gu = 0
-				sum_gv = 0 
+
 				for i in range(self.N):
 
 					x, y, z = self.trigrams[i]  # Here, we take the i-th trigram (x, y, z) in
