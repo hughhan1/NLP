@@ -243,10 +243,10 @@ class LanguageModel:
                         # calculate u(xyz'). We use the same procedure as above to do so,
                         # and like above, will then store it into the dictionary.
 
-                        theta_temp, f_temp = self.__get_theta_and_f(x, y, zp)
-                        self.u_dict[(x, y, zp)] = np.exp(np.dot(theta_temp, f_temp)) 
+                        theta_temp, f_temp = self.__get_theta_and_f(x, y, z_)
+                        self.u_dict[(x, y, z_)] = np.exp(np.dot(theta_temp, f_temp)) 
 
-                    up = self.u_dict[(x, y, zp)]  # Fetch our value of u' from our u dict,
+                    up = self.u_dict[(x, y, z_)]  # Fetch our value of u' from our u dict,
                     summation += up               # and add it to the value of Z
 
                 self.Z_dict[(x, y)] = summation
@@ -363,7 +363,7 @@ class LanguageModel:
             self.V = np.zeros((self.dim, self.dim))
 
             # Optimization parameters
-            gamma0 = 0.1                                    # initial learning rate, used to 
+            gamma0 = 0.01                                    # initial learning rate, used to 
                                                             #     compute actual learning rate
             theta0 = np.zeros(2 * self.dim * self.dim)   # set original theta to the 0 vector
             f0     = np.zeros(2 * self.dim * self.dim)   # set original f to the 0 vector
@@ -379,13 +379,17 @@ class LanguageModel:
             f     = f0
             t     = 0
 
+            print ("Using:\n"
+                   "\tC=%d\n"
+                   "\td=%f\n") % (self.lambdap, gamma0)
+
             for e in range(epochs):
+
+                F_theta = 0
 
                 for i in range(self.N):
 
-                    print i
-
-                    x, y, z = self.trigrams[i]       # Here, we take the i-th trigram (x, y, z) in
+                    x, y, z = self.trigrams[i]  # Here, we take the i-th trigram (x, y, z) in
                                                 # our training data.
                     if x not in self.vectors:
                         x = OOL                 # If any piece of the trigram is not in the
@@ -402,6 +406,9 @@ class LanguageModel:
                     gradient_V = YZ - (2.0 * self.lambdap / self.N) * self.V  # gradient using the
                                                                               # 1st and 3rd terms.
 
+                    # magnitude of theta is used when calculating F(theta)
+                    mag_theta = np.sum(np.square(self.U)) + np.sum(np.square(self.V))
+
                     Z_xy = self.__Z(x, y)   # Calculate the value of Z(xy) for this theta value.
 
                     for z_ in self.vocab:           # Now we iterate through all possible values
@@ -417,7 +424,7 @@ class LanguageModel:
 
                         theta, f = self.__get_theta_and_f(x, y, z_)
                         u_xyz_ = np.exp(np.dot(theta, f)) 
-                        p = u_xyz_ / Z_xy                                        
+                        p = u_xyz_ / Z_xy
 
                         gradient_U -= p * XZ_      # Now we use p(z'| xy) to calculate the
                         gradient_V -= p * YZ_      # gradients of U and V.
@@ -439,8 +446,18 @@ class LanguageModel:
                     # code can probably be optimized, but let's try to get a working version first
                     # before confusing ourselves with optimization!
 
-                    theta, _ = self.__get_theta_and_f(x, y, z)
+                    # Below, we compute one component of F(theta). To do so, we add log(p(z | xy))
+                    # and subtract (C/N) * (mag_theta). We do this on every iteration to generate
+                    # a summation from i=1 to i=N
+
+                    F_theta += math.log(self.prob(x, y, z)) - (self.lambdap / self.N) * mag_theta
+
                     t += 1
+
+                theta, _ = self.__get_theta_and_f(x, y, z)
+
+                F_theta /= self.N
+                print "epoch %d: F=%f" % (e, F_theta)
 
             ########################## END Stochastic Gradient Ascent ##########################
 
