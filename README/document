@@ -5,6 +5,8 @@
 
 4.
 (c) When c(xyz) = c(xyz') = 0, the probability p(z|xy) becomes (lambda * V * p(z|y)) / (c(xy) + lambda * V). Therefore the difference between p(z|xy) and p(z'|xy) is the value of p(z|y) and p(z'|y). And we can not guarantee that p(z|y) = p(z'|y). For example, we may never meet "kiss the tree" and "kiss the Jupiter", but obviously "the tree" is more common than "the Jupiter", which shows that p(z|y) != p(z'|y).
+
+
 When c(xyz) = c(xyz') = 1, we just subtract p(z'|xy) from p(z|xy), then we go back to a similar situation when c(xyz) = c(xyz') = 0. Hence the conclusion remains the same.
 
 (d) Not sure how to analyze this part.

@@ -118,9 +118,9 @@
 	\end{lstlisting}
 	To calculate the perplexity of each corpus, we can simply raise 2 to the power of each \textit{negated} log probability. That is, we can simply do the following.
 	\begin{eqnarray*}
-		2^{12111.3} &\text{for}& \texttt{speech/sample1}\\
-		2^{7388.84} &\text{for}& \texttt{speech/sample2}\\
-		2^{7468.29} &\text{for}& \texttt{speech/sample3}\\
+		2^{12111.3} &\text{for}& \texttt{speech/sample1} \\
+		2^{7388.84} &\text{for}& \texttt{speech/sample2} \\
+		2^{7468.29} &\text{for}& \texttt{speech/sample3}
 	\end{eqnarray*}
 	To calculate the perplexity per word, we first need to calculate the cross-entropy by dividing each negated log proability by the number of words in its respective corpus.
 
@@ -132,8 +132,8 @@
     \end{lstlisting}
     Then we see that the perplexity per word of each file is the following.
     \begin{eqnarray*}
-		2^{\frac{12111.3}{1686}} &\text{for}& \texttt{speech/sample1}\\
-		2^{\frac{7388.84}{978}} &\text{for}& \texttt{speech/sample2}\\
+		2^{\frac{12111.3}{1686}} &\text{for}& \texttt{speech/sample1} \\
+		2^{\frac{7388.84}{978}} &\text{for}& \texttt{speech/sample2}  \\
 		2^{\frac{7468.29}{985}} &\text{for}& \texttt{speech/sample3}
 	\end{eqnarray*}
 	We obtain the following approximated perplexity-per-word values.
@@ -188,18 +188,23 @@
 			\texttt{gen} &\colon& \text{log-probability } \approx \ -423681 \\
 			\texttt{spam} &\colon& \text{log-probability } \approx \ -280362 
 		\end{eqnarray*}
-		Using these values, we can obtain the approximate smallest cross-entropies.
+		Next, we can count the number of words in all of the \texttt{gen} dev files and the number of words in all of the \texttt{spam} dev files using the following two commands, respectively. \vspace{4pt}
 
-		%TODO: Calculate cross entropy
+		\codebox{\$ find gen\_spam/dev/gen/ -name '*.txt' | xargs wc -w \hspace{40mm}} \\
+		\codebox{\$ find gen\_spam/dev/spam/ -name '*.txt' | xargs wc -w \hspace{38mm}}
+
+		We went up getting the values of 48198 and 39284 for the \texttt{gen} and \texttt{spam} dev files, respectively. 
+
+		Using these values, we can then obtain the approximate smallest cross-entropies.
 		\begin{eqnarray*}
-			\texttt{gen} &\colon& \text{log-probability } \approx \ -423681 \\
-			\texttt{spam} &\colon& \text{log-probability } \approx \ -280362 
+			\texttt{gen} &\colon& \text{cross-entropy } \approx \ 8.79 \\
+			\texttt{spam} &\colon& \text{cross-entropy } \approx \ 7.14 
 		\end{eqnarray*}
 
 		The $\lambda$ values that were used in finding these minimum cross-entropies were as follows.
 		\begin{eqnarray*}
-			\texttt{gen} &\colon& \lambda \ = \ 0.01357 \\
-			\texttt{spam} &\colon& \lambda \ = \ 0.0083
+			\lambda_{\texttt{gen}} &=& 0.01357 \\
+			\lambda_{\texttt{spam}} &=& 0.0083
 		\end{eqnarray*}
 
 	\item % b
@@ -249,23 +254,31 @@
 
 		\begin{enumerate}[label=\roman*.]
 		\item
-			Using the UNIFORM estimate, if we see a word that is out of the vocabulary, we would have no choice but to assign that \textsc{oov} word a probability of 0, due to it being the 20,000th word of a vocabulary of size 19,999. That is, the sum of the probabilities of all other words already sum to 1, and we cannot have a probability greater than 1.
+			Using the UNIFORM estimate, if we see a word that is out of the vocabulary, we would have no choice but to assign that \textsc{oov} word a probability of 0, due to it being the 20,000th word of a vocabulary of size 19,999. 
+
+			The reason for this is that the probabilities of all other words must sum to 1, and we cannot have a probability greater than 1.
 			\begin{eqnarray*}
-				\sum\limits_{i=1}^{V}{\frac{1}{V}} &=& 1
+				\sum\limits_{i=1}^{V}{\frac{1}{V}} &=& 1 , \ \ V = \text{19,999}
 			\end{eqnarray*}
-			However, this is an bad estimation, simply because no word can have a probability of 0, regardless of whether that word was observed in the training data.
+			From the above equation, it is clear that we cannot assign \textsc{oov} a probability of any value other than $0$, if we are not to exceed a total probability of $1$.
+
+			However, assigning \textsc{oov} a probability of 0 is a bad estimation, because no word should have a probability of 0, regardless of whether that word was observed in the training data.
 		\item
-			% TODO: answer the question
-			Using the ADDL estimate, 
+			Using the ADDL estimate, a somewhat similar situation occurs. The ADDL probability is defined as follows.
+			\begin{eqnarray*}
+				\hat{p}(z \mid xy) &=& \frac{c(xyz) + \lambda}{c(xy) + \lambda V}
+			\end{eqnarray*}
+			Now if we were to sum the probabilities $\hat{p}(z \mid xy)$ for all $z \in \text{vocabulary}$, we would take a summation over 20,000 elements. However, if $V =$ 19,999, we would end up getting a sum that is greater than 1, which canot be true due to the laws of probability. Hence, taking $V =$ 19,999 is problematic.
+
 		\end{enumerate}
 	\item % b
-		% TODO: be more thorough
 		If we let $\lambda = 0$, then we are not modifying our probability at all. That is, we get the following from our probabiliy estimate.
 		\begin{eqnarray*}
 			\hat{p}(z \mid xy) &=& \frac{c(xyz) + \lambda}{c(xy) + \lambda V} 	\\
 							   &=& \frac{c(xyz) + 0}{c(xy) + 0} 				\\
 							   &=& \frac{c(xyz)}{c(xy)} 						\\
 		\end{eqnarray*}
+		This ends up being the naive estimate of $\hat{p}(z \mid xy)$. If no smoothing occurs, then the probabilitiy given to any trigram that did not appear in the training corpus is 0, which is not well represntative of natural language.
 	\item % c
 
 		\begin{enumerate}[label=\roman*.]
@@ -274,22 +287,43 @@
 
 			We see that
 			\begin{eqnarray*}
-				\hat{p}(z\mid xy) &=& \frac{\lambda V \cdot \hat{p}(z \mid y)}{c(xy) + \lambda V}
+				\hat{p}(z\mid xy) &=& \frac{0 + \lambda V \cdot \hat{p}(z \mid y)}{c(xy) + \lambda V}
 			\end{eqnarray*}
 
-			Then the difference between $\hat{p}(z\mid xy)$ and $\hat{p}(z' \mid xy)$ is the  possible differing values of $\hat{p}(z \mid y)$ and $\hat{p}(z'|y)$. However, we cannot guarantee that $\hat{p}(z \mid y)$ = $\hat{p}(z' \mid y)$. \vspace{4pt}
+			Then the difference between $\hat{p}(z\mid xy)$ and $\hat{p}(z' \mid xy)$ is the possible differing values of $\hat{p}(z \mid y)$ and $\hat{p}(z' \mid y)$. And we cannot guarantee that $\hat{p}(z \mid y)$ = $\hat{p}(z' \mid y)$. \vspace{4pt}
 
-			For example, we might never see either of the phrases ``kiss the tree'' and ``kiss the Jupiter''. However, when we backoff, it is possible that we have seen both of the phrases ``the tree'' and ``the Jupiter''. \vspace{4pt}
+			For example, we might see neither of the phrases ``kiss the tree'' nor ``kiss the Jupiter''. However, when we backoff, it is possible that we would have seen both of the phrases ``the tree'' and ``the Jupiter'' (which are both much more common). \vspace{4pt}
 
-			And in English, it is much more likely that the phrase ``the tree'' is more common than ``the Jupiter'', which demonstrates a case in which that $\hat{p}(z \mid y) \neq \hat{p}(z' \mid y)$.
+			And in English, it is much more likely that the phrase ``the tree'' is more common than ``the Jupiter'', which demonstrates a case in which $\hat{p}(z \mid y) \neq \hat{p}(z' \mid y)$. \vspace{4pt}
+
+			$\implies \hat{p}(z\mid xy) \neq \hat{p}(z' \mid xy)$. \vspace{4pt}
 			
 		\item
-			% TODO: Clarify this answer
-			Now let's think about the case when $c(xyz) = c(xyz') = 1$.
+			Now let's think about the case when $c(xyz) = c(xyz') = 1$. \vspace{4pt}
+
+			We see that
+			\begin{eqnarray*}
+				\hat{p}(z\mid xy) &=& \frac{1 + \lambda V \cdot \hat{p}(z \mid y)}{c(xy) + \lambda V}
+			\end{eqnarray*}
+
+			Again, the difference between $\hat{p}(z\mid xy)$ and $\hat{p}(z' \mid xy)$ is the possible differing values of $\hat{p}(z \mid y)$ and $\hat{p}(z' \mid y)$. And again, we cannot guarantee that $\hat{p}(z \mid y) = \hat{p}(z' \mid y)$. \vspace{4pt}
+
+			For example, consider the phrases ``kick the Spongebob'' and ``kick the man'', both of which have been counted exaclty once in the training corpora. But when we backoff, it is possible that we would have seen the ``the man'' much more frequently than ``the Spongebob''. Again, this is another case in which $\hat{p}(z \mid y) \neq \hat{p}(z' \mid y)$. \vspace{4pt}
+
+			$\implies \hat{p}(z\mid xy) \neq \hat{p}(z' \mid xy)$. \vspace{4pt}
+
 		\end{enumerate}
 
 	\item % d
-		% TODO: Answer this question
+		Again, we can write out the formula for the probability of a particular trigram using BACKOFF\_ADDL smoothing.
+		\begin{eqnarray*}
+			\hat{p}(z\mid xy) &=& \frac{c(xyz) + \lambda V \cdot \hat{p}(z \mid y)}{c(xy) + \lambda V}
+		\end{eqnarray*}
+		If we were to increase the value of $\lambda$, we would be smoothing at a greater rate. That is, we would be more heavily weighting the value of $\hat{p}(z \mid y)$ into our calculation of $\hat{p}(z \mid xy)$. 
+
+		Now note that $\hat{p}(z \mid y)$ backs off onto $\hat{p}(z)$, which is calculated using the naive estimate. So if we more heavily weight the value of $\hat{p}(z \mid y)$, we are implicitly 
+
+		I DON'T KNOW!
 	\end{enumerate}
 \item % PROBLEM 5
 	\begin{enumerate}[label=(\alph*)]
@@ -300,43 +334,69 @@
 		\begin{itemize}
 			\item[] \hspace{-24pt} 
 				\textbf{cross-entropies for the switchboard corpora} \vspace{4pt} \\
-				% TODO: calculate these
-				Below contains output using ADDL for switchboard corpora.
+				In problem \textbf{1}, we calculated the log-probabilities using ADDL using a $\lambda$ value of $0.01$. Because $\lambda^* = 0.0104$, we need to recalculate the log-probabilities. \vspace{4pt}
+
+				Below contains log-probabilities using ADDL for switchboard corpora.
 				\begin{lstlisting}
-		WE MUST 	/usr/local/data/cs465/hw-lm/speech/sample1
-		CALCULATE	/usr/local/data/cs465/hw-lm/speech/sample2
-		THESE VALS	/usr/local/data/cs465/hw-lm/speech/sample3
+		-12572.8    speech/sample1
+		-7544.45    speech/sample2
+		-7944.22    speech/sample3
 				\end{lstlisting}
 
-				Below contains output using BACKOFF\_ADDL for switchboard corpora.
+				Below contains log-probabilities using BACKOFF\_ADDL for switchboard corpora.
 				\begin{lstlisting}
-		-10040.1	/usr/local/data/cs465/hw-lm/speech/sample1
-		-6039.31	/usr/local/data/cs465/hw-lm/speech/sample2
-		-6413.95	/usr/local/data/cs465/hw-lm/speech/sample3
+		-10040.1    speech/sample1
+		-6039.31    speech/sample2
+		-6413.95    speech/sample3
 				\end{lstlisting}
-				TODO : Make generalization
+				
+				Now to calculate the cross-entropties of the sample files, we must count the number of words in each sample file. We can do so using the following command. \vspace{4pt}
+
+				\codebox{\$ find speech -name 'sample*' | xargs wc -w \hspace{49mm}}
+				\begin{lstlisting}
+		1686    speech/sample1
+		978     speech/sample2
+		985     speech/sample3
+				\end{lstlisting}
+
+				Then we can find the cross-entropies of each sample file by dividing the negative log-probability of each sample file by its corresponding word count. \\
+				
+				Below contains the cross-entropies of the switchboard corpora for each of the three samples, using ADDL and BACKOFF\_ADDL smoothing. \\
+
+				\begin{center}\begin{tabular}{| r || c | c |}
+					\hline
+									& \ \ \ \ \ ADDL \ \ \ \ \ & BACKOFF\_ADDL \\
+					\hline \hline
+					\texttt{speech/sample1} & 7.457 & 5.955 		\\
+					\texttt{speech/sample2} & 7.714 & 6.175 		\\
+					\texttt{speech/sample3} & 8.065 & 6.512 		\\
+					\hline
+				
+				\end{tabular}\end{center} \vspace{8pt}
+
+				For each of the three speech samples, we see that switching from ADDL smoothing to BACKOFF\_ADDL smoothing decreases the cross-entropy greatly, against the training switchboard corpus.
 
 			\item[] \hspace{-24pt} 
 				\textbf{text categorization error rates for gen/spam} \vspace{4pt} \\
 				Below contains output using BACKOFF\_ADDL for \texttt{gen} test files.
 				\begin{lstlisting}
-		209 looked more like gen_spam/train/gen (58.06%)
-		151 looked more like gen_spam/train/spam (41.94%)
+		337 looked more like gen_spam/train/gen (93.61%)
+		23 looked more like gen_spam/train/spam (6.39%)
 				\end{lstlisting}
 
 				Below contains output using BACKOFF\_ADDL for \texttt{spam} test files.
 				\begin{lstlisting}
-		7 looked more like gen_spam/train/gen (3.89%)
-		173 looked more like gen_spam/train/spam (96.11%)
+		17 looked more like gen_spam/train/gen (9.44%)
+		163 looked more like gen_spam/train/spam (90.56%)
 				\end{lstlisting}
-				From these outputs, we can see that the error rates calculated using BACKOFF\_ADDL were lower than the error rates calculated using ADDL as in \textbf{3}(c) for \texttt{spam} test files. \vspace{4pt}
+				From these outputs, we can see that the error rates using BACKOFF\_ADDL were \textit{significantly} lower than the error rates using ADDL as in \textbf{3}(c) for \texttt{spam} test files. \vspace{4pt}
 
-				At the same time, the error rates calculated using BACKOFF\_ADDL were higher than the error rates calculated using ADDL as in \textbf{3}(c) for \texttt{gen} test files. \vspace{4pt}
+				At the same time, the error rates using BACKOFF\_ADDL were \textit{slightly} higher than the error rates using ADDL as in \textbf{3}(c) for \texttt{gen} test files. \vspace{4pt}
 
-				We can conclude that switching from ADDL to BACKOFF\_ADDL causes the error rates for classifying spam files to decrease extraordinarily, but at the cost of spiking up error rates for classifying genuine files.
+				We can conclude that switching from ADDL to BACKOFF\_ADDL causes the error rates for classifying spam files to decrease extraordinarily, but at the cost of slightly increasing error rates for classifying genuine files. It seems to balance out the classification correctness rates a quite a bit.
 		\end{itemize}
 	\item % c
-		\textit{Extra credit.}
+		\textit{Extra credit:} We were able to find $\lambda_1 = 0.1$, which works a bit better than $\lambda^*$ in a sense. By using $\lambda_1$, our classification results on test data are exactly the same, but the cross-entropies are much smaller.
 	\end{enumerate}
 \item % PROBLEM 6
 	\begin{enumerate}[label=(\alph*)]
