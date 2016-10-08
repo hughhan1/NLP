@@ -108,9 +108,9 @@ class LanguageModel:
 
     def __get_XZ_and_YZ(self, x, y, z, XZ=None, YZ=None):
 
-        if XZ is None:                                 # If we are not passed a theta or f
-            XZ = np.zeros((self.dim, self.dim))          # vector, we can just initialize them
-        if YZ is None:                                 # to vectors of size 2 * d^2.
+        if XZ is None:
+            XZ = np.zeros((self.dim, self.dim))
+        if YZ is None: 
             YZ = np.zeros((self.dim, self.dim))
 
         if x not in self.vectors:
@@ -124,10 +124,10 @@ class LanguageModel:
         vec_y = self.vectors[y]
         vec_z = self.vectors[z]
 
-        for i in xrange(0, self.dim):                # elements of the matrix U and
-            for j in xrange(0, self.dim):            # add its values to their
-                XZ[i][j] = vec_x[i] * vec_z[j]            # corresponding indices in theta.
-                YZ[i][j] = vec_y[i] * vec_z[j]            # corresponding indices in theta.
+        for i in xrange(0, self.dim):
+            for j in xrange(0, self.dim):
+                XZ[i][j] = vec_x[i] * vec_z[j]
+                YZ[i][j] = vec_y[i] * vec_z[j]
 
         return XZ, YZ
 
@@ -140,16 +140,16 @@ class LanguageModel:
             x = OOV
         if y not in self.vocab:
             y = OOV
-                                                                   # iterate and calculate the
-        Z_xy = 0                                                   # summation of u(xyz') for
-        for z_ in self.vocab:                                      # for all z'
 
-            if z_ not in self.vectors:                             # if z' is not in the
-                z_ = OOL                                           # lexicon, set it to OOL
+        Z_xy = 0                                         # iterate and calculate the summation of
+        for z_ in self.vocab:                            # u(xyz') for all z' in the vocabulary
 
-            theta_temp, f_temp = self.__get_theta_and_f(x, y, z_)  # get theta and feature f
-            u_xyz_ = np.exp(np.dot(theta_temp, f_temp))            # calculate u(xyz')
-            Z_xy += u_xyz_                                         # add u(xyz') to Z(xy)
+            if z_ not in self.vectors:                   # if z' is not in the
+                z_ = OOL                                 # lexicon, set it to OOL
+
+            theta, f = self.__get_theta_and_f(x, y, z_)  # get theta and feature f
+            u_xyz_ = np.exp(np.dot(theta, f))            # calculate u(xyz')
+            Z_xy += u_xyz_                               # add u(xyz') to Z(xy)
 
         return Z_xy
 
@@ -232,7 +232,7 @@ class LanguageModel:
 
             if (x, y) not in self.Z_dict:
 
-                summation = 0
+                Z_xy = 0
                 for z_ in self.vocab:
                     if z_ not in self.vectors:
                         z_ = OOL
@@ -246,10 +246,10 @@ class LanguageModel:
                         theta_temp, f_temp = self.__get_theta_and_f(x, y, z_)
                         self.u_dict[(x, y, z_)] = np.exp(np.dot(theta_temp, f_temp)) 
 
-                    up = self.u_dict[(x, y, z_)]  # Fetch our value of u' from our u dict,
-                    summation += up               # and add it to the value of Z
+                    u_xyz_ = self.u_dict[(x, y, z_)]  # Fetch our value of u(xyz') from our u dict
+                    Z_xy += u_xyz_                    # and add it to the value of Z(xy)
 
-                self.Z_dict[(x, y)] = summation
+                self.Z_dict[(x, y)] = Z_xy            # Store Z(xy) in our Z dictionary
 
             u = self.u_dict[(x, y, z)]    # Now let's get the value of u from the u dict
             Z = self.Z_dict[(x, y)]       # Similary, get the value of Z from the Z dict
@@ -363,13 +363,13 @@ class LanguageModel:
             self.V = np.zeros((self.dim, self.dim))
 
             # Optimization parameters
-            gamma0 = 0.01                                    # initial learning rate, used to 
+            gamma0 = 0.01                                   # initial learning rate, used to 
                                                             #     compute actual learning rate
-            theta0 = np.zeros(2 * self.dim * self.dim)   # set original theta to the 0 vector
-            f0     = np.zeros(2 * self.dim * self.dim)   # set original f to the 0 vector
+            theta0 = np.zeros(2 * self.dim * self.dim)      # set original theta to the 0 vector
+            f0     = np.zeros(2 * self.dim * self.dim)      # set original f to the 0 vector
             epochs = 10                                     # number of passes
 
-            self.N = len(tokens_list) - 2  # number of training instances
+            self.N = len(tokens_list) - 2                   # number of training instances
 
             sys.stderr.write("Start optimizing.\n")
 
@@ -379,14 +379,15 @@ class LanguageModel:
             f     = f0
             t     = 0
 
-            print ("Using:\n"
-                   "\tC=%d\n"
-                   "\td=%f\n") % (self.lambdap, gamma0)
+            sys.stderr.write(("Using:\n"
+                              "\tC=%d\n"
+                              "\td=%f\n") % (self.lambdap, gamma0))
 
             for e in range(epochs):
 
                 F_theta = 0
-
+                sum_gu = 0
+                sum_gv = 0 
                 for i in range(self.N):
 
                     x, y, z = self.trigrams[i]  # Here, we take the i-th trigram (x, y, z) in
@@ -398,6 +399,11 @@ class LanguageModel:
                     if z not in self.vectors:
                         z = OOL
 
+                    # magnitude of theta is used when calculating F(theta)
+                    mag_theta = np.sum(np.square(self.U)) + np.sum(np.square(self.V))
+
+                    F_theta += math.log(self.prob(x, y, z)) - (self.lambdap / self.N) * mag_theta
+
                     gamma = gamma0 / (1 + gamma0 * (self.lambdap/self.N) * t)
 
                     XZ, YZ = self.__get_XZ_and_YZ(x, y, z)
@@ -405,9 +411,6 @@ class LanguageModel:
                     gradient_U = XZ - (2.0 * self.lambdap / self.N) * self.U  # part of the
                     gradient_V = YZ - (2.0 * self.lambdap / self.N) * self.V  # gradient using the
                                                                               # 1st and 3rd terms.
-
-                    # magnitude of theta is used when calculating F(theta)
-                    mag_theta = np.sum(np.square(self.U)) + np.sum(np.square(self.V))
 
                     Z_xy = self.__Z(x, y)   # Calculate the value of Z(xy) for this theta value.
 
@@ -426,8 +429,8 @@ class LanguageModel:
                         u_xyz_ = np.exp(np.dot(theta, f)) 
                         p = u_xyz_ / Z_xy
 
-                        gradient_U -= p * XZ_      # Now we use p(z'| xy) to calculate the
-                        gradient_V -= p * YZ_      # gradients of U and V.
+                        gradient_U -= p * XZ_  # Now we use p(z'| xy) to calculate the partial
+                        gradient_V -= p * YZ_  # derivatives of F with respect to U and V.
 
                         # Note: in the traditional stochastic gradient ascent algorithm, the
                         #       summation of the products of p(z'| xy) and yz' are calculated,
@@ -437,8 +440,9 @@ class LanguageModel:
                         #       and instead of summing up all of ther products, we subtract a
                         #       single piece of the summation on every iteration.
 
-                    self.U += gamma * gradient_U                    # Finally, we need to update
-                    self.V += gamma * gradient_V                    # U and V using the gradient.
+                    self.U += gamma * gradient_U   # Finally, we need to update our U and V using
+                    self.V += gamma * gradient_V   # the partial derivatives of F with respect to
+                                                   # matrices U and V
 
                     # Note that after U and V are updated, theta and f should be updated as well
                     # Since our algorithm is focused around theta and f, we can retrieve our
@@ -450,14 +454,10 @@ class LanguageModel:
                     # and subtract (C/N) * (mag_theta). We do this on every iteration to generate
                     # a summation from i=1 to i=N
 
-                    F_theta += math.log(self.prob(x, y, z)) - (self.lambdap / self.N) * mag_theta
-
                     t += 1
 
-                theta, _ = self.__get_theta_and_f(x, y, z)
-
                 F_theta /= self.N
-                print "epoch %d: F=%f" % (e, F_theta)
+                print "epoch %d: F=%f" % (e+1, F_theta)
 
             ########################## END Stochastic Gradient Ascent ##########################
 
