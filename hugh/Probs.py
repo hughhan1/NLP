@@ -127,11 +127,6 @@ class LanguageModel:
 		XY = np.outer(vec_x, vec_z)
 		YZ = np.outer(vec_y, vec_z)
 
-		# for i in xrange(0, self.dim):
-		# 	for j in xrange(0, self.dim):
-		# 		XZ[i][j] = vec_x[i] * vec_z[j]
-		# 		YZ[i][j] = vec_y[i] * vec_z[j]
-
 		return XZ, YZ
 
 
@@ -313,7 +308,7 @@ class LanguageModel:
 			p = u / Z
 
 			self.p_dict[(x,y,z)] = p      # Store the calculated probability in our
-											# probability dictionary
+										  # probability dictionary
 			return p
 
 		else:
@@ -414,8 +409,6 @@ class LanguageModel:
 				self.trigrams.append((x, y, z))
 
 			# Initialize parameters
-			# self.U = [[0.0 for _ in range(self.dim)] for _ in range(self.dim)]
-			# self.V = [[0.0 for _ in range(self.dim)] for _ in range(self.dim)]
 			self.U = np.zeros((self.dim, self.dim))
 			self.V = np.zeros((self.dim, self.dim))
 
@@ -430,15 +423,12 @@ class LanguageModel:
 
 			sys.stderr.write("Start optimizing.\n")
 
+			####################################################################################
 			######################### BEGIN Stochastic Gradient Ascent #########################
 
 			theta = theta0
 			f     = f0
 			t     = 0
-
-			sys.stderr.write(("Using:\n"
-							  "\tC=%d\n"
-							  "\td=%f\n") % (self.lambdap, gamma0))
 
 			for e in range(epochs):
 
@@ -446,29 +436,39 @@ class LanguageModel:
 
 				for i in range(self.N):
 
-					x, y, z = self.trigrams[i]  # Here, we take the i-th trigram (x, y, z) in
-												# our training data.
+					gamma = gamma0 / (1 + gamma0 * (self.lambdap/self.N) * t)  # update gamma
+
+					x, y, z = self.trigrams[i]  # Fetch the i-th trigram (x, y, z) of our training
+												# corpus.
 					if x not in self.vectors:
 						x = OOL                 # If any piece of the trigram is not in the
 					if y not in self.vectors:   # lexicon, we set it to the value OOL, meaning
 						y = OOL                 # 'out of lexixon'.
-					if z not in self.vectors:
-						z = OOL
+					if z not in self.vectors: 	#
+						z = OOL 				# Note that OOL != OOV.
 
-					# magnitude of theta is used when calculating F(theta)
-					mag_theta = np.sum(np.square(self.U)) + np.sum(np.square(self.V))
+					theta, f = self.__get_theta_and_f(x, y, z)
 
-					F_theta += math.log(self.prob(x, y, z)) - (self.lambdap / self.N) * mag_theta
+					u_xyz = np.exp(np.dot(theta, f))  # Calculate the value of u(xyz) and Z(xy)
+					Z_xy  = self.__Z(x, y)   		  # using the current theta value.
 
-					gamma = gamma0 / (1 + gamma0 * (self.lambdap/self.N) * t)
+					p_xyz = u_xyz / Z_xy			  # Use u(xyz) and Z(xy) to calculate p(z|xy)
+
+					# Below, we compute one component of F(theta). That is, F_i(theta). To do so,
+					# we add log(p(z | xy)) and subtract (C/N) * (magnitude ot theta). We do this
+					# on every iteration to generate a summation from i=1 to i=N.
+
+					F_theta += math.log(p_xyz) - (self.lambdap/self.N) * np.sum(np.square(theta))
+
+					# Below, we calculate the matrices XZ and YZ. XZ and YZ are matrices
+					# representing the element-by-element product of X * Z and Y * Z. Note that F
+					# is exactly equivalent to the enumeration of XZ concatenated with YZ.
 
 					XZ, YZ = self.__get_XZ_and_YZ(x, y, z)
-																				# Now we calculate
+																			  # Now we calculate
 					gradient_U = XZ - (2.0 * self.lambdap / self.N) * self.U  # part of the
 					gradient_V = YZ - (2.0 * self.lambdap / self.N) * self.V  # gradient using the
-																				# 1st and 3rd terms.
-
-					Z_xy = self.__Z(x, y)   # Calculate the value of Z(xy) for this theta value.
+																			  # 1st and 3rd terms.
 
 					for z_ in self.vocab:           # Now we iterate through all possible values
 													# of z' and finish calculating the gradient
@@ -481,41 +481,35 @@ class LanguageModel:
 						# value of u(xyz') and dividing by the value of Z(xy). Note that Z(xy)
 						# remains constaint for this entire inner loop.
 
-						theta, f = self.__get_theta_and_f(x, y, z_)
-						u_xyz_ = np.exp(np.dot(theta, f)) 
-						p = u_xyz_ / Z_xy
+						theta_, f_ = self.__get_theta_and_f(x, y, z_)
+						u_xyz_ = np.exp(np.dot(theta_, f_)) 
+						p_xyz_ = u_xyz_ / Z_xy
 
-						gradient_U -= p * XZ_  # Now we use p(z'| xy) to calculate the partial
-						gradient_V -= p * YZ_  # derivatives of F with respect to U and V.
+						gradient_U -= p_xyz_ * XZ_  # We use p(z'| xy) to calculate the partial
+						gradient_V -= p_xyz_ * YZ_  # derivatives of F with respect to U and V.
 
-						# Note: in the traditional stochastic gradient ascent algorithm, the
-						#       summation of the products of p(z'| xy) and yz' are calculated,
-						#       then subtracted from the gradient.
-						#
-						#       In our implementation, however, we iterate through the elements z'
-						#       and instead of summing up all of ther products, we subtract a
-						#       single piece of the summation on every iteration.
+						# Note: in the stochastic gradient ascent algorithm, the summation of the
+						#       products of p(z'| xy) and yz' are calculated, then subtracted from
+						#       the gradient. But in our implementation, however, we iterate 
+						#       through the elements z' and instead of summing up all of their
+						#       products, we subtract a single piece of the summation on every
+						#		iteration.
 
 					self.U += gamma * gradient_U   # Finally, we need to update our U and V using
 					self.V += gamma * gradient_V   # the partial derivatives of F with respect to
-													 # matrices U and V
+												   # matrices U and V
 
-					# Note that after U and V are updated, theta and f should be updated as well
-					# Since our algorithm is focused around theta and f, we can retrieve our
-					# value of theta, and continue the iterations until the SGA is finished. This
-					# code can probably be optimized, but let's try to get a working version first
-					# before confusing ourselves with optimization!
-
-					# Below, we compute one component of F(theta). To do so, we add log(p(z | xy))
-					# and subtract (C/N) * (mag_theta). We do this on every iteration to generate
-					# a summation from i=1 to i=N
+					# Note that when U and V are updated, theta and f are also implicitly updated.
 
 					t += 1
+									# After N iterations, we have a sum of all F_i(theta), for all
+				F_theta /= self.N 	# i from 1 to N. To calculate F(theta), we take the average,
+									# which is calculated simply dividing by N.
 
-				F_theta /= self.N
 				print "epoch %d: F=%f" % (e+1, F_theta)
 
 			########################## END Stochastic Gradient Ascent ##########################
+			####################################################################################
 
 		sys.stderr.write("Finished training on %d tokens\n" % self.tokens[""])
 
