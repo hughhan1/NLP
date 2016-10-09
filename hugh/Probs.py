@@ -299,7 +299,7 @@ class LanguageModel:
                 self.Z_dict[(x, y)] = Z_xy          # can easily compute the value of p(z | xy).
 
             p_xyz = u_xyz / Z_xy 
-            
+
             self.p_dict[(x,y,z)] = p_xyz            # Store the calculated probability in our
                                                     # probability dictionary
             return p_xyz
