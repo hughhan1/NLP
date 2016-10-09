@@ -431,9 +431,289 @@
 \item % PROBLEM 6
 	\begin{enumerate}[label=(\alph*)]
 	\item % a
+		\texttt{IMPLEMENTATION PROBLEM}
 	\item % b
+		\texttt{IMPLEMENTATION PROBLEM}
 	\item % c
+		\begin{lstlisting}
+		epoch 1:   F=-3.274666
+		epoch 2:   F=-3.160848
+		epoch 3:   F=-3.114404
+		epoch 4:   F=-3.087500
+		epoch 5:   F=-3.070043
+		epoch 6:   F=-3.058030
+		epoch 7:   F=-3.049404
+		epoch 8:   F=-3.042993
+		epoch 9:   F=-3.038087
+		epoch 10: F=-3.034236
+		\end{lstlisting}
 	\item % d
+		First, we can run some experiments on the development files. Because we will need the word counts of the development files, we can get those easily using the following two commands. \vspace{4pt} \\
+		\codebox{wc -w english\_spanish/dev/english/*/* \hspace{70mm}} \\
+		\codebox{wc -w english\_spanish/dev/spanish/*/* \hspace{70mm}} \\
+
+		For \texttt{english}, we have total word count of 16820. \\
+		For \texttt{spanish}, we have total word count of 17069. \\
+
+		After getting the word counts of the files, we can then calculate the negative log probabilities across each particular group of files (either \texttt{english} or \texttt{spanish}).
+
+		To calculate the cross-entropy, we simply divide the negative log probabilities by their corresponding word counts.
+
+		The data below contain results using development files.
+
+		\begin{itemize}
+		\item[] \hspace{-24pt} \textbf{ADDL}
+			\begin{itemize}
+			\item[] \hspace{-24pt} \textit{C = 1} 	 \vspace{4pt}
+				\begin{center}\begin{tabular}{| r || c | c |}
+				\hline
+									& log-probability	& cross-entropy \\
+				\hline \hline
+				\texttt{english}	& $-72686.8$		& 4.321			\\
+				\texttt{spanish}	& $-67682.5$		& 3.965			\\
+				\hline
+				
+				\end{tabular}\end{center}
+				
+			\item[] \hspace{-24pt} \textit{C = 0.05} \vspace{4pt}
+				\begin{center}\begin{tabular}{| r || c | c |}
+				\hline
+									& log-probability	& cross-entropy \\
+				\hline \hline
+				\texttt{english}	& $-70801.5$		& 4.209			\\
+				\texttt{spanish}	& $-67773$			& 3.971			\\
+				\hline
+				
+				\end{tabular}\end{center}
+
+			\item[] \hspace{-24pt} \textit{C = 3} 	 \vspace{4pt}
+				\begin{center}\begin{tabular}{| r || c | c |}
+				\hline
+									& log-probability	& cross-entropy \\
+				\hline \hline
+				\texttt{english}	& $-77439.3$		& 4.604			\\
+				\texttt{spanish}	& $-72267.5$		& 4.234			\\
+				\hline
+				
+				\end{tabular}\end{center}
+
+			\end{itemize} \vspace{8pt}
+
+			Generally speaking, it would seem that increasing the value of $C$ increases the cross-entropy when using the ADDL smoothing function. 
+			\vspace{8pt} \\
+
+		\item[] \hspace{-24pt} \textbf{BACKOFF\_ADDL}
+			\begin{itemize}
+			\item[] \hspace{-24pt} \textit{C = 1} 	 \vspace{4pt}
+				\begin{center}\begin{tabular}{| r || c | c |}
+				\hline
+									& log-probability	& cross-entropy \\
+				\hline \hline
+				\texttt{english}	& $-62616.4$		& 3.723			\\
+				\texttt{spanish}	& $-61372.4$		& 3.596			\\
+				\hline
+				
+				\end{tabular}\end{center}
+				
+			\item[] \hspace{-24pt} \textit{C = 0.05} \vspace{4pt}
+				\begin{center}\begin{tabular}{| r || c | c |}
+				\hline
+									& log-probability	& cross-entropy \\
+				\hline \hline
+				\texttt{english}	& $-71948$			& 4.278			\\
+				\texttt{spanish}	& $-72578.1$		& 4.252			\\
+				\hline
+				
+				\end{tabular}\end{center}
+
+			\item[] \hspace{-24pt} \textit{C = 3} 	 \vspace{4pt} \\
+				\begin{center}\begin{tabular}{| r || c | c |}
+				\hline
+									& log-probability	& cross-entropy \\
+				\hline \hline
+				\texttt{english}	& $-65199.2$		& 3.876			\\
+				\texttt{spanish}	& $-63375$			& 3.713			\\
+				\hline
+				
+				\end{tabular}\end{center}
+
+			\end{itemize} \vspace{8pt}
+
+			Generally speaking, it would seem that there is an optimal value of $C$ that minimizes the cross-entropy when using the BACKOFF\_ADDL. This optimal value most likely occurs somewhere in the range $(0.05, 3)$.
+			\vspace{8pt} \\
+
+		\newpage
+		\item[] \hspace{-24pt} \textbf{LOGLINEAR}
+
+			\begin{itemize}
+			\item[] \hspace{-24pt} \textit{C = 1} 	 \vspace{4pt}
+				\begin{center}\begin{tabular}{| r || c | c |}
+				\hline
+									& log-probability	& cross-entropy \\
+				\hline \hline
+				\texttt{english}	& $-75830.3$		& 4.443			\\
+				\texttt{spanish}	& $-74669.3$		& 4.375			\\
+				\hline
+				
+				\end{tabular}\end{center}
+				
+			\item[] \hspace{-24pt} \textit{C = 0.05} \vspace{4pt}
+				\begin{center}\begin{tabular}{| r || c | c |}
+				\hline
+									& log-probability	& cross-entropy \\
+				\hline \hline
+				\texttt{english}	& $-75876$			& 4.445			\\
+				\texttt{spanish}	& $-74640.2$		& 4.373			\\
+				\hline
+				
+				\end{tabular}\end{center}
+
+			\item[] \hspace{-24pt} \textit{C = 3} 	 \vspace{4pt} \\
+				\begin{center}\begin{tabular}{| r || c | c |}
+				\hline
+									& log-probability	& cross-entropy \\
+				\hline \hline
+				\texttt{english}	& $-75872$			& 4.511			\\
+				\texttt{spanish}	& $-74811.4$		& 4.383			\\
+				\hline
+				
+				\end{tabular}\end{center}
+
+			\end{itemize} \vspace{8pt}
+
+			Generally speaking, there does not seem to be a significant change in the cross-entropy for any $C$ in the range $[0.05, 1]$ when using the LOGLINEAR smoothing function. However, increaseing the value of $C$ past $1$ seems to increase the cross-entropy, but only slightly.
+			\vspace{8pt} \\
+
+		\end{itemize}
+
+		After analyzing the results of changing $C$ around in relation to the effect on cross-entropy for the ADDL, BACKOFF\_ADDL, and LOGLINEAR functions, it would probably make sense to take a look at how changing $C$ around affects classification accuracies of each model.
+
+		\begin{itemize}
+		\item[] \hspace{-24pt} \textbf{ADDL}
+			\begin{itemize}
+			\item[] \hspace{-24pt} \textit{C = 1} 	 \vspace{4pt}
+				\begin{center}\begin{tabular}{| r || c | c |}
+				\hline
+									& log-probability	& cross-entropy \\
+				\hline \hline
+				\texttt{english}	& $-72686.8$		& 4.321			\\
+				\texttt{spanish}	& $-67682.5$		& 3.965			\\
+				\hline
+				
+				\end{tabular}\end{center}
+				
+			\item[] \hspace{-24pt} \textit{C = 0.05} \vspace{4pt}
+				\begin{center}\begin{tabular}{| r || c | c |}
+				\hline
+									& log-probability	& cross-entropy \\
+				\hline \hline
+				\texttt{english}	& $-70801.5$		& 4.209			\\
+				\texttt{spanish}	& $-67773$			& 3.971			\\
+				\hline
+				
+				\end{tabular}\end{center}
+
+			\item[] \hspace{-24pt} \textit{C = 3} 	 \vspace{4pt}
+				\begin{center}\begin{tabular}{| r || c | c |}
+				\hline
+									& log-probability	& cross-entropy \\
+				\hline \hline
+				\texttt{english}	& $-77439.3$		& 4.604			\\
+				\texttt{spanish}	& $-72267.5$		& 4.234			\\
+				\hline
+				
+				\end{tabular}\end{center}
+
+			\end{itemize} \vspace{8pt}
+
+			Generally speaking, it would seem that increasing the value of $C$ increases the cross-entropy when using the ADDL smoothing function. 
+			\vspace{8pt} \\
+
+		\item[] \hspace{-24pt} \textbf{BACKOFF\_ADDL}
+			\begin{itemize}
+			\item[] \hspace{-24pt} \textit{C = 1} 	 \vspace{4pt}
+				\begin{center}\begin{tabular}{| r || c | c |}
+				\hline
+									& log-probability	& cross-entropy \\
+				\hline \hline
+				\texttt{english}	& $-62616.4$		& 3.723			\\
+				\texttt{spanish}	& $-61372.4$		& 3.596			\\
+				\hline
+				
+				\end{tabular}\end{center}
+				
+			\item[] \hspace{-24pt} \textit{C = 0.05} \vspace{4pt}
+				\begin{center}\begin{tabular}{| r || c | c |}
+				\hline
+									& log-probability	& cross-entropy \\
+				\hline \hline
+				\texttt{english}	& $-71948$			& 4.278			\\
+				\texttt{spanish}	& $-72578.1$		& 4.252			\\
+				\hline
+				
+				\end{tabular}\end{center}
+
+			\item[] \hspace{-24pt} \textit{C = 3} 	 \vspace{4pt} \\
+				\begin{center}\begin{tabular}{| r || c | c |}
+				\hline
+									& log-probability	& cross-entropy \\
+				\hline \hline
+				\texttt{english}	& $-65199.2$		& 3.876			\\
+				\texttt{spanish}	& $-63375$			& 3.713			\\
+				\hline
+				
+				\end{tabular}\end{center}
+
+			\end{itemize} \vspace{8pt}
+
+			Generally speaking, it would seem that there is an optimal value of $C$ that minimizes the cross-entropy when using the BACKOFF\_ADDL. This optimal value most likely occurs somewhere in the range $(0.05, 3)$.
+			\vspace{8pt} \\
+
+		\newpage
+		\item[] \hspace{-24pt} \textbf{LOGLINEAR}
+
+			\begin{itemize}
+			\item[] \hspace{-24pt} \textit{C = 1} 	 \vspace{4pt}
+				\begin{center}\begin{tabular}{| r || c | c |}
+				\hline
+									& log-probability	& cross-entropy \\
+				\hline \hline
+				\texttt{english}	& $-75830.3$		& 4.443			\\
+				\texttt{spanish}	& $-74669.3$		& 4.375			\\
+				\hline
+				
+				\end{tabular}\end{center}
+				
+			\item[] \hspace{-24pt} \textit{C = 0.05} \vspace{4pt}
+				\begin{center}\begin{tabular}{| r || c | c |}
+				\hline
+									& log-probability	& cross-entropy \\
+				\hline \hline
+				\texttt{english}	& $-75876$			& 4.445			\\
+				\texttt{spanish}	& $-74640.2$		& 4.373			\\
+				\hline
+				
+				\end{tabular}\end{center}
+
+			\item[] \hspace{-24pt} \textit{C = 3} 	 \vspace{4pt} \\
+				\begin{center}\begin{tabular}{| r || c | c |}
+				\hline
+									& log-probability	& cross-entropy \\
+				\hline \hline
+				\texttt{english}	& $-75872$			& 4.511			\\
+				\texttt{spanish}	& $-74811.4$		& 4.383			\\
+				\hline
+				
+				\end{tabular}\end{center}
+
+			\end{itemize} \vspace{8pt}
+
+			Generally speaking, there does not seem to be a significant change in the cross-entropy for any $C$ in the range $[0.05, 1]$ when using the LOGLINEAR smoothing function. However, increaseing the value of $C$ past $1$ seems to increase the cross-entropy, but only slightly.
+			\vspace{8pt} \\
+
+		\end{itemize}
+
+
 	\item % e
 		\textit{Extra credit.}
 	\item % f
