@@ -59,6 +59,7 @@ class LanguageModel:
         # dimensional lists.
         self.U, self.V = None, None
         self.beta = None
+        self.alpha = None
 
         self.Z_dict = None # maps from (x,y)   pairs   to their Z(x, y)   values
         self.u_dict = None # maps from (x,y,z) triples to their u(xyz)    values
@@ -114,7 +115,7 @@ class LanguageModel:
                 idx += 1                             # corresponding indices in theta.
 
         theta[idx] = self.beta
-        f[idx] = math.log(self.tokens.get(beta_z, 0) + 1.0)
+        f[idx] = self.alpha * math.log(self.tokens.get(beta_z, 0) + 1.0)
         return theta, f
 
 
@@ -416,6 +417,7 @@ class LanguageModel:
             self.U = np.zeros((self.dim, self.dim))
             self.V = np.zeros((self.dim, self.dim))
             self.beta = 1.0
+            self.alpha = 0.25
 
             # Optimization parameters
             gamma0 = 0.01                                   # initial learning rate, used to 
@@ -464,7 +466,7 @@ class LanguageModel:
                     # we add log(p(z | xy)) and subtract (C/N) * (magnitude ot theta). We do this
                     # on every iteration to generate a summation from i=1 to i=N.
 
-                    F_theta += math.log(p_xyz) - (self.lambdap/self.N) * np.sum(np.square(theta))
+                    F_theta += self.alpha * math.log(p_xyz) - (self.lambdap/self.N) * np.sum(np.square(theta))
 
                     # Below, we calculate the matrices XZ and YZ. XZ and YZ are matrices
                     # representing the element-by-element product of X * Z and Y * Z. Note that F
@@ -476,7 +478,7 @@ class LanguageModel:
                     gradient_V = YZ - (2.0 * self.lambdap / self.N) * self.V  # gradient using the
                                                                               # 1st and 3rd terms.
 
-                    gradient_Beta = math.log(self.tokens.get(beta_z, 0) + 1.0) - (2.0 * self.lambdap / self.N) * self.beta
+                    gradient_Beta = self.alpha * math.log(self.tokens.get(beta_z, 0) + 1.0) - (2.0 * self.lambdap / self.N) * self.beta
                     #print gradient_Beta
                     for z_ in self.vocab:           # Now we iterate through all possible values
                                                     # of z' and finish calculating the gradient
@@ -498,7 +500,7 @@ class LanguageModel:
 
                         gradient_U -= p_xyz_ * XZ_  # We use p(z'| xy) to calculate the partial
                         gradient_V -= p_xyz_ * YZ_  # derivatives of F with respect to U and V.
-                        gradient_Beta -= p_xyz_ * math.log(self.tokens.get(beta_z, 0) + 1.0)
+                        gradient_Beta -= p_xyz_ * self.alpha * math.log(self.tokens.get(beta_z, 0) + 1.0)
                         #print p_xyz_ * math.log(self.tokens.get(beta_z, 0) + 1.0)
 
                         # Note: in the stochastic gradient ascent algorithm, the summation of the
