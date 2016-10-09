@@ -85,7 +85,10 @@ class LanguageModel:
             theta = np.zeros(2 * self.dim * self.dim + 1)  # a theta or f vector,
         if f is None:                                  # we can initialize
             f = np.zeros(2 * self.dim * self.dim + 1)      # them to vectors of
-                                                       # size 2 * d^2.
+        
+        beta_z = z                                               # size 2 * d^2.
+        if beta_z not in self.vocab:
+            beta_z = OOV
         if x not in self.vectors:
             x = OOL
         if y not in self.vectors:
@@ -111,7 +114,7 @@ class LanguageModel:
                 idx += 1                             # corresponding indices in theta.
 
         theta[idx] = self.beta
-        f[idx] = math.log(self.tokens.get(z, 0) + 1.0)
+        f[idx] = math.log(self.tokens.get(beta_z, 0) + 1.0)
         return theta, f
 
 
@@ -438,6 +441,10 @@ class LanguageModel:
                     gamma = gamma0 / (1 + gamma0 * (self.lambdap/self.N) * t)  # update gamma
 
                     x, y, z = self.trigrams[i]  # Fetch the i-th trigram (x, y, z) of our training
+
+                    beta_z = z
+                    if beta_z not in self.vocab:
+                        beta_z = OOV
                                                 # corpus.
                     if x not in self.vectors:
                         x = OOL                 # If any piece of the trigram is not in the
@@ -469,9 +476,13 @@ class LanguageModel:
                     gradient_V = YZ - (2.0 * self.lambdap / self.N) * self.V  # gradient using the
                                                                               # 1st and 3rd terms.
 
-                    gradient_Beta = math.log(self.tokens.get(z, 0) + 1.0) - (2.0 * self.lambdap / self.N) * self.beta
+                    gradient_Beta = math.log(self.tokens.get(beta_z, 0) + 1.0) - (2.0 * self.lambdap / self.N) * self.beta
+                    #print gradient_Beta
                     for z_ in self.vocab:           # Now we iterate through all possible values
                                                     # of z' and finish calculating the gradient
+                        beta_z = z_
+                        if beta_z not in self.vocab:
+                            beta_z = OOV
                         if z_ not in self.vectors:  # using the 2nd term.    
                             z_ = OOL
 
@@ -487,7 +498,8 @@ class LanguageModel:
 
                         gradient_U -= p_xyz_ * XZ_  # We use p(z'| xy) to calculate the partial
                         gradient_V -= p_xyz_ * YZ_  # derivatives of F with respect to U and V.
-                        gradient_Beta -= p_xyz_ * math.log(self.tokens.get(z_, 0) + 1.0)
+                        gradient_Beta -= p_xyz_ * math.log(self.tokens.get(beta_z, 0) + 1.0)
+                        #print p_xyz_ * math.log(self.tokens.get(beta_z, 0) + 1.0)
 
                         # Note: in the stochastic gradient ascent algorithm, the summation of the
                         #       products of p(z'| xy) and yz' are calculated, then subtracted from
@@ -499,6 +511,8 @@ class LanguageModel:
                     self.U += gamma * gradient_U   # Finally, we need to update our U and V using
                     self.V += gamma * gradient_V   # the partial derivatives of F with respect to
                                                    # matrices U and V
+                    #print gradient_Beta
+                    #print '------- {0} ----------'.format(i)
 
                     self.beta += gamma * gradient_Beta
                     # Note that when U and V are updated, theta and f are also implicitly updated.
