@@ -274,52 +274,6 @@ class LanguageModel:
             if self.p_dict is None:
                 self.p_dict = dict()
 
-            ################################################
-            ############## BEGIN PEIYI CODE ################
-
-            # if x not in self.vocab:
-            #     x = OOV
-            # if x not in self.vectors:
-            #     x = OOL
-
-            # if y not in self.vocab:
-            #     y = OOV
-            # if y not in self.vectors:
-            #     y = OOL
-
-            # if z not in self.vocab:
-            #     z = OOV
-            # if z not in self.vectors:
-            #     z = OOL
-
-            # u_xyz = 0.0
-            # vec_x = self.vectors[x]
-            # vec_y = self.vectors[y]
-            # vec_z = np.array(self.vectors[z]).transpose()
-
-            # XU = np.dot(np.array(vec_x), np.array(self.U))
-            # YV = np.dot(np.array(vec_y), np.array(self.V))
-
-            # u_xyz = np.exp(XU * vec_z + YV * vec_z)[0]
-
-            # if (x, y) not in self.Z_dict:
-            #     temp = 0.0
-
-            #     for z_ in self.vocab:
-            #         if z_ not in self.vectors:
-            #             z_ = OOL
-
-            #         vec_z = np.array(self.vectors[z_]).transpose()
-
-            #         temp += np.exp(XU * vec_z + YV * vec_z)[0]
-
-            #     self.Z_dict[(x, y)] = temp
-
-            # return u_xyz / self.Z_dict[(x, y)]
-
-            ############### END PEIYI CODE #################
-            ################################################
-
             if x not in self.vocab:
                 x = OOV
             if y not in self.vocab:
@@ -327,31 +281,27 @@ class LanguageModel:
             if z not in self.vocab:
                 z = OOV
 
-            if (x, y, z) in self.p_dict:
-              return self.p_dict[(x, y, z)]
+            if (x, y, z) in self.p_dict:        # If p(z | xy) had aleady been calculated, just
+              return self.p_dict[(x, y, z)]     # quickly look it up in the cache.
 
             theta, f = self.__get_theta_and_f(x, y, z)
 
-            # Now, we can simply calculate u(xyz) by taking e to the power of the product
-            # of theta and f. We will store this value in a dictionary, so that we can use
-            # dynamic programming.
+            if (x, y, z) in self.u_dict:            # After getting the values of theta and f, we
+                u_xyz = self.u_dict[(x, y, z)]      # can fetch the values of u(xyz) and Z(xy)
+            else:                                   # from a cache if they have already been
+                u_xyz = np.exp(np.dot(theta, f))    # calculated.
+                self.u_dict[(x, y, z)] = u_xyz      # 
+                                                    # If they have not been calculated, calculate
+            if (x, y) in self.Z_dict:               # them now, and store them in a cache for 
+                Z_xy = self.Z_dict[(x, y)]          # faster future retrieval.
+            else:                                   #
+                Z_xy = self.__Z(x, y)               # Finally, after getting u(xyz) and Z(xy), we
+                self.Z_dict[(x, y)] = Z_xy          # can easily compute the value of p(z | xy).
 
-            if (x, y, z) in self.u_dict:
-                u_xyz = self.u_dict[(x, y, z)]
-            else:
-                u_xyz = np.exp(np.dot(theta, f))
-                self.u_dict[(x, y, z)] = u_xyz
-
-            if (x, y) in self.Z_dict:
-                Z_xy = self.Z_dict[(x, y)]
-            else:
-                Z_xy = self.__Z(x, y)
-                self.Z_dict[(x, y)] = Z_xy
-
-            p_xyz = u_xyz / Z_xy
-
-            self.p_dict[(x,y,z)] = p_xyz  # Store the calculated probability in our
-                                          # probability dictionary
+            p_xyz = u_xyz / Z_xy 
+            
+            self.p_dict[(x,y,z)] = p_xyz            # Store the calculated probability in our
+                                                    # probability dictionary
             return p_xyz
 
         else:
@@ -446,6 +396,10 @@ class LanguageModel:
 
         if self.smoother == 'LOGLINEAR': 
             # Train the log-linear model using SGD.
+
+            self.u_dict = None    # Because we are training our probability model using a new
+            self.Z_dict = None    # file, we need to reset all of our cached values of u(xyz),
+            self.p_dict = None    # Z(xy), and p(z | xy). (These values used in self.prob()).
 
             for i in range(2, len(tokens_list)):
                 x, y, z = tokens_list[i - 2], tokens_list[i - 1], tokens_list[i]

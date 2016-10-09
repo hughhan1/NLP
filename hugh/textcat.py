@@ -28,8 +28,8 @@ def main():
         Possible values for smoother: uniform, add1, backoff_add1, backoff_wb, loglinear1
           (the \"1\" in add1/backoff_add1 can be replaced with any real lambda >= 0
            the \"1\" in loglinear1 can be replaced with any C >= 0 )
-        lexicon is the location of the word vector file, which is only used in the loglinear model
-        trainpath is the location of the training corpus
+        lexicon is the location of the word vector file, which is only used in the 
+        loglinear model trainpath is the location of the training corpus
           (the search path for this includes "%s")
         """ % (sys.argv[0], sys.argv[0], course_dir, course_dir, Probs.DEFAULT_TRAINING_DIR)
         sys.exit(1)
@@ -49,10 +49,10 @@ def main():
     lm.set_vocab_size(train_file1, train_file2)  # the union of both the first training
                                                  # corpus and the second training corpus.
   
-    # We use natural log for our internal computations and that's
-    # the kind of log-probability that fileLogProb returns.  
-    # But we'd like to print a value in bits: so we convert
-    # log base e to log base 2 at print time, by dividing by log(2).
+    # We use natural log for our internal computations and that's the kind of 
+    # log-probability that the function filelogprob returns. But we'd like to print a 
+    # value in bits: so we convert log base e to log base 2 at print time, by dividing
+    # by log(2).
 
     file1_logprob = dict()    # map from each testfile to log-probability using file1
     file2_logprob = dict()    # map from each testfile to log-probability using file2
@@ -65,15 +65,24 @@ def main():
     for testfile in argv:     # log-probabilities for each test file
         file2_logprob[testfile] = lm.filelogprob(testfile) / math.log(2)
 
-    file1_count = 0                                             # Here, we count the number
-    file2_count = 0                                             # of test files more similar
-    for testfile in argv:                                       # to file1 and number of
-        if file1_logprob[testfile] > file2_logprob[testfile]:   # test files more similar to
-            print "%s\t%s" % (train_file1, testfile)            # file2. We print out which
-            file1_count += 1                                    # test file is more similar
-        else:                                                   # to which training file,
-            print "%s\t%s" % (train_file2, testfile)            # for each test file.
+    file1_count = 0                                              # Count the number of
+    file2_count = 0                                              # test files more
+    for testfile in argv:                                        # similar to file1 and
+        if file1_logprob[testfile] > file2_logprob[testfile]:    # number of test files
+            print "%s\t%s" % (train_file1, testfile)             # more similar to file2.
+            file1_count += 1                                     # Print which test files
+        elif file1_logprob[testfile] < file2_logprob[testfile]:  # is more similar to
+            print "%s\t%s" % (train_file2, testfile)             # which training files.
             file2_count += 1
+        else:                                                    # If the two files have
+            rand = random.uniform(0.0, 1.0)                      # equal probabilities,
+            if rand < 0.5:                                       # we don't want to 
+                print "%s\t%s" % (train_file1, testfile)         # deterministically
+                file1_count += 1                                 # choose either the
+            else:                                                # first or second file
+                print "%s\t%s" % (train_file2, testfile)         # every single time. So
+                file2_count += 1                                 # flip a coin and pick
+                                                                 # at random.
 
     file1_percent = 100 * float(file1_count)/float(file1_count + file2_count)
     file2_percent = 100 * float(file2_count)/float(file1_count + file2_count)
