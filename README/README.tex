@@ -691,15 +691,22 @@
 		\begin{enumerate}[label=\roman*.]
 		\setcounter{enumiii}{3}
 		\item % iv
-			Below are our results for the \texttt{english} and \texttt{spanish} test files, respectively.
-			\begin{lstlisting}
-		53 looked more like en.1K (14.36%)
-		316 looked more like sp.1K (85.64%)
-			\end{lstlisting}
+
+			After implementing the new feature and running the tests, we found that the \texttt{english} and \texttt{spanish} test files had log-probabilities of approximately -207303 and -149003, respectively. We see that their respective cross-entropies equated to approximately 5.883 and 4.248, respectively. 
+
+			For the \texttt{english} test files, the cross-entropy increased tremendously while for the \texttt{spanish} test files, the cross-entropy increased only slightly from before this feature was implemented.
+
+			Below are our error-rate results for the \texttt{english} and \texttt{spanish} test files, respectively.
 			\begin{lstlisting}
 		219 looked more like en.1K (59.19%)
 		151 looked more like sp.1K (40.81%)
 			\end{lstlisting}
+			\begin{lstlisting}
+		53 looked more like en.1K (14.36%)
+		316 looked more like sp.1K (85.64%)
+			\end{lstlisting}
+
+			We see that our error rates are much better for \texttt{spanish}, but worse for \texttt{english}. Note that these tests were run using $\gamma_0 = 0.01$.
 		\end{enumerate}
 	\end{enumerate}
 \item % PROBLEM 7

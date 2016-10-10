@@ -131,7 +131,7 @@ class LanguageModel:
         vec_y = self.vectors[y]
         vec_z = self.vectors[z]
 
-        XY = np.outer(vec_x, vec_z)
+        XZ = np.outer(vec_x, vec_z)
         YZ = np.outer(vec_y, vec_z)
 
         return XZ, YZ

@@ -58,10 +58,13 @@ class LanguageModel:
         # They are initialized in train() function and represented as two
         # dimensional lists.
         self.U, self.V = None, None
+        self.W = None
+        self.T = None
 
         self.Z_dict = None # maps from (x,y)   pairs   to their Z(x, y)   values
         self.u_dict = None # maps from (x,y,z) triples to their u(xyz)    values
         self.p_dict = None # maps from (x,y,z) triples to their p(z| x,y) values
+        self.count_z = None
 
         # self.tokens[(x, y, z)] = # of times that xyz was observed during training.
         # self.tokens[(y, z)]    = # of times that yz was observed during training.
@@ -80,10 +83,10 @@ class LanguageModel:
         TODO: Add documentation
         """
         if theta is None:                              # If we are not passed
-            theta = np.zeros(2 * self.dim * self.dim)  # a theta or f vector,
+            theta = np.zeros(2 * self.dim * self.dim + self.dim + self.dim * self.dim * self.dim)  # a theta or f vector,
         if f is None:                                  # we can initialize
-            f = np.zeros(2 * self.dim * self.dim)      # them to vectors of
-                                                       # size 2 * d^2.
+            f = np.zeros(2 * self.dim * self.dim + self.dim + self.dim * self.dim * self.dim)      # them to vectors of
+                                                                                                   # size 2 * d^2.
         if x not in self.vectors:
             x = OOL
         if y not in self.vectors:
@@ -108,6 +111,18 @@ class LanguageModel:
                 f[idx]     = vec_y[i] * vec_z[j]     # also to be added to their
                 idx += 1                             # corresponding indices in theta.
 
+        for i in xrange(0, self.dim):
+            theta[idx] = self.T[i]
+            f[idx]     = vec_z[i]
+            idx += 1
+
+        for i in xrange(0, self.dim):
+            for j in xrange(0, self.dim):
+                for k in xrange(0, self.dim):
+                    theta[idx] = self.W[i][j][k]
+                    f[idx]     = vec_x[j] * vec_y[k] * vec_z[i]
+                    idx += 1
+
         return theta, f
 
 
@@ -131,10 +146,41 @@ class LanguageModel:
         vec_y = self.vectors[y]
         vec_z = self.vectors[z]
 
-        XY = np.outer(vec_x, vec_z)
+        XZ = np.outer(vec_x, vec_z)
         YZ = np.outer(vec_y, vec_z)
 
         return XZ, YZ
+
+    def __get_Z_and_XYZ(self, x, y, z, Z=None, XYZ=None):
+        """
+        TODO: Add documentation
+        """
+        if Z is None:
+            Z = np.zeros(self.dim)
+        if XYZ is None: 
+            XYZ = np.zeros((self.dim, self.dim, self.dim))
+
+        if x not in self.vectors:
+            x = OOL
+        if y not in self.vectors:
+            y = OOL
+        if z not in self.vectors:
+            z = OOL
+
+        vec_x = self.vectors[x]
+        vec_y = self.vectors[y]
+        vec_z = self.vectors[z]
+
+        Z = np.array(vec_z)
+
+        XYZ_ = []
+        XY = np.outer(vec_x, vec_y)
+        
+        for i in xrange(0, self.dim):
+            XYZ_.append(vec_z[i] * XY)
+
+        XYZ = np.array(XYZ_)
+        return Z, XYZ
 
 
     def __Z(self, x, y):
@@ -408,6 +454,8 @@ class LanguageModel:
             # Initialize parameters
             self.U = np.zeros((self.dim, self.dim))
             self.V = np.zeros((self.dim, self.dim))
+            self.T = np.zeros(self.dim)
+            self.W = np.zeros((self.dim, self.dim, self.dim))
 
             # Optimization parameters
             gamma0 = 0.01                                   # initial learning rate, used to 
@@ -433,6 +481,7 @@ class LanguageModel:
                     gamma = gamma0 / (1 + gamma0 * (self.lambdap/self.N) * t)  # update gamma
 
                     x, y, z = self.trigrams[i]  # Fetch the i-th trigram (x, y, z) of our training
+
                                                 # corpus.
                     if x not in self.vectors:
                         x = OOL                 # If any piece of the trigram is not in the
@@ -459,17 +508,25 @@ class LanguageModel:
                     # is exactly equivalent to the enumeration of XZ concatenated with YZ.
 
                     XZ, YZ = self.__get_XZ_and_YZ(x, y, z)
+                    Z, XYZ = self.__get_Z_and_XYZ(x, y, z)
                                                                               # Now we calculate
                     gradient_U = XZ - (2.0 * self.lambdap / self.N) * self.U  # part of the
                     gradient_V = YZ - (2.0 * self.lambdap / self.N) * self.V  # gradient using the
                                                                               # 1st and 3rd terms.
 
+                    gradient_T = Z - (2.0 * self.lambdap / self.N) * self.T
+                    gradient_W = XYZ - (2.0 * self.lambdap / self.N) * self.W
+                    #print gradient_Beta
                     for z_ in self.vocab:           # Now we iterate through all possible values
                                                     # of z' and finish calculating the gradient
+                        beta_z = z_
+                        if beta_z not in self.vocab:
+                            beta_z = OOV
                         if z_ not in self.vectors:  # using the 2nd term.    
                             z_ = OOL
 
                         XZ_, YZ_ = self.__get_XZ_and_YZ(x, y, z_)
+                        Z_, XYZ_ = self.__get_Z_and_XYZ(x, y, z_)
 
                         # Below, we calculate the probability p(z'| xy) by first calculating the
                         # value of u(xyz') and dividing by the value of Z(xy). Note that Z(xy)
@@ -481,6 +538,10 @@ class LanguageModel:
 
                         gradient_U -= p_xyz_ * XZ_  # We use p(z'| xy) to calculate the partial
                         gradient_V -= p_xyz_ * YZ_  # derivatives of F with respect to U and V.
+                        gradient_T -= p_xyz_ * Z_
+                        gradient_W -= p_xyz_ * XYZ_
+
+                        #print p_xyz_ * math.log(self.tokens.get(beta_z, 0) + 1.0)
 
                         # Note: in the stochastic gradient ascent algorithm, the summation of the
                         #       products of p(z'| xy) and yz' are calculated, then subtracted from
@@ -492,13 +553,19 @@ class LanguageModel:
                     self.U += gamma * gradient_U   # Finally, we need to update our U and V using
                     self.V += gamma * gradient_V   # the partial derivatives of F with respect to
                                                    # matrices U and V
+                    #print gradient_Beta
+                    #print '------- {0} ----------'.format(i)
 
+                    self.T += gamma * gradient_T
+                    self.W += gamma * gradient_W
                     # Note that when U and V are updated, theta and f are also implicitly updated.
 
                     t += 1
                                     # After N iterations, we have a sum of all F_i(theta), for all
                 F_theta /= self.N   # i from 1 to N. To calculate F(theta), we take the average,
                                     # which is calculated simply dividing by N.
+
+                #print self.beta
 
                 print "epoch %d: F=%f" % (e+1, F_theta)
 

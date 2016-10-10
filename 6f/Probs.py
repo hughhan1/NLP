@@ -20,14 +20,12 @@ import numpy as np
 # TODO for TA: Currently, we use the same token for BOS and EOS as we only have
 # one sentence boundary symbol in the word embedding file.  Maybe we should
 # change them to two separate symbols?
-BOS = 'EOS'         # special word type for context at Beginning Of Sequence
-EOS = 'EOS'         # special word type for observed token at End Of Sequence
-OOV = 'OOV'         # special word type for all Out-Of-Vocabulary words
-OOL = 'OOL'         # special word type for all Out-Of-Lexicon words
-
-OOV_THRESHOLD = 3   # minimum number of occurrence for a word to be considered in-vocabulary
-
+BOS = 'EOS'   # special word type for context at Beginning Of Sequence
+EOS = 'EOS'   # special word type for observed token at End Of Sequence
+OOV = 'OOV'    # special word type for all Out-Of-Vocabulary words
+OOL = 'OOL'    # special word type for all Out-Of-Lexicon words
 DEFAULT_TRAINING_DIR = "/usr/local/data/cs465/hw-lm/All_Training/"
+OOV_THRESHOLD = 3  # minimum number of occurrence for a word to be considered in-vocabulary
 
 
 # TODO for TA: Maybe we should use inheritance instead of condition on the
@@ -84,12 +82,12 @@ class LanguageModel:
         """
         TODO: Add documentation
         """
-        if theta is None:                                  # If we are not passed
+        if theta is None:                              # If we are not passed
             theta = np.zeros(2 * self.dim * self.dim + 1)  # a theta or f vector,
-        if f is None:                                      # we can initialize
+        if f is None:                                  # we can initialize
             f = np.zeros(2 * self.dim * self.dim + 1)      # them to vectors of
-                                                           # size 2 * d^2.
-        beta_z = z
+        
+        beta_z = z                                               # size 2 * d^2.
         if beta_z not in self.vocab:
             beta_z = OOV
         if x not in self.vectors:
@@ -141,7 +139,7 @@ class LanguageModel:
         vec_y = self.vectors[y]
         vec_z = self.vectors[z]
 
-        XY = np.outer(vec_x, vec_z)
+        XZ = np.outer(vec_x, vec_z)
         YZ = np.outer(vec_y, vec_z)
 
         return XZ, YZ
@@ -291,8 +289,8 @@ class LanguageModel:
             if z not in self.vocab:
                 z = OOV
 
-            if (x, y, z) in self.p_dict:            # If p(z | xy) had aleady been calculated,
-              return self.p_dict[(x, y, z)]         # just quickly look it up in the cache.
+            if (x, y, z) in self.p_dict:        # If p(z | xy) had aleady been calculated, just
+              return self.p_dict[(x, y, z)]     # quickly look it up in the cache.
 
             theta, f = self.__get_theta_and_f(x, y, z)
 
@@ -409,7 +407,7 @@ class LanguageModel:
 
             self.u_dict = None    # Because we are training our probability model using a new
             self.Z_dict = None    # file, we need to reset all of our cached values of u(xyz),
-            self.p_dict = None    # Z(xy), and p(z | xy). (These values are used in self.prob()).
+            self.p_dict = None    # Z(xy), and p(z | xy). (These values used in self.prob()).
 
             for i in range(2, len(tokens_list)):
                 x, y, z = tokens_list[i - 2], tokens_list[i - 1], tokens_list[i]
@@ -422,15 +420,18 @@ class LanguageModel:
             self.alpha = 0.25
 
             # Optimization parameters
-            gamma0 = 0.001                           # initial learning rate
-            epochs = 10                              # number of passes
+            gamma0 = 0.01                                   # initial learning rate, used to 
+                                                            #     compute actual learning rate
+            epochs = 10                                     # number of passes
 
-            self.N = len(tokens_list) - 2            # number of training instances
+            self.N = len(tokens_list) - 2                   # number of training instances
 
             sys.stderr.write("Start optimizing.\n")
 
-            ######################################################################################
-            #########################  BEGIN Stochastic Gradient Ascent  #########################
+            ####################################################################################
+            ####################################################################################
+            ########################  BEGIN Stochastic Gradient Ascent  ########################
+            ####################################################################################
 
             t = 0
             for e in range(epochs):
@@ -441,18 +442,18 @@ class LanguageModel:
 
                     gamma = gamma0 / (1 + gamma0 * (self.lambdap/self.N) * t)  # update gamma
 
-                    x, y, z = self.trigrams[i]    # Fetch the i-th trigram (x, y, z) of our
-                                                  # training corpus.
-                    beta_z = z                  
-                    if beta_z not in self.vocab:  # We don't want to use an OOL value of z when
-                        beta_z = OOV              # calculating the gradient of B. Here, we set
-                                                  # another variable to hold the value of z.
+                    x, y, z = self.trigrams[i]  # Fetch the i-th trigram (x, y, z) of our training
+
+                    beta_z = z
+                    if beta_z not in self.vocab:
+                        beta_z = OOV
+                                                # corpus.
                     if x not in self.vectors:
-                        x = OOL                   # If any piece of the trigram is not in the
-                    if y not in self.vectors:     # lexicon, we set it to the value OOL, meaning
-                        y = OOL                   # 'out of lexixon'.
-                    if z not in self.vectors:     #
-                        z = OOL                   # Note that OOL != OOV.
+                        x = OOL                 # If any piece of the trigram is not in the
+                    if y not in self.vectors:   # lexicon, we set it to the value OOL, meaning
+                        y = OOL                 # 'out of lexixon'.
+                    if z not in self.vectors:   #
+                        z = OOL                 # Note that OOL != OOV.
 
                     theta, f = self.__get_theta_and_f(x, y, z)
 
@@ -472,20 +473,18 @@ class LanguageModel:
                     # is exactly equivalent to the enumeration of XZ concatenated with YZ.
 
                     XZ, YZ = self.__get_XZ_and_YZ(x, y, z)
+                                                                              # Now we calculate
+                    gradient_U = XZ - (2.0 * self.lambdap / self.N) * self.U  # part of the
+                    gradient_V = YZ - (2.0 * self.lambdap / self.N) * self.V  # gradient using the
+                                                                              # 1st and 3rd terms.
 
-                    # Below, we calculate the 1st and 3rd terms of each of the gradients of U, V,
-                    # and the unigram feature weight beta.
-                                                                              
-                    gradient_U = XZ - (2.0 * self.lambdap / self.N) * self.U  
-                    gradient_V = YZ - (2.0 * self.lambdap / self.N) * self.V 
-                    gradient_B = (self.alpha * math.log(self.tokens.get(beta_z, 0) + 1.0) - 
-                                  (2.0 * self.lambdap / self.N) * self.beta)
-
+                    gradient_Beta = self.alpha * math.log(self.tokens.get(beta_z, 0) + 1.0) - (2.0 * self.lambdap / self.N) * self.beta
+                    #print gradient_Beta
                     for z_ in self.vocab:           # Now we iterate through all possible values
                                                     # of z' and finish calculating the gradient
-                        beta_z_ = z_
-                        if beta_z_ not in self.vocab:
-                            beta_z_ = OOV
+                        beta_z = z_
+                        if beta_z not in self.vocab:
+                            beta_z = OOV
                         if z_ not in self.vectors:  # using the 2nd term.    
                             z_ = OOL
 
@@ -501,11 +500,8 @@ class LanguageModel:
 
                         gradient_U -= p_xyz_ * XZ_  # We use p(z'| xy) to calculate the partial
                         gradient_V -= p_xyz_ * YZ_  # derivatives of F with respect to U and V.
-
-                        # Next, we use the formula p(z'|xy) * alpha * log(c(z) + 1) to calculate
-                        # the unigram feature function f(xyz). This is implemented below.
-
-                        gradient_B -= p_xyz_ * self.alpha * math.log(self.tokens.get(beta_z_, 0) + 1.0)
+                        gradient_Beta -= p_xyz_ * self.alpha * math.log(self.tokens.get(beta_z, 0) + 1.0)
+                        #print p_xyz_ * math.log(self.tokens.get(beta_z, 0) + 1.0)
 
                         # Note: in the stochastic gradient ascent algorithm, the summation of the
                         #       products of p(z'| xy) and yz' are calculated, then subtracted from
@@ -514,22 +510,27 @@ class LanguageModel:
                         #       products, we subtract a single piece of the summation on every
                         #       iteration.
 
-                    self.U    += gamma * gradient_U   # Finally, we update our U, V, and beta
-                    self.V    += gamma * gradient_V   # using the partial derivatives of F with
-                    self.beta += gamma * gradient_B   # respect to matrices U, V, and beta.
+                    self.U += gamma * gradient_U   # Finally, we need to update our U and V using
+                    self.V += gamma * gradient_V   # the partial derivatives of F with respect to
+                                                   # matrices U and V
+                    #print gradient_Beta
+                    #print '------- {0} ----------'.format(i)
 
+                    self.beta += gamma * gradient_Beta
                     # Note that when U and V are updated, theta and f are also implicitly updated.
 
                     t += 1
                                     # After N iterations, we have a sum of all F_i(theta), for all
                 F_theta /= self.N   # i from 1 to N. To calculate F(theta), we take the average,
                                     # which is calculated simply dividing by N.
-                # print self.beta
+
 
                 print "epoch %d: F=%f" % (e+1, F_theta)
 
-            #########################   END Stochastic Gradient Ascent   #########################
-            ######################################################################################
+            ####################################################################################
+            ########################   END Stochastic Gradient Ascent   ########################
+            ####################################################################################
+            ####################################################################################
 
         sys.stderr.write("Finished training on %d tokens\n" % self.tokens[""])
 
