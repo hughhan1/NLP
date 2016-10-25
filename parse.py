@@ -179,7 +179,7 @@ class Parser:
                         rule_ptrs = self.__build_rule_ptrs(symbol, curr_col)
                         self.table[curr_col].extend(rule_ptrs)
 
-                # print "(%d, %d)" % (curr_col, curr_row)
+                print "(%d, %d)" % (curr_col, curr_row)
                 
                 curr_row += 1
 
