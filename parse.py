@@ -112,7 +112,7 @@ class Parser:
                         # d is the dot index for each element
                         # r is the rule pointer
                         r = self.get_rule(r_ptr)
-                        if r.rhs[d] == rule.lhs:
+                        if d < len(r.rhs) and r.rhs[d] == rule.lhs:
                             updated_tuple = (d + 1, r_ptr)
                             self.table[curr_col].append(updated_tuple)
 
@@ -139,10 +139,9 @@ class Parser:
 
                 curr_row += 1
 
-
             curr_col += 1
-            print self.table
 
+        print self.table
         self.curr_rules = set()
 
 
