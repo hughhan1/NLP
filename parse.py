@@ -22,7 +22,7 @@ class Rule:
                 .format(self.prob, self.weight, self.lhs, self.rhs))
 
 
-class RulePointer:
+class TableEntry:
 
     def __init__(self, lhs, grammar_idx, col, dot_idx):
         self.lhs     = lhs
@@ -58,7 +58,7 @@ class Parser:
         # Next, populate the rule dictionary using a grammar file.
         self.__read_file(grammar_file)
 
-        self.curr_rule_ptrs = set()
+        self.existing_entries = set()
 
 
     def __read_file(self, filename):
@@ -80,13 +80,13 @@ class Parser:
 
     def __build_rule_ptrs(self, symbol, col):
         possible_rules = self.grammar[symbol]
-        rule_ptrs = []
+        entries = []
         for i, rule in enumerate(possible_rules):
-            rule_ptr = RulePointer(symbol, i, col, 0)
-            if not rule_ptr in self.curr_rule_ptrs:
-                rule_ptrs.append(rule_ptr)
-                self.curr_rule_ptrs.add(rule_ptr)
-        return rule_ptrs
+            entry = TableEntry(symbol, i, col, 0)
+            if entry not in self.existing_entries:
+                entries.append(entry)
+                self.existing_entries.add(entry)
+        return entries
 
 
     def print_table(self):
@@ -111,11 +111,17 @@ class Parser:
             col_idx += 1
 
 
-    def get_rule(self, rule_pointer):
-        return self.grammar[rule_pointer.lhs][rule_pointer.grammar_idx]
+    def get_rule(self, entry):
+        return self.grammar[entry.lhs][entry.grammar_idx]
 
 
-    def parse(self, sentence):
+    def parse(self, sentence_file):
+        with open(sentence_file, 'r') as f:
+            for line in f.readlines():
+                self.parse_sentence(line)
+
+
+    def parse_sentence(self, sentence):
 
         words = sentence.split()
 
@@ -123,23 +129,23 @@ class Parser:
         self.table = [[] for _ in range(len(words) + 1)]
 
         # First we need to append our root rule
-        rule_ptrs = self.__build_rule_ptrs(ROOT, 0)
-        self.table[0].extend(rule_ptrs)
+        entries = self.__build_rule_ptrs(ROOT, 0)
+        self.table[0].extend(entries)
 
         curr_col = 0
         while curr_col < len(self.table):
 
-            # iterate through all tuples in our current column, and add all of
+            # iterate through all entries in our current column, and add all of
             # the existing rules to our set of current rules
-            for r_ptr in self.table[curr_col]:
-                self.curr_rule_ptrs.add(r_ptr)
+            for entry in self.table[curr_col]:
+                self.existing_entries.add(entry)
 
             curr_row = 0
             while curr_row < len(self.table[curr_col]):
 
-                rule_ptr = self.table[curr_col][curr_row]  # Here, we get the
-                dot_idx = rule_ptr.dot_idx                 # current cell of
-                rule = self.get_rule(rule_ptr)             # our table.
+                entry = self.table[curr_col][curr_row]  # Here, we get the
+                dot_idx = entry.dot_idx                 # current cell of
+                rule = self.get_rule(entry)             # our table.
 
                 if dot_idx >= len(rule.rhs):
 
@@ -156,19 +162,19 @@ class Parser:
                     # current entry's left hand side as the dot_idx-th symbol
                     # in the associated entry's right hand side.
 
-                    back_col = rule_ptr.col        # First, retrieve the actual
+                    back_col = entry.col           # First, retrieve the actual
                     column = self.table[back_col]  # associated column (list).
 
-                    for r_ptr in column:           # Now iterate through all
+                    for e in column:               # Now iterate through all
                                                    # entries in the column.
-                        d = r_ptr.dot_idx
-                        r = self.get_rule(r_ptr)
+                        d = e.dot_idx
+                        r = self.get_rule(e)
 
                         if d < len(r.rhs) and r.rhs[d] == rule.lhs:
-                            updated_rule_ptr = RulePointer(r_ptr.lhs, r_ptr.grammar_idx, r_ptr.col, d+1)
-                            if updated_rule_ptr not in self.curr_rule_ptrs:
-                                self.table[curr_col].append(updated_rule_ptr)
-                                self.curr_rule_ptrs.add(updated_rule_ptr)
+                            updated_entry = TableEntry(e.lhs, e.grammar_idx, e.col, d+1)
+                            if updated_entry not in self.existing_entries:
+                                self.table[curr_col].append(updated_entry)
+                                self.existing_entries.add(updated_entry)
 
                 else:
 
@@ -189,8 +195,8 @@ class Parser:
                             pass
                         elif words[curr_col] == symbol:
                             next_col = curr_col + 1
-                            updated_rule_ptr = RulePointer(rule_ptr.lhs, rule_ptr.grammar_idx, rule_ptr.col, dot_idx + 1)
-                            self.table[next_col].append(updated_rule_ptr)
+                            updated_entry = TableEntry(entry.lhs, entry.grammar_idx, entry.col, dot_idx + 1)
+                            self.table[next_col].append(updated_entry)
 
                     else:                               
                         # NON-TERMINAL SYMBOL
@@ -198,25 +204,31 @@ class Parser:
                         # be a nonterminal. We unravel the symbol, and then 
                         # append its children to our current column.
 
-                        rule_ptrs = self.__build_rule_ptrs(symbol, curr_col)
-                        self.table[curr_col].extend(rule_ptrs)
+                        entries = self.__build_rule_ptrs(symbol, curr_col)
+                        self.table[curr_col].extend(entries)
                 
                 curr_row += 1
 
             curr_col += 1
-                                         # After finishing our current column 
-            self.curr_rule_ptrs = set()  # and advancing to the next, we need 
-                                         # to clear our list of rule pointers 
-                                         # that were already used.
+                                           # After finishing our current
+            self.existing_entries = set()  # column and advancing to the next,
+                                           # we need to clear our set of
+                                           # entries that were already used.
 
-        self.print_table()               # print the finished table
+        self.print_table()                 # print the finished table
 
 
 def main():
 
-    parser = Parser("papa.gr")
+    if len(sys.argv) != 3:
+        return
 
-    parser.parse("Papa ate the caviar with the spoon")
+    grammar_file  = sys.argv[1]
+    sentence_file = sys.argv[2]
 
-main()
+    parser = Parser(grammar_file)
+    parser.parse(sentence_file)
 
+
+if __name__ == "__main__":
+    main()
