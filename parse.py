@@ -89,6 +89,28 @@ class Parser:
         return rule_ptrs
 
 
+    def print_table(self):
+        '''
+        Prints each column of the table in the following format
+
+        COL   LHS       RHS      DOT-INDEX
+         3     N  -> ['caviar']     (1)
+         2     NP -> ['Det', 'N']   (2)
+         1     VP -> ['V', 'NP']    (2)
+         0     S  -> ['NP', 'VP']   (2)
+         4     P  -> ['with']       (0)
+        '''
+        col_idx = 0
+        for col in self.table:
+            print "COLUMN %d" % (col_idx)
+            for entry in col:
+                rule = self.get_rule(entry)
+                print ("{0} {1}\t-> {2}\t({3})"
+                       .format(entry.col, rule.lhs, rule.rhs, entry.dot_idx))
+            print ""
+            col_idx += 1
+
+
     def get_rule(self, rule_pointer):
         return self.grammar[rule_pointer.lhs][rule_pointer.grammar_idx]
 
@@ -178,8 +200,6 @@ class Parser:
 
                         rule_ptrs = self.__build_rule_ptrs(symbol, curr_col)
                         self.table[curr_col].extend(rule_ptrs)
-
-                print "(%d, %d)" % (curr_col, curr_row)
                 
                 curr_row += 1
 
@@ -188,6 +208,10 @@ class Parser:
             self.curr_rule_ptrs = set()  # and advancing to the next, we need 
                                          # to clear our list of rule pointers 
                                          # that were already used.
+
+        self.print_table()               # print the finished table
+
+
 def main():
 
     parser = Parser("papa.gr")
