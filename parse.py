@@ -29,7 +29,7 @@ class TableEntry:
         self.grammar_idx = grammar_idx
         self.col     = col
         self.dot_idx = dot_idx
-
+        self.back_ptr = None
 
     def __eq__(self, other):
         return self.lhs         == other.lhs         and \
@@ -131,7 +131,7 @@ class Parser:
         # First we need to append our root rule
         entries = self.__build_rule_ptrs(ROOT, 0)
         self.table[0].extend(entries)
-
+        last_column = None
         curr_col = 0
         while curr_col < len(self.table):
 
@@ -172,6 +172,7 @@ class Parser:
 
                         if d < len(r.rhs) and r.rhs[d] == rule.lhs:
                             updated_entry = TableEntry(e.lhs, e.grammar_idx, e.col, d+1)
+                            updated_entry.back_ptr = entry
                             if updated_entry not in self.existing_entries:
                                 self.table[curr_col].append(updated_entry)
                                 self.existing_entries.add(updated_entry)
@@ -196,6 +197,7 @@ class Parser:
                         elif words[curr_col] == symbol:
                             next_col = curr_col + 1
                             updated_entry = TableEntry(entry.lhs, entry.grammar_idx, entry.col, dot_idx + 1)
+                            updated_entry.back_ptr = entry
                             self.table[next_col].append(updated_entry)
 
                     else:                               
@@ -205,29 +207,51 @@ class Parser:
                         # append its children to our current column.
 
                         entries = self.__build_rule_ptrs(symbol, curr_col)
+                        for e in entries: e.back_ptr = entry
                         self.table[curr_col].extend(entries)
                 
                 curr_row += 1
 
             curr_col += 1
+            if curr_col == len(sentence) + 1:
+                last_column = self.existing_entries
                                            # After finishing our current
             self.existing_entries = set()  # column and advancing to the next,
                                            # we need to clear our set of
                                            # entries that were already used.
 
-        self.print_table()                 # print the finished table
+        # self.print_table()                 # print the finished table
+        temp = TableEntry(ROOT, 0, 0, 1)
+        if temp not in last_column:
+            return "failure"
+        else:
+            # get root from last column
 
+            # self.print_parse()
+            pass
+        print self.table
+
+    def print_parse(self, node, output):
+        if node is None:
+            return ""
+        elif node == TableEntry(ROOT, 0, 0, 0):
+            output += node
+            return output
+        else:
+            output += self.print_parse(node.back_ptr, output)
+            output += node
+        return output
 
 def main():
-
+    '''
     if len(sys.argv) != 3:
         return
 
     grammar_file  = sys.argv[1]
     sentence_file = sys.argv[2]
-
-    parser = Parser(grammar_file)
-    parser.parse(sentence_file)
+    '''
+    parser = Parser("papa.gr")
+    parser.parse_sentence("Papa ate the caviar with the spoon")
 
 
 if __name__ == "__main__":
