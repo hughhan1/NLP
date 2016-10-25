@@ -33,7 +33,7 @@ class RulePointer:
 
 
     def __repr__(self):
-        return "lhs: {0}, idx: {1}, col: {2}".format(self.lhs, self.idx, self.col)
+        return "lhs: {0}, grammar_idx: {1}, col: {2}, dot_idx: {3} ".format(self.lhs, self.grammar_idx, self.col, self.dot_idx)
 
 
 class Parser:
