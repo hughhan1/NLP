@@ -20,10 +20,6 @@ class Rule:
         return "prob: {0}, weight: {1}, lhs: {2}, rhs: {3}".format(self.prob, self.weight, self.lhs, self.rhs)
 
 
-    def __str__(self):
-        return "\{ prob: {0}, weight: {1}, lhs: {2}, rhs: {3} \}".format(self.prob, self.weight, self.lhs, self.rhs)
-
-
 class RulePointer:
 
     def __init__(self, lhs, grammar_idx, col, dot_idx):
@@ -129,14 +125,14 @@ class Parser:
                     back_col = rule_pointer.col
                     column = self.table[back_col]
                     for r_ptr in column:
-                        # d is the dot index for each element
                         # r is the rule pointer
                         d = r_ptr.dot_idx
                         r = self.get_rule(r_ptr)
                         if d < len(r.rhs) and r.rhs[d] == rule.lhs:
-                            updated_rule_ptr = RulePointer(r_ptr.lhs, r_ptr.grammar_idx, rule_pointer.col, d+1)
-                            self.table[curr_col].append(updated_rule_ptr)
-                            self.curr_rule_ptrs.add(updated_rule_ptr)
+                            updated_rule_ptr = RulePointer(r_ptr.lhs, r_ptr.grammar_idx, r_ptr.col, d+1)
+                            if updated_rule_ptr not in self.curr_rule_ptrs:
+                                self.table[curr_col].append(updated_rule_ptr)
+                                self.curr_rule_ptrs.add(updated_rule_ptr)
 
                 else:
                     # If our symbol is not a key in our grammar, then it must
@@ -162,14 +158,15 @@ class Parser:
                         rule_ptrs = self.__build_rule_ptrs(symbol, curr_col)
                         self.table[curr_col].extend(rule_ptrs)
 
-                print self.curr_rule_ptrs
                 print "(col: %d, row: %d)" % (curr_col, curr_row)
                 curr_row += 1
 
             self.curr_rule_ptrs = set()
             curr_col += 1
 
-        print self.table
+        for i in self.table:
+            print i
+
 
 
 def main():
