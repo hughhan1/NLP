@@ -25,12 +25,23 @@ class Rule:
 
 
 class RulePointer:
+
     def __init__(self, lhs, grammar_idx, col, dot_idx):
         self.lhs     = lhs
         self.grammar_idx = grammar_idx
         self.col     = col
         self.dot_idx = dot_idx
 
+
+    def __eq__(self, other):
+        return self.lhs         == other.lhs         and \
+               self.grammar_idx == other.grammar_idx and \
+               self.col         == other.col         and \
+               self.dot_idx     == other.dot_idx
+
+
+    def __hash__(self):
+        return hash(self.lhs) ^ hash(self.grammar_idx) ^ hash(self.col) ^ hash(self.dot_idx)
 
     def __repr__(self):
         return "lhs: {0}, grammar_idx: {1}, col: {2}, dot_idx: {3} ".format(self.lhs, self.grammar_idx, self.col, self.dot_idx)
@@ -151,6 +162,7 @@ class Parser:
                         rule_ptrs = self.__build_rule_ptrs(symbol, curr_col)
                         self.table[curr_col].extend(rule_ptrs)
 
+                print self.curr_rule_ptrs
                 print "(col: %d, row: %d)" % (curr_col, curr_row)
                 curr_row += 1
 
