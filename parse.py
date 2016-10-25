@@ -71,7 +71,6 @@ class Parser:
             if not rule in self.curr_rules:
                 rule_ptr = RulePointer(symbol, i, col)
                 tuples.append((0, rule_ptr))
-                #self.curr_rules.add(rule_ptr)
                 self.curr_rules.add(rule)
         return tuples
 
@@ -94,12 +93,18 @@ class Parser:
         curr_col = 0
         while curr_col < len(self.table):
 
+            # iterate through all tuples in our current column, and add all of
+            # the existing rules to our set of current rules
+            for _, r_ptr in self.table[curr_col]:
+                r = self.get_rule(r_ptr)
+                self.curr_rules.add(r)
+
             curr_row = 0
             while curr_row < len(self.table[curr_col]):
 
                 dot_idx, rule_pointer = self.table[curr_col][curr_row]
                 rule = self.get_rule(rule_pointer)
-                if dot_idx >= len(rule.rhs):
+                if dot_idx >= len(rule.rhs):    # LOOK BACK
 
                     # Use the rule_pointer.col attribute to go back to the correct
                     # column. Then iterate through that column, and copy over all
@@ -117,6 +122,7 @@ class Parser:
                         if d < len(r.rhs) and r.rhs[d] == rule.lhs:
                             updated_tuple = (d + 1, r_ptr)
                             self.table[curr_col].append(updated_tuple)
+                            self.curr_rules.add(r)
 
                 else:
                     # If our symbol is not a key in our grammar, then it must
@@ -130,15 +136,15 @@ class Parser:
                     # column.
 
                     symbol = rule.rhs[dot_idx]
-                    if not symbol in self.grammar:
-                    	if curr_col >= len(words):
-                    		pass
-                    		# TODO: ask what to do in this case
+                    if not symbol in self.grammar:  # SCAN TERMINAL
+                        if curr_col >= len(words):
+                            pass
+                            # TODO: ask what to do in this case
                         elif words[curr_col] == symbol:
                             next_col = curr_col + 1
                             updated_tuple = (dot_idx + 1, rule_pointer)
                             self.table[next_col].append(updated_tuple)
-                    else:
+                    else:                           # EVALUATE NON-TERMINAL
                         tuples = self.__build_tuples(symbol, curr_col)
                         self.table[curr_col].extend(tuples)
 
@@ -155,7 +161,7 @@ def main():
 
     parser = Parser("papa.gr")
 
-    parser.parse("Papa ate the caviar")
+    parser.parse("Papa ate the caviar with the spoon")
 
 main()
 
