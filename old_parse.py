@@ -25,12 +25,10 @@ class Rule:
 
 
 class RulePointer:
-    def __init__(self, lhs, grammar_idx, col, dot_idx):
-        self.lhs     = lhs
-        self.grammar_idx = grammar_idx
-        self.col     = col
-        self.dot_idx = dot_idx
-
+    def __init__(self, lhs, idx, col):
+        self.lhs = lhs
+        self.idx = idx
+        self.col = col
 
     def __repr__(self):
         return "lhs: {0}, idx: {1}, col: {2}".format(self.lhs, self.idx, self.col)
@@ -46,7 +44,7 @@ class Parser:
         # Next, populate the rule dictionary using a grammar file.
         self.__read_file(grammar_file)
 
-        self.curr_rule_ptrs = set()
+        self.curr_rules = set()
 
 
     def __read_file(self, filename):
@@ -66,19 +64,19 @@ class Parser:
                 self.grammar[lhs].append(Rule(prob, lhs, rhs))
 
 
-    def __build_rule_ptrs(self, symbol, col):
+    def __build_tuples(self, symbol, col):
         possible_rules = self.grammar[symbol]
-        rule_ptrs = []
+        tuples = []
         for i, rule in enumerate(possible_rules):
-            rule_ptr = RulePointer(symbol, i, col, 0)
-            if not rule_ptr in self.curr_rule_ptrs:
-                rule_ptrs.append(rule_ptr)
-                self.curr_rule_ptrs.add(rule_ptr)
-        return rule_ptrs
+            if not rule in self.curr_rules:
+                rule_ptr = RulePointer(symbol, i, col)
+                tuples.append((0, rule_ptr))
+                self.curr_rules.add(rule)
+        return tuples
 
 
     def get_rule(self, rule_pointer):
-        return self.grammar[rule_pointer.lhs][rule_pointer.grammar_idx]
+        return self.grammar[rule_pointer.lhs][rule_pointer.idx]
 
 
     def parse(self, sentence):
@@ -89,7 +87,7 @@ class Parser:
         self.table = [[] for _ in range(len(words) + 1)]
 
         # First we need to append our root rule
-        tuples = self.__build_rule_ptrs(ROOT, 0)
+        tuples = self.__build_tuples(ROOT, 0)
         self.table[0].extend(tuples)
 
         curr_col = 0
@@ -97,14 +95,14 @@ class Parser:
 
             # iterate through all tuples in our current column, and add all of
             # the existing rules to our set of current rules
-            for r_ptr in self.table[curr_col]:
-                self.curr_rule_ptrs.add(r_ptr)
+            for _, r_ptr in self.table[curr_col]:
+                r = self.get_rule(r_ptr)
+                self.curr_rules.add(r)
 
             curr_row = 0
             while curr_row < len(self.table[curr_col]):
 
-                rule_pointer = self.table[curr_col][curr_row]
-                dot_idx = rule_pointer.dot_idx
+                dot_idx, rule_pointer = self.table[curr_col][curr_row]
                 rule = self.get_rule(rule_pointer)
                 if dot_idx >= len(rule.rhs):    # LOOK BACK
 
@@ -117,15 +115,14 @@ class Parser:
 
                     back_col = rule_pointer.col
                     column = self.table[back_col]
-                    for r_ptr in column:
+                    for d, r_ptr in column:
                         # d is the dot index for each element
                         # r is the rule pointer
-                        d = r_ptr.dot_idx
                         r = self.get_rule(r_ptr)
                         if d < len(r.rhs) and r.rhs[d] == rule.lhs:
-                            updated_rule_ptr = RulePointer(r_ptr.lhs, r_ptr.grammar_idx, rule_pointer.col, d+1)
-                            self.table[curr_col].append(updated_rule_ptr)
-                            self.curr_rule_ptrs.add(updated_rule_ptr)
+                            updated_tuple = (d + 1, r_ptr)
+                            self.table[curr_col].append(updated_tuple)
+                            self.curr_rules.add(r)
 
                 else:
                     # If our symbol is not a key in our grammar, then it must
@@ -145,16 +142,16 @@ class Parser:
                             # TODO: ask what to do in this case
                         elif words[curr_col] == symbol:
                             next_col = curr_col + 1
-                            updated_rule_ptr = RulePointer(rule_pointer.lhs, rule_pointer.grammar_idx, rule_pointer.col, dot_idx + 1)
-                            self.table[next_col].append(updated_rule_ptr)
+                            updated_tuple = (dot_idx + 1, rule_pointer)
+                            self.table[next_col].append(updated_tuple)
                     else:                           # EVALUATE NON-TERMINAL
-                        rule_ptrs = self.__build_rule_ptrs(symbol, curr_col)
-                        self.table[curr_col].extend(rule_ptrs)
+                        tuples = self.__build_tuples(symbol, curr_col)
+                        self.table[curr_col].extend(tuples)
 
                 print "(col: %d, row: %d)" % (curr_col, curr_row)
                 curr_row += 1
 
-            self.curr_rule_ptrs = set()
+            self.curr_rules = set()
             curr_col += 1
 
         print self.table
