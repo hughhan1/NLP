@@ -4,10 +4,10 @@ from collections import defaultdict
 class Rule:
 
     def __init__(self, prob, lhs, rhs):
-        self.prob     = prob
-        self.logprob  = -math.log(prob) / math.log(2.0)
-        self.lhs      = lhs
-        self.rhs      = rhs
+        self.prob   = prob
+        self.weight = - math.log(prob) / math.log(2.0)
+        self.lhs    = lhs
+        self.rhs    = rhs
 
 
 class Grammar:
@@ -42,7 +42,7 @@ class Grammar:
         with open(filename, 'r') as f:            # Iterate through all of the
             for line in f.readlines():            # lines, and populate the
                                                   # rule dictionary of our
-                tokens = line.split()             # grammar.
+                tokens   = line.split()           # grammar.
                 prob     = float(tokens[0])
                 lhs, rhs = tokens[1], tokens[2:]
 
