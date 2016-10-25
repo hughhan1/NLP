@@ -93,8 +93,10 @@ class Parser:
 
         curr_col = 0
         while curr_col < len(self.table):
+
             curr_row = 0
             while curr_row < len(self.table[curr_col]):
+
                 dot_idx, rule_pointer = self.table[curr_col][curr_row]
                 rule = self.get_rule(rule_pointer)
                 if dot_idx >= len(rule.rhs):
@@ -129,6 +131,9 @@ class Parser:
 
                     symbol = rule.rhs[dot_idx]
                     if not symbol in self.grammar:
+                    	if curr_col >= len(words):
+                    		pass
+                    		# TODO: ask what to do in this case
                         if words[curr_col] == symbol:
                             next_col = curr_col + 1
                             updated_tuple = (dot_idx + 1, rule_pointer)
@@ -137,12 +142,13 @@ class Parser:
                         tuples = self.__build_tuples(symbol, curr_col)
                         self.table[curr_col].extend(tuples)
 
+                print "(col: %d, row: %d)" % (curr_col, curr_row)
                 curr_row += 1
 
+            self.curr_rules = set()
             curr_col += 1
 
         print self.table
-        self.curr_rules = set()
 
 
 def main():
