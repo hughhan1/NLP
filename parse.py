@@ -9,6 +9,7 @@ ROOT = "ROOT"
 
 
 class Rule:
+
     def __init__(self, prob, lhs, rhs):
         self.prob = prob
         self.weight = - math.log(prob) / math.log(2.0)
@@ -17,7 +18,8 @@ class Rule:
 
 
     def __repr__(self):
-        return "prob: {0}, weight: {1}, lhs: {2}, rhs: {3}".format(self.prob, self.weight, self.lhs, self.rhs)
+        return ("prob: {0}, weight: {1}, lhs: {2}, rhs: {3}"
+                .format(self.prob, self.weight, self.lhs, self.rhs))
 
 
 class RulePointer:
@@ -37,10 +39,13 @@ class RulePointer:
 
 
     def __hash__(self):
-        return hash(self.lhs) ^ hash(self.grammar_idx) ^ hash(self.col) ^ hash(self.dot_idx)
+        return hash(self.lhs) ^ hash(self.grammar_idx) ^ \
+               hash(self.col) ^ hash(self.dot_idx)
+
 
     def __repr__(self):
-        return "lhs: {0}, grammar_idx: {1}, col: {2}, dot_idx: {3} ".format(self.lhs, self.grammar_idx, self.col, self.dot_idx)
+        return ("lhs: {0}, grammar_idx: {1}, col: {2}, dot_idx: {3} "
+                .format(self.lhs, self.grammar_idx, self.col, self.dot_idx))
 
 
 class Parser:
@@ -60,10 +65,10 @@ class Parser:
         '''
         helper function for parsing grammar file
         '''
-        with open(filename, 'r') as f:  # Iterate through all of the
-            for line in f.readlines():  # lines, and populate the
-                # rule dictionary of our
-                tokens = line.split()  # grammar.
+        with open(filename, 'r') as f:             # Here, we iterate through
+            for line in f.readlines():             # all of the lines, and
+                                                   # populate the rule
+                tokens = line.split()              # dictionary of our grammar.
                 prob = float(tokens[0])
                 lhs, rhs = tokens[1], tokens[2:]
 
@@ -96,8 +101,8 @@ class Parser:
         self.table = [[] for _ in range(len(words) + 1)]
 
         # First we need to append our root rule
-        tuples = self.__build_rule_ptrs(ROOT, 0)
-        self.table[0].extend(tuples)
+        rule_ptrs = self.__build_rule_ptrs(ROOT, 0)
+        self.table[0].extend(rule_ptrs)
 
         curr_col = 0
         while curr_col < len(self.table):
@@ -110,24 +115,33 @@ class Parser:
             curr_row = 0
             while curr_row < len(self.table[curr_col]):
 
-                rule_pointer = self.table[curr_col][curr_row]
-                dot_idx = rule_pointer.dot_idx
-                rule = self.get_rule(rule_pointer)
-                if dot_idx >= len(rule.rhs):    # LOOK BACK
+                rule_ptr = self.table[curr_col][curr_row]  # Here, we get the
+                dot_idx = rule_ptr.dot_idx                 # current cell of
+                rule = self.get_rule(rule_ptr)             # our table.
 
-                    # Use the rule_pointer.col attribute to go back to the correct
-                    # column. Then iterate through that column, and copy over all
-                    # relevant rule_pointers (+1 to the dot_idx) to this column.
+                if dot_idx >= len(rule.rhs):
+
+                    # If the index of our dot (the current position in the 
+                    # rule) is greater than or equal to the length of the
+                    # right-hand side of the rule, then that means we've 
+                    # reached the end of the rule.
                     #
-                    # The relevant rule_pointers are going to be the ones that have
-                    # rule
+                    # Thus, we need to look back to the associated column, take
+                    # all relevant entries, shift over the dot_idx by 1 to the
+                    # right, and copy them into the current column.
+                    #
+                    # The relevant entries are the entries that contain the
+                    # current entry's left hand side as the dot_idx-th symbol
+                    # in the associated entry's right hand side.
 
-                    back_col = rule_pointer.col
-                    column = self.table[back_col]
-                    for r_ptr in column:
-                        # r is the rule pointer
+                    back_col = rule_ptr.col        # First, retrieve the actual
+                    column = self.table[back_col]  # associated column (list).
+
+                    for r_ptr in column:           # Now iterate through all
+                                                   # entries in the column.
                         d = r_ptr.dot_idx
                         r = self.get_rule(r_ptr)
+
                         if d < len(r.rhs) and r.rhs[d] == rule.lhs:
                             updated_rule_ptr = RulePointer(r_ptr.lhs, r_ptr.grammar_idx, r_ptr.col, d+1)
                             if updated_rule_ptr not in self.curr_rule_ptrs:
@@ -135,40 +149,45 @@ class Parser:
                                 self.curr_rule_ptrs.add(updated_rule_ptr)
 
                 else:
-                    # If our symbol is not a key in our grammar, then it must
-                    # be a terminal. If it is a terminal, then we try to match
-                    # the current symbol with the corresponding symbol in our
-                    # sentence.
-                    #
-                    # If our symbol is in a key in our grammar, then it must
-                    # be a nonterminal. In this case, we continue to unravel
-                    # the symbol, and then append its children to our current
-                    # column.
+
+                    # Otherwise, we can check if the current symbol is a
+                    # terminal or non-terminal, and then go from there.
 
                     symbol = rule.rhs[dot_idx]
-                    if not symbol in self.grammar:  # SCAN TERMINAL
+                    if symbol not in self.grammar:     
+
+                        # TERMINAL SYMBOL
+                        # If our symbol is not a key in our grammar, then it 
+                        # must be a terminal. If it is a terminal, then we try 
+                        # to match the current symbol with the corresponding 
+                        # symbol in our sentence.
+
                         if curr_col >= len(words):
-                            pass
                             # TODO: ask what to do in this case
+                            pass
                         elif words[curr_col] == symbol:
                             next_col = curr_col + 1
-                            updated_rule_ptr = RulePointer(rule_pointer.lhs, rule_pointer.grammar_idx, rule_pointer.col, dot_idx + 1)
+                            updated_rule_ptr = RulePointer(rule_ptr.lhs, rule_ptr.grammar_idx, rule_ptr.col, dot_idx + 1)
                             self.table[next_col].append(updated_rule_ptr)
-                    else:                           # EVALUATE NON-TERMINAL
+
+                    else:                               
+                        # NON-TERMINAL SYMBOL
+                        # If our symbol is a key in our grammar, then it must
+                        # be a nonterminal. We unravel the symbol, and then 
+                        # append its children to our current column.
+
                         rule_ptrs = self.__build_rule_ptrs(symbol, curr_col)
                         self.table[curr_col].extend(rule_ptrs)
 
-                print "(col: %d, row: %d)" % (curr_col, curr_row)
+                # print "(%d, %d)" % (curr_col, curr_row)
+                
                 curr_row += 1
 
-            self.curr_rule_ptrs = set()
             curr_col += 1
-
-        for i in self.table:
-            print i
-
-
-
+                                         # After finishing our current column 
+            self.curr_rule_ptrs = set()  # and advancing to the next, we need 
+                                         # to clear our list of rule pointers 
+                                         # that were already used.
 def main():
 
     parser = Parser("papa.gr")
