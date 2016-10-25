@@ -134,7 +134,7 @@ class Parser:
                     	if curr_col >= len(words):
                     		pass
                     		# TODO: ask what to do in this case
-                        if words[curr_col] == symbol:
+                        elif words[curr_col] == symbol:
                             next_col = curr_col + 1
                             updated_tuple = (dot_idx + 1, rule_pointer)
                             self.table[next_col].append(updated_tuple)
