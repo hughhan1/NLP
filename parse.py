@@ -22,18 +22,31 @@ class Rule:
                 .format(self.prob, self.weight, self.lhs, self.rhs))
 
 
+class TerminalEntry:
+
+    def __init__(self, lhs, weight=0, curr_prob=1):
+        self.lhs = lhs
+        self.rhs = []
+        self.weight = weight
+        self.curr_prob = curr_prob
+        self.back_ptrs = []
+
+
 class TableEntry:
 
-    def __init__(self, lhs, grammar_idx, col, dot_idx):
-        self.lhs     = lhs
+    def __init__(self, lhs, grammar_idx, col, dot_idx, weight=None, curr_prob=None):
+        self.lhs         = lhs
         self.grammar_idx = grammar_idx
-        self.col     = col
-        self.dot_idx = dot_idx
-        self.back_ptrs = []
-        self.visited = False
+        self.col         = col
+        self.dot_idx     = dot_idx
+        self.back_ptrs   = []
+        self.weight      = weight
+        self.curr_prob   = curr_prob
+
 
     def __eq__(self, other):
-        return self.lhs         == other.lhs         and \
+        return isinstance(other, TableEntry)         and \
+               self.lhs         == other.lhs         and \
                self.grammar_idx == other.grammar_idx and \
                self.col         == other.col         and \
                self.dot_idx     == other.dot_idx
@@ -83,7 +96,7 @@ class Parser:
         possible_rules = self.grammar[symbol]
         entries = []
         for i, rule in enumerate(possible_rules):
-            entry = TableEntry(symbol, i, col, 0)
+            entry = TableEntry(symbol, i, col, 0, rule.weight, rule.prob)
             if entry not in self.existing_entries:
                 entries.append(entry)
                 self.existing_entries.add(entry)
@@ -102,17 +115,25 @@ class Parser:
          4     P  -> ['with']       (0)
         '''
         col_idx = 0
+
         for col in self.table:
             print "COLUMN %d" % (col_idx)
             for entry in col:
-                rule = self.get_rule(entry)
-                print ("{0} {1}\t-> {2}\t({3})"
-                       .format(entry.col, rule.lhs, rule.rhs, entry.dot_idx))
+                if entry == None:
+                    print "  [ -- None -- ]"
+                else:
+                    rule = self.get_rule(entry)
+                    print ("{0} {1}\t-> {2}\t({3})\t({4})"
+                           .format(entry.col, rule.lhs, rule.rhs, entry.dot_idx, entry.weight))
+
+
             print ""
             col_idx += 1
 
 
     def get_rule(self, entry):
+        if entry == None:
+            return None
         return self.grammar[entry.lhs][entry.grammar_idx]
 
 
@@ -145,11 +166,18 @@ class Parser:
             while curr_row < len(self.table[curr_col]):
 
                 entry = self.table[curr_col][curr_row]  # Here, we get the
+
+                if entry == None:
+                    curr_row += 1
+                    continue
+
                 dot_idx = entry.dot_idx                 # current cell of
                 rule = self.get_rule(entry)             # our table.
 
                 if dot_idx >= len(rule.rhs):
 
+                    # ATTACH
+                    #
                     # If the index of our dot (the current position in the 
                     # rule) is greater than or equal to the length of the
                     # right-hand side of the rule, then that means we've 
@@ -172,13 +200,48 @@ class Parser:
                         r = self.get_rule(e)
 
                         if d < len(r.rhs) and r.rhs[d] == rule.lhs:
-                            updated_entry = TableEntry(e.lhs, e.grammar_idx, e.col, d+1)
+
+                            # Obtain the total weight of the previous entry
+                            # (which is the entry being attached) and the
+                            # weight of the current rule.
+
+                            prob   = e.curr_prob * entry.curr_prob
+                            weight = e.weight + entry.weight
+
+                            updated_entry = TableEntry(e.lhs, e.grammar_idx, e.col, d+1, weight, prob)
                             updated_entry.back_ptrs.extend(e.back_ptrs)
                             updated_entry.back_ptrs.append(entry)
 
                             if updated_entry not in self.existing_entries:
                                 self.table[curr_col].append(updated_entry)
                                 self.existing_entries.add(updated_entry)
+                            else:
+                                for existing_entry in self.existing_entries:
+                                    # if existing_entry == updated_entry and \
+                                    #    updated_entry.weight < existing_entry.weight:
+                                    #     self.existing_entries.remove(existing_entry)
+                                    #     self.existing_entries.add(updated_entry)
+
+                                    #     temp_idx = self.table[curr_col].index(existing_entry)
+
+                                    #     self.table[curr_col][temp_idx] = None
+                                    #     self.table[curr_col].append(updated_entry)
+                                    #     break
+                                    if existing_entry == updated_entry and \
+                                       updated_entry.curr_prob > existing_entry.curr_prob:
+                                        self.existing_entries.remove(existing_entry)
+                                        self.existing_entries.add(updated_entry)
+
+                                        temp_idx = self.table[curr_col].index(existing_entry)
+
+                                        self.table[curr_col][temp_idx] = None
+                                        self.table[curr_col].append(updated_entry)
+                                        break
+
+                    last_symbol = rule.rhs[len(rule.rhs) - 1]
+                    if entry.back_ptrs and last_symbol not in self.grammar:
+                        t = TerminalEntry(rule.rhs[len(rule.rhs) - 1])
+                        entry.back_ptrs.append(t)
 
                 else:
 
@@ -188,6 +251,8 @@ class Parser:
                     symbol = rule.rhs[dot_idx]
                     if symbol not in self.grammar:     
 
+                        # SCAN
+                        #
                         # TERMINAL SYMBOL
                         # If our symbol is not a key in our grammar, then it 
                         # must be a terminal. If it is a terminal, then we try 
@@ -199,19 +264,33 @@ class Parser:
                             pass
                         elif words[curr_col] == symbol:
                             next_col = curr_col + 1
-                            updated_entry = TableEntry(entry.lhs, entry.grammar_idx, entry.col, dot_idx + 1)
-                            # updated_entry.back_ptr = entry
+                            updated_entry = TableEntry(entry.lhs, entry.grammar_idx, entry.col, dot_idx + 1, entry.weight, entry.curr_prob)
+                            updated_entry.back_ptrs.extend(entry.back_ptrs)
+
+                            if dot_idx + 1 < len(rule.rhs):
+                                # If this happens, it must be that we scanned some terminal
+                                # symbol, but we haven't advanced the dot index to the end
+                                # of the rhs yet.
+                                #
+                                # Now, we need to make a temporary TableEntry, and point a
+                                # backpointer to that, which will represent the terminal
+                                # symbol.
+
+                                t = TerminalEntry(rule.rhs[dot_idx])
+                                updated_entry.back_ptrs.append(t)
+
                             self.table[next_col].append(updated_entry)
 
-                    else:                               
+                    else:  
+
+                        # PREDICT
+                        #                             
                         # NON-TERMINAL SYMBOL
                         # If our symbol is a key in our grammar, then it must
                         # be a nonterminal. We unravel the symbol, and then 
                         # append its children to our current column.
 
                         entries = self.__build_rule_ptrs(symbol, curr_col)
-                        # for e in entries: 
-                        #     e.back_ptr = entry
                         self.table[curr_col].extend(entries)
                 
                 curr_row += 1
@@ -231,9 +310,10 @@ class Parser:
             if tab_entry == temp:
                 res = tab_entry
         if res is None:
-            return "failure"
-
-        self.print_parse(res)
+            print "NONE"
+        else:
+            self.print_parse(res)
+            print res.weight
 
 
     def print_parse(self, entry):
@@ -244,16 +324,19 @@ class Parser:
         )
         '''
 
-        rule = self.get_rule(entry)
-        sys.stdout.write("({0} ".format(rule.lhs))
+        if isinstance(entry, TerminalEntry):
+            sys.stdout.write(" {0}".format(entry.lhs))
+        else:
+            rule = self.get_rule(entry)
+            sys.stdout.write("({0} ".format(rule.lhs))
 
-        if not entry.back_ptrs:
-            sys.stdout.write(" {0}".format(rule.rhs[0]))
+            if not entry.back_ptrs:
+                sys.stdout.write(" {0}".format(rule.rhs[0]))
 
-        for e in entry.back_ptrs:
-            self.print_parse(e)
+            for e in entry.back_ptrs:
+                self.print_parse(e)
 
-        sys.stdout.write(")")
+            sys.stdout.write(")")
 
 
 def main():
@@ -266,6 +349,7 @@ def main():
 
     parser = Parser(grammar_file)
     parser.parse(sentence_file)
+    # parser.parse_sentence("{ 3 }")
 
 
 if __name__ == "__main__":
