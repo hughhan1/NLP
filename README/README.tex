@@ -1,0 +1,138 @@
+\documentclass[11pt]{article}
+
+\usepackage{epsfig}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage{amstext}
+\usepackage{amsmath}
+\usepackage{xspace}
+\usepackage{theorem}
+\usepackage{hyperref}
+\usepackage{fullpage}
+\usepackage{framed}
+
+\usepackage{enumitem}                     
+\usepackage{listings}
+\usepackage{color}
+
+\usepackage{titlesec}
+
+\usepackage{tikz}
+\usepackage{graphicx}
+\usetikzlibrary{positioning}
+
+\definecolor{dkgreen}{rgb}{0,0.6,0}
+\definecolor{gray}{rgb}{0.5,0.5,0.5}
+\definecolor{mauve}{rgb}{0.58,0,0.82}
+
+\titleformat*{\section}{\bfseries}
+\titleformat*{\subsection}{\bfseries}
+\titleformat*{\subsubsection}{\bfseries}
+\titleformat*{\paragraph}{\bfseries}
+\titleformat*{\subparagraph}{\bfseries}
+
+\newenvironment{proof}{{\bf Proof:  }}{\hfill\rule{2mm}{2mm}}
+\newenvironment{proofof}[1]{{\bf Proof of #1:  }}{\hfill\rule{2mm}{2mm}}
+\newenvironment{proofofnobox}[1]{{\bf#1:  }}{}
+\newenvironment{example}{{\bf Example:  }}{\hfill\rule{2mm}{2mm}}
+
+\newtheorem{fact}{Fact}
+\newtheorem{lemma}[fact]{Lemma}
+\newtheorem{theorem}[fact]{Theorem}
+\newtheorem{definition}[fact]{Definition}
+\newtheorem{corollary}[fact]{Corollary}
+\newtheorem{proposition}[fact]{Proposition}
+\newtheorem{claim}[fact]{Claim}
+\newtheorem{exercise}[fact]{Exercise}
+
+% math notation
+\newcommand{\N}{\ensuremath{\mathbb N}}
+\newcommand{\Z}{\ensuremath{\mathbb Z}}
+\newcommand{\Q}{\ensuremath{\mathbb Q}}
+\newcommand{\R}{\ensuremath{\mathbb R}}
+\newcommand{\F}{\ensuremath{\mathcal F}}
+\newcommand{\SymGrp}{\ensuremath{\mathfrak S}}
+
+\newcommand{\size}[1]{\ensuremath{\left|#1\right|}}
+\newcommand{\ceil}[1]{\ensuremath{\left\lceil#1\right\rceil}}
+\newcommand{\floor}[1]{\ensuremath{\left\lfloor#1\right\rfloor}}
+\newcommand{\poly}{\operatorname{poly}}
+\newcommand{\polylog}{\operatorname{polylog}}
+
+% anupam's abbreviations
+\newcommand{\e}{\epsilon}
+\newcommand{\half}{\ensuremath{\frac{1}{2}}}
+\newcommand{\junk}[1]{}
+\newcommand{\sse}{\subseteq}
+\newcommand{\union}{\cup}
+\newcommand{\meet}{\wedge}
+
+\newcommand{\prob}[1]{\ensuremath{\text{{\bf Pr}$\left[#1\right]$}}}
+\newcommand{\expct}[1]{\ensuremath{\text{{\bf E}$\left[#1\right]$}}}
+\newcommand{\Event}{{\mathcal E}}
+
+\newcommand{\mnote}[1]{\normalmarginpar \marginpar{\tiny #1}}
+
+
+\lstset{frame=tb,
+  language={},
+  aboveskip=3mm,
+  belowskip=3mm,
+  showstringspaces=false,
+  columns=flexible,
+  basicstyle={\small\ttfamily},
+  numbers=none,
+  numberstyle=\tiny\color{gray},
+  keywordstyle=\color{blue},
+  commentstyle=\color{dkgreen},
+  stringstyle=\color{mauve},
+  breaklines=true,
+  breakatwhitespace=true,
+  tabsize=3
+}
+
+\definecolor{codegray}{gray}{0.9}
+\newcommand{\code}[1]{\texttt{#1}}
+\newcommand{\codebox}[1]{\colorbox{codegray}{\texttt{#1}}}
+
+\setenumerate[0]{label=\arabic*.}
+
+\newlength\tindent
+\setlength{\tindent}{\parindent}
+\setlength{\parindent}{0pt}
+\renewcommand{\indent}{\hspace*{\tindent}}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Document begins here %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{document}
+
+\noindent {\bf{HUGH HAN, ANISH DALAL} \vspace{4pt} \\ \large {\bf 600.465 Natural Language Processing} \hfill {{\bf Fall 2016}}}\\
+{{\bf Homework \#4}} \hfill {{\bf Due:} 26 October 2016, 2:00pm} \vspace{6pt} \\
+\rule[0.1in]{\textwidth}{0.4pt}
+
+\begin{enumerate}
+\item % PROBLEM 1
+	For this problem, we decided to use the Berkeley parser.
+	\begin{enumerate}[label=(\alph*)]
+	\item
+		One interesting thing about the style of the trees the vast number of symbol types that it has. It represents the different types of words in the English language very well.
+
+		What we thought was particularly cool was that if you gave the parser some gibberish words, it would either
+		\begin{enumerate}[label=(\roman*)]
+			\item
+				Classify those gibberish rules as plain ``symbols'' if it didn't have enough contextual information to make a guess (for example when there is only one word),
+			\item
+				Make an educated guess on what types of words the gibberish actually is.  That is, it guesses the most probable parse rules that could lead to this type of sentence, based contextual information.
+
+				We think that the contextual information could be things such as the number of words or the words surrounding unrecognized words.
+		\end{enumerate}
+		
+	\item
+	\item
+	\end{enumerate}
+
+\end{enumerate}
+
+\end{document}
