@@ -94,7 +94,7 @@ class Parser:
                 self.grammar[lhs].append(Rule(prob, lhs, rhs))
 
 
-    def __build_entries(self, symbol, col):
+    def __predict(self, symbol, col, sentence_token=None):
 
         entries = []
 
@@ -102,6 +102,14 @@ class Parser:
             self.existing_lhs.add(symbol)
             possible_rules = self.grammar[symbol]
             for i, rule in enumerate(possible_rules):
+
+                # If the current rule contains a terminal, but that terminal
+                # doesn't match what our next sentence word is, then we don't
+                # add it to our table.
+                s = rule.rhs[0]
+                if self.is_terminal(s) and s != sentence_token:
+                    continue
+
                 entry = TableEntry(symbol, i, col, 0, rule.weight)
                 if entry not in self.existing_entries:
                     entries.append(entry)
@@ -144,6 +152,7 @@ class Parser:
     def get_rule(self, entry):
         if entry == None:
             return None
+
         return self.grammar[entry.lhs][entry.grammar_idx]
 
 
@@ -162,7 +171,7 @@ class Parser:
         self.table = [[] for _ in range(len(words) + 1)]
 
         # First we need to append our root rule
-        entries = self.__build_entries(ROOT, 0)
+        entries = self.__predict(ROOT, 0)
         self.table[0].extend(entries)
         curr_col = 0
         while curr_col < len(self.table):
@@ -338,7 +347,10 @@ class Parser:
                         #   be a nonterminal. We unravel the symbol, and then 
                         #   append its children to our current column.
 
-                        entries = self.__build_entries(symbol, curr_col)
+                        if curr_col != len(words):
+                            entries = self.__predict(symbol, curr_col, words[curr_col])
+                        else:
+                            entries = self.__predict(symbol, curr_col, None)
                         self.table[curr_col].extend(entries)
                 
                 curr_row += 1
