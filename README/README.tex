@@ -246,13 +246,132 @@
 	\end{enumerate}
 
 \item 
-	For this part, we just implemented some easy speedup tricks. First, we handled the categories have already been predicted for the current column. 
 
-	That is, we keep track of them. If we're about to predict a batch of several hundred \texttt{NP} rules (all rules of the form \texttt{NP} $\to$ \texttt{. BLAH BLAH}), then our program first does a quick check to discover whether we've already added that batch to the current column.
+	Our output from \texttt{parse2.py} is pasted below.
 
-	To do this, we can simply check the left-hand-side of whatever rule we're adding, and that will correspond to the same batch of rules during prediction.
+	\begin{lstlisting}
+(ROOT (S (NP (NPR (NNP John)))
+         (VP (VBZ is)
+             (ADJP-PRD (JJ happy)))
+         (PUNC. .)))
+34.224010618
+(ROOT (S (NP (DT The)
+             (ADJP (RB very)
+                   (JJS biggest))
+             (NNS companies))
+         (VP (VBP are)
+             (RB not)
+             (ADVP (RB likely))
+             (VP (TO to)
+                 (VP (VB go)
+                     (PP (IN under)))))
+         (PUNC. .)))
+104.909225647
+(ROOT (S (NP (DT The)
+             (NN market))
+         (VP (VBZ is)
+             (VP (VBG wondering)
+                 (SBAR (WHNP (WP what))
+                       (S (NP (NPRS (NNP General)
+                                    (NNPS Motors)))
+                          (VP (VBZ has)
+                              (VP (VBN done)))
+                          (PUNC. .)))))))
+94.5811848825
+(ROOT (S (PP (IN In)
+             (NP (JJ recent)
+                 (NNS years)))
+         ,
+         (NP (NN pay))
+         (VP (VBD surged)
+             (SBAR (IN as)
+                   (S (NP (NN demand))
+                      (VP (VBD rose)
+                          (SBAR (IN while)
+                                (S (NP (NNS workers))
+                                   (VP (VBN left)
+                                       (PP (IN for)
+                                           (NP (JJR easier)
+                                               (NNS jobs))))))))))
+         (PUNC. .)))
+161.818960465
+(ROOT (S (S-ADV (VP (VBN caught)
+                    (PRT (RP off))
+                    (NP (NN guard))))
+         ,
+         (NP (NPR (NNP Ford)
+                  (NNP Motor)
+                  (NNP Co.)))
+         (VP (VBD had)
+             (NP (DT no)
+                 (NN choice))
+             (PP (IN except)
+                 (S-NOM (VP (TO to)
+                            (VP (VB follow)
+                                (NP (NN suit))))))
+             (PP (IN with)
+                 (NP (NN financing)
+                     (NNS deals))))
+         (PUNC. .)))
+191.390539461
+(ROOT (S (NP (NNS data))
+         (VP (VBP show)
+             (SBAR (WHNP (WDT that))
+                   (S (VP (VB pay)
+                          (VP (VBD was)
+                              (ADJP-PRD (JJ flat)
+                                        (PP (IN for)
+                                            (NP (NP (DT the)
+                                                    (JJ third)
+                                                    (JJ consecutive)
+                                                    (NN quarter))
+                                                (PP (IN after)
+                                                    (NP (DT a)
+                                                        (NN rash))))))
+                              (PP (IN of)
+                                  (NP (QP (QP (CD 4))
+                                          (NN %)
+                                          (PP (TO to)
+                                              (NP (QP (CD 5))
+                                                  (NN %))))
+                                      (JJ annualized)
+                                      (NNS increases))))))))
+         (PUNC. .)))
+212.54526591
+	\end{lstlisting}
+	Unfortunately, we couldn't finish letting it run in time, so did not submit outputs for sentences 7, 8, or 9. However, our first 6 sentences are correct, and we are somewhat confident that 7, 8, 9 will also be correct if given enough time to run.
 
-	Another thing we implemented was 1-lookahead.
+	To measure speedup, we ran our parser on 3 different grammars: \texttt{wallstreet.gr}, \texttt{papa.gr}, and \texttt{arith.gr}. For \texttt{wallstreet.gr}, due to how large it is, we a) ran it using pypy and b) measured speedup only on the first 3 sentences.
+
+	\begin{center}
+	\begin{tabular}{|c|c|c|}
+	\hline 
+	Grammar & Runtime parse.py (s) & Runtime parse2.py (s) \\ 
+	\hline 
+	\texttt{papa.gr} & 0.07 & 0.04 \\ 
+	\hline 
+	\texttt{arith.gr} & 0.05 & 0.04 \\ 
+	\hline 
+	\texttt{wallstreet.gr} & 98.36 & 45.28 \\ 
+	\hline
+	\end{tabular} 
+	\end{center}
+
+	Clearly \texttt{parse2.py}---our optimized version---runs much faster than parse.py (more than twice as fast on \texttt{wallstreet.gr}). 
+
+	For this part, we just implemented some easy speedup tricks.
+
+	Two speedup methods were used.
+	\begin{enumerate}
+		\item
+			When the predict method is called, we check in constant time whether the rules for a given non-terminal have already been predicted. That is, we keep track of them. 
+
+			If we're about to predict a batch of several hundred \texttt{NP} rules (all rules of the form \texttt{NP} $\to$ \texttt{. BLAH BLAH}), then our program first does a quick check to discover whether we've already added that batch to the current column.
+
+			To do this, we can simply check the left-hand-side of whatever rule we're adding, and that will correspond to the same batch of rules during prediction.
+		\item
+			We implement rudimentary one word lookahead. When predicting, we want to avoid adding preterminals or rules whose right hand sides begin with a terminal whose terminals do not match the current word in the sentence we wish to parse. If we are trying to parse "ate", we want to avoid rules like V $\rightarrow$ observed or X $\rightarrow$ observed Y. Additionally, we want to avoid rules that will not lead to the preterminals we would like to include. For example, since we are looking for V $\rightarrow$ ate, we want rules whose right hand sides are immediately trying to parse V. Thus, we can exclude NP $\rightarrow$ NP VP. We don't see incorrect parses for \texttt{wallstreet.gr} because we don't implement pruning methods. Thus, we don't exclude low probability rules without testing them against duplicate constituents. 
+	\end{enumerate}
 
 \end{enumerate}
 
