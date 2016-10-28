@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.16 (TeX Live 2015) (preloaded format=pdflatex 2015.5.24)  26 OCT 2016 22:57
+This is pdfTeX, Version 3.14159265-2.6-1.40.16 (TeX Live 2015) (preloaded format=pdflatex 2015.5.24)  28 OCT 2016 12:26
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -621,20 +621,20 @@ File: tikzlibrarypositioning.code.tex 2008/10/06 v3.0.0 (rcs-revision 1.7)
  (./README.aux)
 \openout1 = `README.aux'.
 
-LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 109.
-LaTeX Font Info:    ... okay on input line 109.
-LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 109.
-LaTeX Font Info:    ... okay on input line 109.
-LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 109.
-LaTeX Font Info:    ... okay on input line 109.
-LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 109.
-LaTeX Font Info:    ... okay on input line 109.
-LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 109.
-LaTeX Font Info:    ... okay on input line 109.
-LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 109.
-LaTeX Font Info:    ... okay on input line 109.
-LaTeX Font Info:    Checking defaults for PD1/pdf/m/n on input line 109.
-LaTeX Font Info:    ... okay on input line 109.
+LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 111.
+LaTeX Font Info:    ... okay on input line 111.
+LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 111.
+LaTeX Font Info:    ... okay on input line 111.
+LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 111.
+LaTeX Font Info:    ... okay on input line 111.
+LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 111.
+LaTeX Font Info:    ... okay on input line 111.
+LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 111.
+LaTeX Font Info:    ... okay on input line 111.
+LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 111.
+LaTeX Font Info:    ... okay on input line 111.
+LaTeX Font Info:    Checking defaults for PD1/pdf/m/n on input line 111.
+LaTeX Font Info:    ... okay on input line 111.
 
 (/usr/local/texlive/2015/texmf-dist/tex/context/base/supp-pdf.mkii
 [Loading MPS to PDF converter (version 2006.09.02).]
@@ -665,7 +665,7 @@ File: epstopdf-sys.cfg 2010/07/13 v1.3 Configuration of (r)epstopdf for TeX Liv
 e
 ))
 \AtBeginShipoutBox=\box44
-Package hyperref Info: Link coloring OFF on input line 109.
+Package hyperref Info: Link coloring OFF on input line 111.
 
 (/usr/local/texlive/2015/texmf-dist/tex/latex/hyperref/nameref.sty
 Package: nameref 2012/10/27 v2.43 Cross-referencing by name of section
@@ -675,42 +675,97 @@ Package: gettitlestring 2010/12/03 v1.4 Cleanup title references (HO)
 )
 \c@section@level=\count145
 )
-LaTeX Info: Redefining \ref on input line 109.
-LaTeX Info: Redefining \pageref on input line 109.
-LaTeX Info: Redefining \nameref on input line 109.
+LaTeX Info: Redefining \ref on input line 111.
+LaTeX Info: Redefining \pageref on input line 111.
+LaTeX Info: Redefining \nameref on input line 111.
 
 (./README.out) (./README.out)
 \@outlinefile=\write4
 \openout4 = `README.out'.
 
 \c@lstlisting=\count146
- ABD: EveryShipout initializing macros [1
+ ABD: EveryShipout initializing macros
+LaTeX Font Info:    Try loading font information for U+msa on input line 134.
 
-{/usr/local/texlive/2015/texmf-var/fonts/map/pdftex/updmap/pdftex.map}]
-Package atveryend Info: Empty hook `BeforeClearDocument' on input line 137.
-Package atveryend Info: Empty hook `AfterLastShipout' on input line 137.
+(/usr/local/texlive/2015/texmf-dist/tex/latex/amsfonts/umsa.fd
+File: umsa.fd 2013/01/14 v3.01 AMS symbols A
+)
+LaTeX Font Info:    Try loading font information for U+msb on input line 134.
+
+(/usr/local/texlive/2015/texmf-dist/tex/latex/amsfonts/umsb.fd
+File: umsb.fd 2013/01/14 v3.01 AMS symbols B
+)
+<gibparsetree.png, id=7, 206.7725pt x 148.555pt>
+File: gibparsetree.png Graphic file (type png)
+ <use gibparsetree.png>
+Package pdftex.def Info: gibparsetree.png used on input line 139.
+(pdftex.def)             Requested size: 144.73975pt x 103.98778pt.
+
+[1
+
+{/usr/local/texlive/2015/texmf-var/fonts/map/pdftex/updmap/pdftex.map} <./gibpa
+rsetree.png>] <policepoliceparsetree.png, id=27, 316.18124pt x 170.6375pt>
+File: policepoliceparsetree.png Graphic file (type png)
+
+<use policepoliceparsetree.png>
+Package pdftex.def Info: policepoliceparsetree.png used on input line 196.
+(pdftex.def)             Requested size: 221.32535pt x 119.44542pt.
+ [2 <./policepoliceparsetree.png>]
+<gardenpath.png, id=53, 361.35pt x 170.6375pt>
+File: gardenpath.png Graphic file (type png)
+ <use gardenpath.png>
+Package pdftex.def Info: gardenpath.png used on input line 202.
+(pdftex.def)             Requested size: 252.94327pt x 119.44542pt.
+
+<buffalorun.png, id=54, 161.60374pt x 126.4725pt>
+File: buffalorun.png Graphic file (type png)
+ <use buffalorun.png>
+Package pdftex.def Info: buffalorun.png used on input line 217.
+(pdftex.def)             Requested size: 113.12184pt x 88.53014pt.
+
+Overfull \hbox (73.35378pt too wide) in alignment at lines 221--223
+ [][][] []
+ []
+
+<zechariah.png, id=55, 498.86375pt x 303.1325pt>
+File: zechariah.png Graphic file (type png)
+ <use zechariah.png>
+Package pdftex.def Info: zechariah.png used on input line 228.
+(pdftex.def)             Requested size: 349.20224pt x 212.1913pt.
+ [3 <./gardenpath.png> <./buffalorun.png>]
+Underfull \hbox (badness 10000) in paragraph at lines 245--246
+
+ []
+
+[4 <./zechariah.png>] [5]
+Package atveryend Info: Empty hook `BeforeClearDocument' on input line 259.
+Package atveryend Info: Empty hook `AfterLastShipout' on input line 259.
  (./README.aux)
-Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 137.
-Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 137.
+Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 259.
+Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 259.
 Package rerunfilecheck Info: File `README.out' has not changed.
 (rerunfilecheck)             Checksum: D41D8CD98F00B204E9800998ECF8427E;0.
-Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 137.
+Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 259.
  ) 
 Here is how much of TeX's memory you used:
- 17555 strings out of 493089
- 322515 string characters out of 6134842
- 386294 words of memory out of 5000000
- 20748 multiletter control sequences out of 15000+600000
- 4853 words of font info for 18 fonts, out of 8000000 for 9000
+ 17665 strings out of 493089
+ 324178 string characters out of 6134842
+ 403300 words of memory out of 5000000
+ 20797 multiletter control sequences out of 15000+600000
+ 9873 words of font info for 39 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
- 55i,5n,54p,408b,381s stack positions out of 5000i,500n,10000p,200000b,80000s
+ 55i,9n,54p,1218b,1177s stack positions out of 5000i,500n,10000p,200000b,80000s
 </usr/local/texlive/2015/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx10.pfb
 ></usr/local/texlive/2015/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx12.pfb>
-</usr/local/texlive/2015/texmf-dist/fonts/type1/public/amsfonts/cm/cmr10.pfb>
-Output written on README.pdf (1 page, 44679 bytes).
+</usr/local/texlive/2015/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi10.pfb><
+/usr/local/texlive/2015/texmf-dist/fonts/type1/public/amsfonts/cm/cmr10.pfb></u
+sr/local/texlive/2015/texmf-dist/fonts/type1/public/amsfonts/cm/cmr8.pfb></usr/
+local/texlive/2015/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy10.pfb></usr/l
+ocal/texlive/2015/texmf-dist/fonts/type1/public/amsfonts/cm/cmtt10.pfb>
+Output written on README.pdf (5 pages, 139563 bytes).
 PDF statistics:
- 36 PDF objects out of 1000 (max. 8388607)
- 29 compressed objects within 1 object stream
- 8 named destinations out of 1000 (max. 500000)
- 13 words of extra memory for PDF output out of 10000 (max. 10000000)
+ 112 PDF objects out of 1000 (max. 8388607)
+ 92 compressed objects within 1 object stream
+ 43 named destinations out of 1000 (max. 500000)
+ 38 words of extra memory for PDF output out of 10000 (max. 10000000)
 

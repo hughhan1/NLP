@@ -102,6 +102,8 @@
 \setlength{\parindent}{0pt}
 \renewcommand{\indent}{\hspace*{\tindent}}
 
+\graphicspath{{./}}
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Document begins here %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -128,10 +130,129 @@
 
 				We think that the contextual information could be things such as the number of words or the words surrounding unrecognized words.
 		\end{enumerate}
+		Consider the following nonsensical sentence.
+		\begin{eqnarray*}
+			\codebox{My asdfjkasdjl went alksdf the store}
+		\end{eqnarray*}
+		After reading that sentence, the parser deduced that the structure would look something like the following.
+
+		\includegraphics[scale=0.7]{gibparsetree.png}
 		
 	\item
+
+		From our examples, it would seem that any sentence that contained syntactic or lexical ambiguity statements caused the parser to produce an incorrect parse.
+
+		We tried feeding the following sentence into the parser:
+		\begin{eqnarray*}
+		\codebox{Buffalo buffalo Buffalo buffalo buffalo buffalo Buffalo buffalo}
+		\end{eqnarray*}
+		The output produced was the following.
+		\begin{lstlisting}
+		(ROOT
+		  (NP
+		    (NP (NNP Buffalo) (NNP buffalo) (NNP Buffalo))
+		    (NP (JJ buffalo) (NN buffalo) (NN buffalo) (NNP Buffalo) (NNP buffalo))))
+    	\end{lstlisting}
+    	Note that there is no NP VP clause, when there really should be. That is, the word buffalo can behave as a verb, and the parser fails to recognize this.
+
+\newpage
+
+    	We can also think of the following sentence:
+    	\begin{eqnarray*}
+    	\codebox{James while John had had had had had had had \ } \\
+    	\codebox{had had had had a better effect on the teacher}
+    	\end{eqnarray*}
+    	When fed into the parser, the following parse is generated.
+    	\begin{lstlisting}
+		(ROOT
+		  (S
+		    (NP (NNP James) (IN while) (NNP John))
+		    (VP (VBD had)
+		      (VP (VBN had)
+		        (S
+		          (VP (VBD had)
+		            (VP (VBD had)
+		              (VP (VBD had)
+		                (VP (VBD had)
+		                  (VP (VBD had)
+		                    (VP (VBD had)
+		                      (VP (VBD had)
+		                        (S
+		                          (VP (VBD had)
+		                            (VP (VBN had)
+		                              (NP
+		                                (NP (DT a) (JJR better) (NN effect))
+		                                (PP (IN on)
+		                                  (NP (DT the) (NN teacher)))))))))))))))))))
+    	\end{lstlisting}
+
+		Next, we thought of the following sentence.
+    	\begin{eqnarray*}
+    		\codebox{If police police police police, who police police police?}
+    	\end{eqnarray*}
+
+    	Below is its parse tree.
+
+    	\includegraphics[scale=0.7]{policepoliceparsetree.png}
+
+		The way the sentence is structured, it is referring to a noun phrase ``police police" who are in charge of ``police". The sentence is saying ``If there are police officers who monitor other police officers who monitors those police officers?". The parser got the ``police police" noun phrase correct in the second half of the sentence but failed to recognize ``police police" as a noun phrase in the first half (it believes ``police" police ``police police", rather than ``police police" police ``police").  
+
+		The parser does not handle garden path sentences very well either. However, it managed to produce the correct parse for ``The complex houses married and single soldiers and their families"
+
+		\includegraphics[scale=0.7]{gardenpath.png}
+
 	\item
+
+		We created the following grammatical sentence.
+		\begin{eqnarray*}
+			\codebox{Buffalo run runs running runs} 
+		\end{eqnarray*}
+
+		The sentence contains lexical ambiguity. It means ``Buffalo run their runs while running their runs". The phrase ``running runs" is a VP and an NP, so it should be created from the following rule.
+		\begin{eqnarray*}
+			\texttt{VP} \rightarrow \texttt{VP NP}
+		\end{eqnarray*}rule. 
+		The parser incorrectly parses this since it makes the phrase ``running runs" an \texttt{NP}.
+
+		\includegraphics[scale=0.7]{buffalorun.png}
+
+		Finally we searched for a sentence online. We found the following sentence.
+
+		\begin{eqnarray*}
+			\codebox{The word of the Lord came to Zechariah, son of Berekiah, son of Iddo, the prophet}
+		\end{eqnarray*} 
+		The ambiguity is that ``the prophet" can refer to either ``Iddo" or ``Zechariah" when in reality it refers to ``Zechariah" (this sentence is from the hebrew Bible). The parser believes the Iddo is the prophet rather than Zechariah. In the parse below, it creates a noun phrase for ``Iddo the prophet".
+
+		Below is the parse tree from Berkeley.
+
+		\includegraphics[scale=0.7]{zechariah.png}
+
 	\end{enumerate}
+
+\item
+	\begin{enumerate}[label=(\alph*)]
+	\item
+		Our algorithm does not take more than $O(n^2)$ space. We maintain a chart of length $n+1$ where $n$ is the length of the sentence. At most, a column $j$ will have O($j$) entries, so in the worst case you have O($n+1$) entries in the last column. Now note that the following statement is true.
+		\begin{eqnarray*}
+			O(n+1) + O(n) + O(n-1) + O(n-2) \dots &=& O(n^2)
+		\end{eqnarray*} 
+		The extra space used for each column is a set (implemented by a dict) of the same size as the column. We maintain a "table entry" object which maintains the same information as a dotted rule but in a more efficient structure. 
+
+		Our algorithm does not take more then $O(n^3)$ time. For any given rule in the chart, We either scan, predict, or complete. Scan is a $O(1)$ check against the input sentence. Predict adds all associated rules to the chart which is $O($number of rules for a non terminal$)$, and we maintain a hash map of rules in the current column to do $O(1)$ checking of duplicate rules before adding. Thus the runtime is bounded by the runtime of predict and complete. Complete similarly attaches constituents to customers. Due to the $O(1)$ check for duplicates (as well as $O(1)$ attachment as will be discussed in the next section), the runtime does not exceed $O(n^3)$.
+	\item 
+		We do not exceed $O(1)$ runtime for attaching to a column. We use primitive python's list object which is essentially a vector that allows $O(1)$ append to the end of the list. The list represents a column and the chart is a list of lists. There is not a time where we add to the middle of the list, so elements will not need to be shifted.
+	\item 
+		In the ``attach" portion of our parse method, we update weights accurately by having a table entry maintain the current weight of its own parse tree. If a rule is added by prediction, the weight assigned to it is the $\log_2 {p(}$probability of rule given by the grammar $)$. When we attach a constituent to its customer, we update weights by first adding the weight of the constituent to the weight of the customer (all weights are ``current weights" since they represent the weight of that parse) and checking if the parse tree formed is unique. If it is unique, it is added to the current column, else it is checked against the table entry for which it is the same. If the ``new" weight is less than the weight of the table entry already in the table, the old entry is removed (nullified rather than removing so that no elements need to be shifted). Thus, weights are maintained properly because they are updated when constituents are attached to customers (weight of a tree is the sum of weight of its branches) and compared against existing entries to find the optimal parse (a dynamic programming paradigm where you choose the optimal solution between two previous solutions). \\
+	\end{enumerate}
+
+\item 
+	For this part, we just implemented some easy speedup tricks. First, we handled the categories have already been predicted for the current column. 
+
+	That is, we keep track of them. If we're about to predict a batch of several hundred \texttt{NP} rules (all rules of the form \texttt{NP} $\to$ \texttt{. BLAH BLAH}), then our program first does a quick check to discover whether we've already added that batch to the current column.
+
+	To do this, we can simply check the left-hand-side of whatever rule we're adding, and that will correspond to the same batch of rules during prediction.
+
+	Another thing we implemented was 1-lookahead.
 
 \end{enumerate}
 
