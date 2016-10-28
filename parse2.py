@@ -71,7 +71,7 @@ class Parser:
         # Next, populate the rule dictionary using a grammar file.
         self.__read_file(grammar_file)
 
-        self.existing_entries = set()
+        self.existing_entries = {}
         self.existing_lhs     = set()
 
 
@@ -116,7 +116,7 @@ class Parser:
                     entry = TableEntry(symbol, i, col, 0, rule.weight)
                     if entry not in self.existing_entries:
                         entries.append(entry)
-                        self.existing_entries.add(entry)
+                        self.existing_entries[entry] = entry.weight
         
         return entries
 
@@ -182,7 +182,7 @@ class Parser:
             # iterate through all entries in our current column, and add all of
             # the existing rules to our set of current rules
             for entry in self.table[curr_col]:
-                self.existing_entries.add(entry)
+                self.existing_entries[entry] = entry.weight
 
             curr_row = 0
             while curr_row < len(self.table[curr_col]):
@@ -253,8 +253,12 @@ class Parser:
                                 # If the new entry doesn't exist in the current
                                 # column, we can simply add it to our table.
 
+                                # Note that the new_entry is technically
+                                # equivalent to the old one, using our
+                                # overloaded __eq__ function.
+
                                 self.table[curr_col].append(new_entry)
-                                self.existing_entries.add(new_entry)
+                                self.existing_entries[new_entry] = new_entry.weight
 
                             else:
 
@@ -262,40 +266,27 @@ class Parser:
                                 # to keep the entry with the lower weight,
                                 # which denotes the higher probability.
 
-                                for existing_entry in self.existing_entries:
-                                    if existing_entry == new_entry:
+                                existing_weight = self.existing_entries[new_entry]
 
-                                        if new_entry.weight < existing_entry.weight:
+                                if (
+                                    (new_entry.weight < existing_weight) or
+                                    (new_entry.weight == existing_weight and 
+                                        random.randint(0, 1) == 1
+                                    )
+                                ):
+                                    # If the new entry is more probable, delete
+                                    # the old one and add the new one.
+                                    #
+                                    # If we have a tie in likelihood, we don't 
+                                    # want to choose deterministically. So we 
+                                    # flip a coin, and pick at random.
 
-                                            # The new entry is more probable,
-                                            # so delete the old one and add the
-                                            # new one.
+                                    self.existing_entries[new_entry] = new_entry.weight
 
-                                            self.existing_entries.remove(existing_entry)
-                                            self.existing_entries.add(new_entry)
+                                    temp_idx = self.table[curr_col].index(new_entry)
 
-                                            temp_idx = self.table[curr_col].index(existing_entry)
-
-                                            self.table[curr_col][temp_idx] = None
-                                            self.table[curr_col].append(new_entry)
-                                            break
-
-                                        elif new_entry.weight == existing_entry.weight and \
-                                             random.randint(0, 1) == 1:
-
-                                            # When we have a tie in likelihood, 
-                                            # we don't want to choose 
-                                            # deterministically. So we flip a
-                                            # coin, and pick at random.
-
-                                            self.existing_entries.remove(existing_entry)
-                                            self.existing_entries.add(new_entry)
-
-                                            temp_idx = self.table[curr_col].index(existing_entry)
-
-                                            self.table[curr_col][temp_idx] = None
-                                            self.table[curr_col].append(new_entry)
-                                            break
+                                    self.table[curr_col][temp_idx] = None
+                                    self.table[curr_col].append(new_entry)
 
                     # Finally, we need to check if the last symbol of our entry
                     # is a terminal symbol. If it is, then we can keep a
@@ -360,7 +351,7 @@ class Parser:
 
             curr_col += 1
                                            # After finishing our current
-            self.existing_entries = set()  # column and advancing to the next,
+            self.existing_entries = {}     # column and advancing to the next,
             self.existing_lhs     = set()  # we need to clear our set of
                                            # entries that were already used.
 
@@ -403,16 +394,18 @@ class Parser:
 
 
 def main():
-    '''
+
     if len(sys.argv) != 3:
         return
 
     grammar_file  = sys.argv[1]
     sentence_file = sys.argv[2]
-    '''
-    parser = Parser("papa.gr")
-    # parser.parse(sentence_file)
-    parser.parse_sentence("Papa ate the caviar with the spoon")
+
+    parser = Parser(grammar_file)
+    parser.parse(sentence_file)
+
+    # parser = Parser("papa.gr")
+    # parser.parse_sentence("Papa ate the caviar with the spoon")
 
 
 if __name__ == "__main__":
