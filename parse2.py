@@ -17,6 +17,12 @@ class Rule:
         self.lhs = lhs
         self.rhs = rhs
 
+    def __eq__(self, other):
+        return isinstance(other, Rule) and \
+               self.prob         == other.prob and \
+               self.weight == other.weight and \
+               self.lhs         == other.lhs and \
+               self.rhs     == other.rhs
 
     def __repr__(self):
         return ("prob: {0}, weight: {1}, lhs: {2}, rhs: {3}"
@@ -67,12 +73,15 @@ class Parser:
         # First, construct a rule dictionary, mapping from a root symbol to a
         # list of its children symbols.
         self.grammar = defaultdict(list)
-
+        self.prefix_table = {}
+        self.left_parent_table = {}
+        self.left_ancestor_pair_table = {}
         # Next, populate the rule dictionary using a grammar file.
         self.__read_file(grammar_file)
 
         self.existing_entries = {}
         self.existing_lhs     = set()
+
 
 
     def __read_file(self, filename):
@@ -91,8 +100,71 @@ class Parser:
                 if self.is_terminal(lhs):
                     self.grammar[lhs] = []
 
+                if (lhs, rhs[0]) not in self.prefix_table:
+                    self.prefix_table[(lhs, rhs[0])] = []
+                # self.prefix_table[(lhs, rhs[0])].append(Rule(prob, lhs, rhs))
+
+
+                if rhs[0] not in self.left_parent_table:
+                    self.left_parent_table[rhs[0]] = []
+
+
+                if len(self.prefix_table[(lhs, rhs[0])]) == 0:
+                    self.left_parent_table[rhs[0]].append(lhs)
+                    self.prefix_table[(lhs, rhs[0])].append(Rule(prob, lhs, rhs))
+
                 self.grammar[lhs].append(Rule(prob, lhs, rhs))
 
+
+    def fill_left_ancestor_pair_table(self, token):
+        self.left_ancestor_pair_table = self.dfs(token, self.left_ancestor_pair_table)
+
+    def dfs(self, y, sj):
+
+        if y in self.left_parent_table:
+            for x in self.left_parent_table[y]:
+                if x not in sj:
+                    sj[x] = []
+                    sj[x].append(y)
+                    self.dfs(x, sj)
+                else:
+                    sj[x].append(y)
+            return sj
+        else:
+            return sj
+
+        '''
+        for x in self.left_parent_table[y]:
+            if x not in sj:
+                sj[x] = []
+                sj[x].append(y)
+                self.dfs(x, sj)
+            else:
+                sj[x].append(y)
+        return sj
+        '''
+    def get_grammar_index(self, symbol, rule):
+        possible_rules = self.grammar[symbol]
+
+        for i, g_rule in enumerate(possible_rules):
+            if rule == g_rule:
+                return i
+
+
+    def __opredict(self, symbol, col):
+        entries = []
+        if symbol not in self.existing_lhs and symbol in self.left_ancestor_pair_table:
+            self.existing_lhs.add(symbol)
+
+            for b in self.left_ancestor_pair_table[symbol]:
+                rules = self.prefix_table[(symbol, b)]
+                for rule in rules:
+                    entry = TableEntry(symbol, self.get_grammar_index(symbol, rule), col, 0, rule.weight)
+                    if entry not in self.existing_entries:
+                        entries.append(entry)
+                        self.existing_entries[entry] = entry.weight
+
+        return entries
 
     def __predict(self, symbol, col, sentence_token=None):
 
@@ -175,6 +247,7 @@ class Parser:
 
         # First we need to append our root rule
         entries = self.__predict(ROOT, 0)
+        # entries = self.__opredict(ROOT, 0)
         self.table[0].extend(entries)
         curr_col = 0
         while curr_col < len(self.table):
@@ -183,6 +256,9 @@ class Parser:
             # the existing rules to our set of current rules
             for entry in self.table[curr_col]:
                 self.existing_entries[entry] = entry.weight
+
+            if not curr_col == len(words):
+                self.fill_left_ancestor_pair_table(words[curr_col])
 
             curr_row = 0
             while curr_row < len(self.table[curr_col]):
@@ -342,9 +418,11 @@ class Parser:
                         #   append its children to our current column.
 
                         if curr_col != len(words):
-                            entries = self.__predict(symbol, curr_col, words[curr_col])
+                            # entries = self.__predict(symbol, curr_col, words[curr_col])
+                            entries = self.__opredict(symbol, curr_col)
                         else:
-                            entries = self.__predict(symbol, curr_col, None)
+                            # entries = self.__predict(symbol, curr_col, None)
+                            entries = self.__opredict(symbol, curr_col)
                         self.table[curr_col].extend(entries)
                 
                 curr_row += 1
@@ -353,9 +431,10 @@ class Parser:
                                            # After finishing our current
             self.existing_entries = {}     # column and advancing to the next,
             self.existing_lhs     = set()  # we need to clear our set of
-                                           # entries that were already used.
+            self.left_ancestor_pair_table = {}                         # entries that were already used.
 
         # self.print_table()                 # print the finished table
+
 
         temp = TableEntry(ROOT, 0, 0, 1)
 
@@ -394,15 +473,17 @@ class Parser:
 
 
 def main():
-
+    '''
     if len(sys.argv) != 3:
         return
 
     grammar_file  = sys.argv[1]
     sentence_file = sys.argv[2]
-
-    parser = Parser(grammar_file)
-    parser.parse(sentence_file)
+    '''
+    parser = Parser("papa.gr")
+    # parser = Parser(grammar_file)
+    parser.parse_sentence("Papa ate the caviar with the spoon")
+    # parser.parse(sentence_file)
 
     # parser = Parser("papa.gr")
     # parser.parse_sentence("Papa ate the caviar with the spoon")

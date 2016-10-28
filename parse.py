@@ -334,10 +334,10 @@ class Parser:
                                            # we need to clear our set of
                                            # entries that were already used.
 
-        # self.print_table()                 # print the finished table
+        self.print_table()                 # print the finished table
 
         temp = TableEntry(ROOT, 0, 0, 1)
-
+        '''
         res = None
         for tab_entry in self.table[curr_col - 1]:
             if tab_entry == temp:
@@ -347,7 +347,7 @@ class Parser:
         else:
             self.print_parse(res)
             print res.weight
-
+        '''
 
     def print_parse(self, entry):
         '''
@@ -373,16 +373,17 @@ class Parser:
 
 
 def main():
-
+    '''
     if len(sys.argv) != 3:
         return
 
     grammar_file  = sys.argv[1]
     sentence_file = sys.argv[2]
+    '''
 
-    parser = Parser(grammar_file)
-    parser.parse(sentence_file)
-    # parser.parse_sentence("{ 3 }")
+    parser = Parser("papa.gr")
+    # parser.parse(sentence_file)
+    parser.parse_sentence("Papa ate the caviar with the spoon")
 
 
 if __name__ == "__main__":
