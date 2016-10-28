@@ -238,7 +238,17 @@
 		\end{eqnarray*} 
 		The extra space used for each column is a set (implemented by a dict) of the same size as the column. We maintain a "table entry" object which maintains the same information as a dotted rule but in a more efficient structure. 
 
-		Our algorithm does not take more then $O(n^3)$ time. For any given rule in the chart, We either scan, predict, or complete. Scan is a $O(1)$ check against the input sentence. Predict adds all associated rules to the chart which is $O($number of rules for a non terminal$)$, and we maintain a hash map of rules in the current column to do $O(1)$ checking of duplicate rules before adding. Thus the runtime is bounded by the runtime of predict and complete. Complete similarly attaches constituents to customers. Due to the $O(1)$ check for duplicates (as well as $O(1)$ attachment as will be discussed in the next section), the runtime does not exceed $O(n^3)$.
+		Our algorithm does not take more then $O(n^3)$ time. 
+
+		{\bf[TL;DR]}: We have three nested loops.
+
+		For each sentence of size $n$, we need to successfully scan $n$ rules. Now note that each attempted scan takes $O(1)$ time, because we can simply compare a rule and the token in the sentence. For each word, we perform at most $O(k)$ attempted scans, where $k$ is the number of predicted rules leading to a terminal, which is dependent on our grammar, not on our sentence input. Since our grammar is independent of the size of our input, we can call it constant.
+
+		But what about prediction and attaching? Note that every time we predict, we need to iterate through all of our rows in our column. It's the same thing for attaching. That is, each of them take $O(k)$ time. In every column, we need to either scan, predict, or attach for each entry. Then because each entry takes $O(k)$, each column in the worst case takes $O(k^2)$. And because we have an input size of $n$, we will have $n+1$ columns, so our total running time is $O(nk^2)$.
+
+		Then if we generalize, and say that in fact the number of words in our sentence is bounded by the size of our grammar (in that we can never have more vocabulary in our sentence than there exists in our grammar), then our total running time is $O(k^3)$.
+
+		Without loss of generality, we can constrain $n$, and our total running time is $O(n^3)$
 	\item 
 		We do not exceed $O(1)$ runtime for attaching to a column. We use primitive python's list object which is essentially a vector that allows $O(1)$ append to the end of the list. The list represents a column and the chart is a list of lists. There is not a time where we add to the middle of the list, so elements will not need to be shifted.
 	\item 
