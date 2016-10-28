@@ -1,7 +1,6 @@
 #!/usr/bin/python
 
 import math
-import random
 import sys
 from collections import defaultdict
 
@@ -25,22 +24,24 @@ class Rule:
 
 class TerminalEntry:
 
-    def __init__(self, lhs, weight=0):
+    def __init__(self, lhs, weight=0, curr_prob=1):
         self.lhs = lhs
         self.rhs = []
         self.weight = weight
+        self.curr_prob = curr_prob
         self.back_ptrs = []
 
 
 class TableEntry:
 
-    def __init__(self, lhs, grammar_idx, col, dot_idx, weight=None):
+    def __init__(self, lhs, grammar_idx, col, dot_idx, weight=None, curr_prob=None):
         self.lhs         = lhs
         self.grammar_idx = grammar_idx
         self.col         = col
         self.dot_idx     = dot_idx
         self.back_ptrs   = []
         self.weight      = weight
+        self.curr_prob   = curr_prob
 
 
     def __eq__(self, other):
@@ -88,41 +89,34 @@ class Parser:
                 prob = float(tokens[0])
                 lhs, rhs = tokens[1], tokens[2:]
 
-                if self.is_terminal(lhs):
+                if lhs not in self.grammar:
                     self.grammar[lhs] = []
 
                 self.grammar[lhs].append(Rule(prob, lhs, rhs))
 
 
-    def __predict(self, symbol, col, sentence_token=None):
+    def __build_entries(self, symbol, col, sentence):
 
         entries = []
-        desired_lhs = ""
+
         if symbol not in self.existing_lhs:
             self.existing_lhs.add(symbol)
             possible_rules = self.grammar[symbol]
             for i, rule in enumerate(possible_rules):
-
-                # If the current rule contains a terminal, but that terminal
-                # doesn't match what our next sentence word is, then we don't
-                # add it to our table.
-                s = rule.rhs[0]
-                if self.is_terminal(s) and s != sentence_token:
-                    continue
-                elif self.is_terminal(s) and s == sentence_token:
-                    desired_lhs = rule.lhs
-
-                if not rule.rhs[0] == desired_lhs:
-                    entry = TableEntry(symbol, i, col, 0, rule.weight)
-                    if entry not in self.existing_entries:
-                        entries.append(entry)
-                        self.existing_entries.add(entry)
+                # one word lookahead
+                if col < len(sentence) and not rule.rhs[0] in self.grammar:
+                    preterminal = rule.lhs[0]
+                    if not rule.rhs[0] == sentence.split()[col]:
+                        for i, e_temp in enumerate(entries):
+                            if self.grammar[e_temp.lhs][e_temp.grammar_idx].rhs[e_temp.dot_idx] == preterminal:
+                                entries.remove(i)
+                        continue
+                entry = TableEntry(symbol, i, col, 0, rule.weight, rule.prob)
+                if entry not in self.existing_entries:
+                    entries.append(entry)
+                    self.existing_entries.add(entry)
         
         return entries
-
-
-    def is_terminal(self, symbol):
-        return symbol not in self.grammar
 
 
     def print_table(self):
@@ -146,8 +140,9 @@ class Parser:
                 else:
                     rule = self.get_rule(entry)
                     print ("{0} {1}\t-> {2}\t({3})\t({4})"
-                           .format(entry.col, rule.lhs, rule.rhs,
-                                   entry.dot_idx, entry.weight))
+                           .format(entry.col, rule.lhs, rule.rhs, entry.dot_idx, entry.weight))
+
+
             print ""
             col_idx += 1
 
@@ -155,7 +150,6 @@ class Parser:
     def get_rule(self, entry):
         if entry == None:
             return None
-
         return self.grammar[entry.lhs][entry.grammar_idx]
 
 
@@ -174,7 +168,8 @@ class Parser:
         self.table = [[] for _ in range(len(words) + 1)]
 
         # First we need to append our root rule
-        entries = self.__predict(ROOT, 0)
+        # entries = self.__build_entries(ROOT, 0)
+        entries = self.__build_entries(ROOT, 0, sentence)
         self.table[0].extend(entries)
         curr_col = 0
         while curr_col < len(self.table):
@@ -224,110 +219,73 @@ class Parser:
                         d = e.dot_idx
                         r = self.get_rule(e)
 
-                        # We can look for the correct rule to attach by
-                        # comparing the symbol after the dot index.
                         if d < len(r.rhs) and r.rhs[d] == rule.lhs:
 
                             # Obtain the total weight of the previous entry
                             # (which is the entry being attached) and the
                             # weight of the current rule.
 
+                            prob   = e.curr_prob * entry.curr_prob
                             weight = e.weight + entry.weight
 
-                            # Next we need to create an updated entry using the
-                            # following steps:
-                            #
-                            #   (1) Create a copy the previous entry, and shift
-                            #       its dot index to the right by 1,
-                            #   (2) Copy the previous entry's back pointers
-                            #   (3) Keep a back pointer the entry representing
-                            #       the rule that is a child of this one.
+                            updated_entry = TableEntry(e.lhs, e.grammar_idx, e.col, d+1, weight, prob)
+                            updated_entry.back_ptrs.extend(e.back_ptrs)
+                            updated_entry.back_ptrs.append(entry)
 
-                            new_entry = TableEntry(e.lhs, e.grammar_idx, 
-                                                   e.col, d + 1, weight)
-                            new_entry.back_ptrs.extend(e.back_ptrs)
-                            new_entry.back_ptrs.append(entry)
-
-                            if new_entry not in self.existing_entries:
-
-                                # If the new entry doesn't exist in the current
-                                # column, we can simply add it to our table.
-
-                                self.table[curr_col].append(new_entry)
-                                self.existing_entries.add(new_entry)
-
+                            if updated_entry not in self.existing_entries:
+                                self.table[curr_col].append(updated_entry)
+                                self.existing_entries.add(updated_entry)
                             else:
-
-                                # If the entry already has been added, we need
-                                # to keep the entry with the lower weight,
-                                # which denotes the higher probability.
-
                                 for existing_entry in self.existing_entries:
-                                    if existing_entry == new_entry:
+                                    if existing_entry == updated_entry and \
+                                       updated_entry.weight <= existing_entry.weight:
+                                        self.existing_entries.remove(existing_entry)
+                                        self.existing_entries.add(updated_entry)
 
-                                        if new_entry.weight < existing_entry.weight:
+                                        temp_idx = self.table[curr_col].index(existing_entry)
 
-                                            # The new entry is more probable,
-                                            # so delete the old one and add the
-                                            # new one.
+                                        self.table[curr_col][temp_idx] = None
+                                        self.table[curr_col].append(updated_entry)
+                                        break
+                                    # if existing_entry == updated_entry and \
+                                    #    updated_entry.curr_prob > existing_entry.curr_prob:
+                                    #     self.existing_entries.remove(existing_entry)
+                                    #     self.existing_entries.add(updated_entry)
 
-                                            self.existing_entries.remove(existing_entry)
-                                            self.existing_entries.add(new_entry)
+                                    #     temp_idx = self.table[curr_col].index(existing_entry)
 
-                                            temp_idx = self.table[curr_col].index(existing_entry)
-
-                                            self.table[curr_col][temp_idx] = None
-                                            self.table[curr_col].append(new_entry)
-                                            break
-
-                                        elif new_entry.weight == existing_entry.weight and \
-                                             random.randint(0, 1) == 1:
-
-                                            # When we have a tie in likelihood, 
-                                            # we don't want to choose 
-                                            # deterministically. So we flip a
-                                            # coin, and pick at random.
-
-                                            self.existing_entries.remove(existing_entry)
-                                            self.existing_entries.add(new_entry)
-
-                                            temp_idx = self.table[curr_col].index(existing_entry)
-
-                                            self.table[curr_col][temp_idx] = None
-                                            self.table[curr_col].append(new_entry)
-                                            break
-
-                    # Finally, we need to check if the last symbol of our entry
-                    # is a terminal symbol. If it is, then we can keep a
-                    # pointer to a terminal symbol to be printed.
-                    #
-                    # But we need to be careful. We only do this when the entry
-                    # is not a leaf. Otherwise, it will get printed, and we
-                    # don't want to double-print.
+                                    #     self.table[curr_col][temp_idx] = None
+                                    #     self.table[curr_col].append(updated_entry)
+                                    #     break
 
                     last_symbol = rule.rhs[len(rule.rhs) - 1]
-
-                    if entry.back_ptrs and self.is_terminal(last_symbol):
+                    if entry.back_ptrs and last_symbol not in self.grammar:
                         t = TerminalEntry(rule.rhs[len(rule.rhs) - 1])
                         entry.back_ptrs.append(t)
 
                 else:
 
-                    symbol = rule.rhs[dot_idx]      # Get the symbol, and check
-                    if self.is_terminal(symbol):    # if it is a terminal
+                    # Otherwise, we can check if the current symbol is a
+                    # terminal or non-terminal, and then go from there.
 
-                        # SCAN:
-                        #   If our symbol is a terminal, then we try to match
-                        #   current symbol with the corresponding symbol in our
-                        #   sentence.
+                    symbol = rule.rhs[dot_idx]
+                    if symbol not in self.grammar:     
+
+                        # SCAN
+                        #
+                        # TERMINAL SYMBOL
+                        # If our symbol is not a key in our grammar, then it 
+                        # must be a terminal. If it is a terminal, then we try 
+                        # to match the current symbol with the corresponding 
+                        # symbol in our sentence.
 
                         if curr_col >= len(words):
                             # TODO: ask what to do in this case
                             pass
                         elif words[curr_col] == symbol:
                             next_col = curr_col + 1
-                            new_entry = TableEntry(entry.lhs, entry.grammar_idx, entry.col, dot_idx + 1, entry.weight)
-                            new_entry.back_ptrs.extend(entry.back_ptrs)
+                            updated_entry = TableEntry(entry.lhs, entry.grammar_idx, entry.col, dot_idx + 1, entry.weight, entry.curr_prob)
+                            updated_entry.back_ptrs.extend(entry.back_ptrs)
 
                             if dot_idx + 1 < len(rule.rhs):
                                 # If this happens, it must be that we scanned some terminal
@@ -339,21 +297,21 @@ class Parser:
                                 # symbol.
 
                                 t = TerminalEntry(rule.rhs[dot_idx])
-                                new_entry.back_ptrs.append(t)
+                                updated_entry.back_ptrs.append(t)
 
-                            self.table[next_col].append(new_entry)
+                            self.table[next_col].append(updated_entry)
 
                     else:  
 
-                        # PREDICT:
-                        #   If our symbol is a key in our grammar, then it must
-                        #   be a nonterminal. We unravel the symbol, and then 
-                        #   append its children to our current column.
+                        # PREDICT
+                        #                             
+                        # NON-TERMINAL SYMBOL
+                        # If our symbol is a key in our grammar, then it must
+                        # be a nonterminal. We unravel the symbol, and then 
+                        # append its children to our current column.
 
-                        if curr_col != len(words):
-                            entries = self.__predict(symbol, curr_col, words[curr_col])
-                        else:
-                            entries = self.__predict(symbol, curr_col, None)
+                        # entries = self.__build_entries(symbol, curr_col)
+                        entries = self.__build_entries(symbol, curr_col, sentence)
                         self.table[curr_col].extend(entries)
                 
                 curr_row += 1
@@ -406,13 +364,13 @@ def main():
     '''
     if len(sys.argv) != 3:
         return
-
-    grammar_file  = sys.argv[1]
-    sentence_file = sys.argv[2]
     '''
-    parser = Parser("papa.gr")
+    grammar_file  = "papa.gr" #sys.argv[1]
+    # sentence_file = sys.argv[2]
+
+    parser = Parser(grammar_file)
     # parser.parse(sentence_file)
-    parser.parse_sentence("Papa ate the caviar with the spoon")
+    parser.parse_sentence("Papa ate the caviar with a spoon")
 
 
 if __name__ == "__main__":
