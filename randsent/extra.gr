@@ -22,36 +22,36 @@
 0.5 ROOT    W_word Aux S_ori ?           # this rule is for (8b)
 
 # The basic grammar rules.  Here's what the abbreviations stand for:
-#    S_ori_wo_obj = sentense in present tense without a object
-#    S_ori_wo_sub = sentense in present tense without a subject
-#    S_ed_wo_obj  = sentense in past tense without a object
-#    S_ed_wo_sub  = sentense in past tense without a subject
+#    S_ori_wo_obj 	= sentense in present tense without a object
+#    S_ori_wo_sub 	= sentense in present tense without a subject
+#    S_ed_wo_obj  	= sentense in past tense without a object
+#    S_ed_wo_sub  	= sentense in past tense without a subject
 #
-#    W_word_obj   = WH-word can be referred to a Noun
-#    W_word       = other WH-word
+#    W_word_obj   	= WH-word can be referred to a Noun
+#    W_word       	= other WH-word
 #
-#    NP 	= noun phrase
-#    PP 	= prepositional phrase
-#    Det 	= determiner that is used before non-vowel sound
-#    Det_vo = determiner that is used before vowel sound
-#    Prep 	= preposition
-#    Conj 	= conjunction
-#    Aux 	= auxiliary verb
+#    NP 			= noun phrase
+#    PP 			= prepositional phrase
+#    Det 			= determiner that is used before non-vowel sound
+#    Det_vo 		= determiner that is used before vowel sound
+#    Prep 			= preposition
+#    Conj 			= conjunction
+#    Aux 			= auxiliary verb
 
-#    NOUN 		= noun, no matter what sound it begins with
-#    Noun 		= noun that do not begin with vowel sound
-#    Noun_vo 	= noun that begin with vowel sound
-#    Noun_pro 	= proper noun
+#    NOUN 			= noun, no matter what sound it begins with
+#    Noun 			= noun that do not begin with vowel sound
+#    Noun_vo 		= noun that begin with vowel sound
+#    Noun_pro 		= proper noun
 
-#    ADJ 	= adjective, no matter what sound it begins with
-#    Adj 	= adjective that do not begin with vowel sound
-#    Adj_vo = adjective that begin with vowel sound
+#    ADJ 			= adjective, no matter what sound it begins with
+#    Adj 			= adjective that do not begin with vowel sound
+#    Adj_vo 		= adjective that begin with vowel sound
 
-#    ADV 	= adverb, no matter what sound it begins with
-#    Adv 	= adverb that do not begin with vowel sound
-#    Adv_vo = adverb that begin with vowel sound
+#    ADV 			= adverb, no matter what sound it begins with
+#    Adv 			= adverb that do not begin with vowel sound
+#    Adv_vo 		= adverb that begin with vowel sound
 
-#    V_that = a verb followed by "that"
+#    V_that 		= a verb followed by "that"
 
 
 #                                       Past Tense      Present Tense      
@@ -78,7 +78,7 @@
 0.1 S_ori   	it V_tr_ori NP NC_pas
 
 ##########################################################
-# begin rule for (8b)
+
 0.5 S_ed_wo_obj   NP V_that_ed that S_ed_wo_obj
 0.5 S_ed_wo_obj   NP V_that_ed that S_ed_wo_sub
 1   S_ed_wo_obj   NP V_tr_ed
@@ -96,7 +96,7 @@
 1   S_ori_wo_obj   NP VP_pre PP Prep
 
 1   S_ori_wo_sub   VP_pre
-# end rule for (8b)
+
 ##########################################################
 
 1	VP_pas  V_tr_ed NP

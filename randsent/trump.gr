@@ -1,0 +1,188 @@
+# Symbols in the grammar are case-sensitive.
+# 
+# This grammar uses a convention that
+#    - terminals are lowercase          (president)
+#    - preterminals are capitalized     (Noun)
+#    - other nonterminals are all-caps  (NP)
+# 
+# This convention just makes grammars more readable to humans.
+#
+#######################
+
+# Rules for creating full sentences.
+
+3       ROOT    S .
+1       ROOT    S !
+0.7     ROOT    S , SAD .
+0.7     ROOT    S , SAD !
+1       ROOT    I have been told that S .
+0.5     ROOT    The other day someone told me S .
+0.5     ROOT    Yesterday someone told me S .
+0.5     ROOT    Last week I heard S .
+0.5     ROOT    I have been informed that S .
+0.5     ROOT    I think S .
+0.5     ROOT    What Americans don't know is S .
+0.5     ROOT    The thing democrats never say is S .
+
+# The basic grammar rules.  Here's what the abbreviations stand for:
+#    S          = sentence
+#    NP         = noun phrase
+#    VP         = verb phrase
+#    PP         = prepositional phrase
+#    Det        = determiner (sometimes called "article")
+#    Prep       = preposition
+#    Adj        = adjective
+#    Conj       = conjunction
+#    V_intran   = intransitive verb
+#    V_that     = a verb followed by "that"
+#    N_clause   = noun clause
+#    Adv        = adverb
+#    Noun_pro   = proper noun
+
+1   S           NP VP
+0.1 S           it Verb NP N_clause
+
+1   VP          Verb NP
+0.1 VP          V_that N_clause
+0.1 VP          V_intran
+0.4 VP          VP PP
+0.2 VP          VP Conj VP
+
+1   NP          Det Noun
+0.5 NP          Det_vo Noun_vo      # this rule is for (7a)
+0.5 NP          Det_p  Noun_p       # for plural nouns
+0.3 NP          NP PP
+0.6 NP          Noun_pro
+0.2 NP          NP Conj NP
+
+1   PP          Prep NP
+
+50  Noun        Adj Noun
+50  Noun_vo     Adj_vo NOUN
+50  Noun_p      ADJ Noun_p          # for plural nouns
+8   NOUN        Noun
+1   NOUN        Noun_vo
+
+1   N_clause    that S
+0.2 V_intran    V_intran Conj V_intran
+
+1   Adj         Adv Adj
+0.2 Adj_vo      Adv_vo ADJ   # these three rules are for (7a)
+8   ADJ         Adj
+1   ADJ         Adj_vo
+
+# Vocabulary.  Your program can see that "ate" is a terminal
+# symbol because there exists no rule for rewriting it.
+# Any symbol that can rewrite as a terminal (or a string of 
+# terminals, like "chief of staff") is called a "preterminal."  Notice 
+# that a preterminal is a special kind of nonterminal.
+
+1   Verb        wanted
+1   Verb        supported
+0.1 Verb        killed
+0.2 Verb        bombed
+0.5 Verb        threatened
+0.3 Verb        voted
+
+1   V_intran    laughed
+1   V_intran    schemed
+0.5 V_intran    plotted
+
+3   V_that      thought
+1   V_that      believed
+1   V_that      decided
+
+1   Det         the
+2   Det         a
+0.5 Det         every
+
+1   Det_vo      the             # "the" and "every" belong to both "Det" and "Det_vo"
+2   Det_vo      an
+0.5 Det_vo      every
+0.5 Det_vo      every single
+
+1   Det_p       all
+1   Det_p       the
+2   Det_p       so many
+0.5 Det_p       many
+2   Det_p       thousands of
+0.5 Det_p       hundreds of
+
+2   Noun        change
+15  Noun        country
+15  Noun        crime
+7   Noun        deal
+17  Noun        government
+8   Noun        law
+16  Noun        nation
+7   Noun        plan
+13  Noun        president
+3   Noun        state
+9   Noun        system
+7   Noun        terrorism
+10  Noun        trade
+11  Noun        violence
+4   Noun        work
+10  Noun        world
+3   Noun        moron
+30  Noun        wall
+    
+1   Noun_vo     immigration
+0.1 Noun_vo     enforcement
+    
+1   Noun_p      children
+8   Noun_p      citizens
+11  Noun_p      communities
+10  Noun_p      crimes
+7   Noun_p      families
+15  Noun_p      immigrants
+12  Noun_p      jobs
+7   Noun_p      lives
+15  Noun_p      people
+20  Noun_p      refugees
+7   Noun_p      terrorists
+5   Noun_p      democrats
+6   Noun_p      threats
+8   Noun_p      politicians
+7   Noun_p      deals
+30  Noun_p      walls
+
+4   Noun_pro    Hillary
+5   Noun_pro    Clinton
+3   Noun_pro    Americans
+2   Noun_pro    America
+1   Noun_pro    the Middle East
+1   Noun_pro    Syria
+1   Noun_pro    Iraq
+1   Noun_pro    Afghan
+
+1   Conj        and
+0.5 Conj        or
+
+9   Adj         failed
+3   Adj         great
+2   Adj         longer
+5   Adj         political
+6   Adj         safe
+4   Adj         stupid
+7   Adj         weak
+5   Adj         loser
+2   Adj         politically correct
+15  Adj         bad
+30  Adj         corrupt
+6   Adj         good
+8   Adj         huge
+6   Adj         tremendous
+2   Adj         terrific
+4   Adj         out of control
+3   Adj         millions of
+    
+10  Adv         very
+5   Adv         really
+
+1   Adv_vo      extremely
+
+1   Prep        with
+1.5 Prep        on
+1   Prep        under
+1.5 Prep        in

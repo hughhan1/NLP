@@ -19,28 +19,28 @@
 2   ROOT    Aux S_ori ?                 # this rule is for (7b)
 
 # The basic grammar rules.  Here's what the abbreviations stand for:
-#    NP 	= noun phrase
-#    PP 	= prepositional phrase
-#    Det 	= determiner that is used before non-vowel sound
-#    Det_vo = determiner that is used before vowel sound
-#    Prep 	= preposition
-#    Conj 	= conjunction
-#    Aux 	= auxiliary verb
+#    NP 		= noun phrase
+#    PP 		= prepositional phrase
+#    Det 		= determiner that is used before non-vowel sound
+#    Det_vo 	= determiner that is used before vowel sound
+#    Prep 		= preposition
+#    Conj 		= conjunction
+#    Aux 		= auxiliary verb
 
 #    NOUN 		= noun, no matter what sound it begins with
 #    Noun 		= noun that do not begin with vowel sound
 #    Noun_vo 	= noun that begin with vowel sound
 #    Noun_pro 	= proper noun
 
-#    ADJ 	= adjective, no matter what sound it begins with
-#    Adj 	= adjective that do not begin with vowel sound
-#    Adj_vo = adjective that begin with vowel sound
+#    ADJ 		= adjective, no matter what sound it begins with
+#    Adj 		= adjective that do not begin with vowel sound
+#    Adj_vo 	= adjective that begin with vowel sound
 
-#    ADV 	= adverb, no matter what sound it begins with
-#    Adv 	= adverb that do not begin with vowel sound
-#    Adv_vo = adverb that begin with vowel sound
+#    ADV 		= adverb, no matter what sound it begins with
+#    Adv 		= adverb that do not begin with vowel sound
+#    Adv_vo 	= adverb that begin with vowel sound
 
-#    V_that = a verb followed by "that"
+#    V_that 	= a verb followed by "that"
 
 #                       Past Tense      Present Tense      
 #    Transitive Verb     V_tr_ed         V_tr_ori          # "ori" for "original"

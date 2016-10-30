@@ -16,13 +16,13 @@
 1	ROOT	is it true that S ?     # mixing terminals and nonterminals is ok.
 
 # The basic grammar rules.  Here's what the abbreviations stand for:
-#    S  = sentence
-#    NP = noun phrase
-#    VP = verb phrase
-#    PP = prepositional phrase
-#    Det = determiner (sometimes called "article")
-#    Prep = preposition
-#    Adj = adjective
+#    S  	= sentence
+#    NP 	= noun phrase
+#    VP 	= verb phrase
+#    PP 	= prepositional phrase
+#    Det 	= determiner (sometimes called "article")
+#    Prep 	= preposition
+#    Adj 	= adjective
 
 1	S	NP VP
 1	VP	Verb NP
