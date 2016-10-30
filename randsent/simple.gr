@@ -5,16 +5,8 @@
 #    - preterminals are capitalized     (Noun)
 #    - other nonterminals are all-caps  (NP)
 # 
-# This convention just makes grammars more readable to humans.  Thus:
+# This convention just makes grammars more readable to humans.
 #
-#    - When *you* are writing grammars in questions 3 and 6, you should 
-#      follow this convention unless you have a good reason not to.  
-#
-#    - But your *program* should still work with grammars that don't
-#      follow this convention.  So how can your program reliably tell
-#      the difference between terminal and nonterminal symbols?  If
-#      there is at least one rule for rewriting a symbol, then that
-#      symbol is a nonterminal and should be rewritten.
 #######################
 
 # Rules for creating full sentences.
