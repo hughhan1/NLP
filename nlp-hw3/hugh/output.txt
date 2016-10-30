@@ -1,0 +1,90 @@
+python fileprob.py loglinear1 lexicons/chars-10.txt english_spanish/train/sp.1K english_spanish/test/english/length-10/en.10.*
+Training from corpus english_spanish/train/sp.1K
+.
+Vocabulary size is 26 types including OOV and EOS
+
+Start optimizing.
+Using:
+	C=1
+	d=0.010000
+epoch 1: F=-2.672665
+epoch 2: F=-1.905446
+epoch 3: F=-1.525944
+epoch 4: F=-1.279915
+epoch 5: F=-1.106820
+epoch 6: F=-0.980773
+epoch 7: F=-0.887173
+epoch 8: F=-0.816665
+epoch 9: F=-0.762938
+epoch 10: F=-0.721611
+Finished training on 964 tokens
+-28.6819	english_spanish/test/english/length-10/en.10.30
+-23.729	english_spanish/test/english/length-10/en.10.31
+-37.1574	english_spanish/test/english/length-10/en.10.32
+-26.7595	english_spanish/test/english/length-10/en.10.33
+-24.5672	english_spanish/test/english/length-10/en.10.34
+-31.5864	english_spanish/test/english/length-10/en.10.35
+-22.7987	english_spanish/test/english/length-10/en.10.36
+-49.3946	english_spanish/test/english/length-10/en.10.37
+-34.8147	english_spanish/test/english/length-10/en.10.38
+-33.5347	english_spanish/test/english/length-10/en.10.39
+-32.6756	english_spanish/test/english/length-10/en.10.40
+-36.5954	english_spanish/test/english/length-10/en.10.41
+-20.5559	english_spanish/test/english/length-10/en.10.42
+-25.4407	english_spanish/test/english/length-10/en.10.43
+-35.5202	english_spanish/test/english/length-10/en.10.44
+-34.3444	english_spanish/test/english/length-10/en.10.45
+-22.1846	english_spanish/test/english/length-10/en.10.46
+-29.0489	english_spanish/test/english/length-10/en.10.47
+-24.5006	english_spanish/test/english/length-10/en.10.48
+-33.2669	english_spanish/test/english/length-10/en.10.49
+-47.0275	english_spanish/test/english/length-10/en.10.50
+-19.8376	english_spanish/test/english/length-10/en.10.51
+-33.5983	english_spanish/test/english/length-10/en.10.52
+-31.9779	english_spanish/test/english/length-10/en.10.53
+-30.2602	english_spanish/test/english/length-10/en.10.54
+-41.5501	english_spanish/test/english/length-10/en.10.55
+-27.2784	english_spanish/test/english/length-10/en.10.56
+-17.7941	english_spanish/test/english/length-10/en.10.57
+-19.034	english_spanish/test/english/length-10/en.10.58
+-29.1624	english_spanish/test/english/length-10/en.10.59
+-49.2705	english_spanish/test/english/length-10/en.10.60
+-34.3147	english_spanish/test/english/length-10/en.10.61
+-35.4684	english_spanish/test/english/length-10/en.10.62
+-18.4614	english_spanish/test/english/length-10/en.10.63
+-19.5182	english_spanish/test/english/length-10/en.10.64
+-30.3945	english_spanish/test/english/length-10/en.10.65
+-24.7081	english_spanish/test/english/length-10/en.10.66
+-33.8032	english_spanish/test/english/length-10/en.10.67
+-16.1918	english_spanish/test/english/length-10/en.10.68
+-28.4076	english_spanish/test/english/length-10/en.10.69
+-28.9051	english_spanish/test/english/length-10/en.10.70
+-34.5579	english_spanish/test/english/length-10/en.10.71
+-38.0729	english_spanish/test/english/length-10/en.10.72
+-26.2564	english_spanish/test/english/length-10/en.10.73
+-20.2015	english_spanish/test/english/length-10/en.10.74
+-25.244	english_spanish/test/english/length-10/en.10.75
+-33.3461	english_spanish/test/english/length-10/en.10.76
+-26.9726	english_spanish/test/english/length-10/en.10.77
+-30.2948	english_spanish/test/english/length-10/en.10.78
+-25.8309	english_spanish/test/english/length-10/en.10.79
+-27.8799	english_spanish/test/english/length-10/en.10.80
+-30.7823	english_spanish/test/english/length-10/en.10.81
+-27.63	english_spanish/test/english/length-10/en.10.82
+-64.2452	english_spanish/test/english/length-10/en.10.83
+-23.1927	english_spanish/test/english/length-10/en.10.84
+-43.7644	english_spanish/test/english/length-10/en.10.85
+-28.2838	english_spanish/test/english/length-10/en.10.86
+-28.7949	english_spanish/test/english/length-10/en.10.87
+-25.3377	english_spanish/test/english/length-10/en.10.88
+-29.7792	english_spanish/test/english/length-10/en.10.89
+-21.5177	english_spanish/test/english/length-10/en.10.90
+-25.3883	english_spanish/test/english/length-10/en.10.91
+-33.4321	english_spanish/test/english/length-10/en.10.92
+-28.1513	english_spanish/test/english/length-10/en.10.93
+-27.9316	english_spanish/test/english/length-10/en.10.94
+-23.0587	english_spanish/test/english/length-10/en.10.95
+-24.4666	english_spanish/test/english/length-10/en.10.96
+-39.0285	english_spanish/test/english/length-10/en.10.97
+-31.3085	english_spanish/test/english/length-10/en.10.98
+-34.0758	english_spanish/test/english/length-10/en.10.99
