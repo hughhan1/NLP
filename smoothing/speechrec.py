@@ -11,6 +11,9 @@
 # Modified by Mozhi Zhang <mzhang29@jhu.edu> to add the new log linear model
 # with word embeddings.  (2/17/2016)
 
+# Modified by Hugh Han <hughhan@jhu.edu> and Peiyi Zheng <pzheng4@jhu.edu>
+# for the CS465 course at Johns Hopkins University.  (10/8/2016)
+
 import math
 import sys
 
